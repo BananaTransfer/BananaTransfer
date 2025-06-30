@@ -1,0 +1,20 @@
+@startuml
+title Send File
+
+actor "User Sender" as usrs
+collections "Browser Sender" as brws
+database "Server Sender" as srvs
+database "Server Recipient" as srvr
+
+usrs -> brws: Enter recipient \nusername@domain
+brws -> srvs: Fetch recipient public key
+srvs -> srvs: DNS lookup recipient server
+srvs -> srvr: Get recipient public key
+srvs -> srvs: Check hash of public key if \nrecipient is known and store it
+srvs -> brws: Public key of recipient
+
+usrs -> brws: Add file to send
+brws -> brws: Generate symmetric key \nEncrypt file with sym key \nEncrypt sym key with \n public key of recipient
+brws -> srvs: Upload encrypted file
+srvs -> srvr: Announce about the shared file
+@enduml

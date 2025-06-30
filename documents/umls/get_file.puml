@@ -1,0 +1,22 @@
+@startuml
+title Get File
+
+database "Server Sender" as srvs
+database "Server Recipient" as srvr
+collections "Browser Recipient" as brwr
+actor "User Recipient" as usrr
+
+usrr -> brwr: Authenticate with \nusername@domain / password
+brwr -> srvr: Authenticate with \nusername@domain / password
+usrr -> brwr: Check available files
+brwr -> srvr: Get list of files shared with user
+usrr -> brwr: Select file to download
+brwr -> srvr: Request to fetch file
+srvr -> srvs: Get file from sender server
+srvs -> srvr: Send file if it is available
+srvr -> srvs: Confirm file reception
+srvs -> srvs: Delete file on server
+srvr -> brwr: Send encrypted file \nand encrypted private \nkey of user to browser
+usrr -> brwr: Enter password for private key
+brwr -> brwr: Decrypt private key with password \nDecrypt symmetric key with private key \nDecrypt file with symmetric key
+@enduml
