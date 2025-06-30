@@ -24,6 +24,17 @@ sudo apt-get install -y nodejs
 $ npm install
 ```
 
+Create file `.env` with the configuration variables
+```
+# .env
+PORT=3000
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=youruser
+DB_PASS=yourpass
+DB_NAME=yourdb
+```
+
 ## Compile and run the project
 
 ```bash
