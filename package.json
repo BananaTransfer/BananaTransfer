@@ -30,6 +30,7 @@
     "@types/passport-local": "^1.0.38",
     "bcrypt": "^6.0.0",
     "bootstrap": "^5.3.7",
+    "htmx.org": "^2.0.6",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
     "pg": "^8.16.3",
