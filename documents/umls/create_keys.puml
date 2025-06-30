@@ -1,5 +1,5 @@
 @startuml
-title Create Keys
+title Create User Keys
 
 database "Server Recipient" as srvr
 collections "Browser Recipient" as brwr
