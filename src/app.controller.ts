@@ -8,14 +8,16 @@ import { AppService } from './app.service';
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
+  /*
   // hello world with a simple text response (uses service)
   @Get()
   getHello(): string {
     return this.appService.getHello();
   }
+   */
 
   // hello world with a rendered HTML response (uses template engine pug)
-  @Get('hello')
+  @Get('')
   renderHello(@Res() res: Response): void {
     res.render('index');
   }
