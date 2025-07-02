@@ -38,8 +38,8 @@ ExternalAccount "0..1" --> "*" PublicKey: associated to >
 
 Account "*" --> "*" PublicKey: Trust >
 
-Transfer "1" -left- "1" PublicKey: Sent >
-Transfer "1" -left- "1" PublicKey: Received >
+Transfer "*" -left- "1" PublicKey: Sent >
+Transfer "*" -left- "1" PublicKey: Received >
 
 Transfer "1" -- "0..1" File
 
