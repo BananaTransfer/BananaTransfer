@@ -1,0 +1,46 @@
+@startuml
+
+class User {
+    id: bigserial
+    username: text
+}
+
+class Account {
+    password_hash: text
+    private_key_encrypted: text
+}
+
+class ExternalAccount {
+    domain: text
+}
+
+class PublicKey {
+    id: bigserial
+    key: text
+}
+
+class Transfer {
+    id: bigserial
+    symmetric_key_encrypted: text
+}
+
+class File {
+    id: bigserial
+    s3_path: text
+}
+
+Account -up-|> User
+ExternalAccount -up-|> User
+
+Account "0..1" --> "1" PublicKey: own >
+
+ExternalAccount "0..1" --> "*" PublicKey: associated to >
+
+Account "*" --> "*" PublicKey: Trust >
+
+Transfer "1" -left- "1" PublicKey: Sent >
+Transfer "1" -left- "1" PublicKey: Received >
+
+Transfer "1" -- "0..1" File
+
+@enduml
