@@ -5,18 +5,19 @@ class User {
     username: text
 }
 
-class Account {
+class LocalUser {
     password_hash: text
     private_key_encrypted: text
+    public_key: text
 }
 
-class ExternalAccount {
+class RemoteUser {
     domain: text
 }
 
-class PublicKey {
+class PublicKeyHash {
     id: bigserial
-    key: text
+    hash: varchar
 }
 
 class Transfer {
@@ -29,18 +30,19 @@ class File {
     s3_path: text
 }
 
-Account -up-|> User
-ExternalAccount -up-|> User
 
-Account "0..1" --> "1" PublicKey: own >
+LocalUser -up-|> User
+RemoteUser -up-|> User
 
-ExternalAccount "0..1" --> "*" PublicKey: associated to >
+LocalUser "0..1" --> "1" PublicKeyHash: own >
 
-Account "*" --> "*" PublicKey: Trust >
+User "0..1" --> "*" PublicKeyHash: associated to >
 
-Transfer "*" -left- "1" PublicKey: Sent >
-Transfer "*" -left- "1" PublicKey: Received >
+LocalUser "*" --> "*" PublicKeyHash: trust >
 
-Transfer "1" -- "0..1" File
+Transfer "*" -- "1" PublicKeyHash: send >
+Transfer "*" -- "1" PublicKeyHash: received >
+
+Transfer "1" -up- "0..1" File
 
 @enduml
