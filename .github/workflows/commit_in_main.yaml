@@ -64,6 +64,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y pipx
+          pipx ensurepath
           pipx install --include-deps ansible
       - name: Install amazon.aws.aws_ec2 ansible plugin dependencies
         run: pipx inject ansible boto3 botocore
