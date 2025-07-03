@@ -45,11 +45,11 @@
         state: started
         enabled: true
 
-    - name: Login to GitHub Container Registry (ghcr.io)
-      community.docker.docker_login:
-        registry_url: ghcr.io
-        username: "{{ ghcr_username }}"
-        password: "{{ ghcr_token }}"
+#    - name: Login to GitHub Container Registry (ghcr.io)
+#      community.docker.docker_login:
+#        registry_url: ghcr.io
+#        username: "{{ ghcr_username }}"
+#        password: "{{ ghcr_token }}"
 
   tasks:
     - name: Ensure /opt/app directory exists
@@ -62,7 +62,7 @@
 
     - name: Copy docker-compose.yml to the server
       copy:
-        src: docker-compose.yml
+        src: ../../../docker-compose.yaml
         dest: /opt/app/docker-compose.yml
         owner: root
         group: root
