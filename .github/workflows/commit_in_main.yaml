@@ -63,11 +63,7 @@ jobs:
       - name: Install Ansible
         run: |
           sudo apt update
-          sudo apt install -y pipx
-          pipx ensurepath
-          pipx install --include-deps ansible
-      - name: Install amazon.aws.aws_ec2 ansible plugin dependencies
-        run: pipx inject ansible boto3 botocore
+          sudo apt install -y ansible boto3 botocore
       - name: Add docker collection for ansible
         run: ansible-galaxy collection install community.docker
       - uses: webfactory/ssh-agent@v0.9.0
