@@ -4,4 +4,4 @@ regions:
   - eu-west-1
 filters:
   tag:project: bananatransfer
-  tag:environment: {{ environment_name }}
+  tag:environment: staging

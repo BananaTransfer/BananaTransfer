@@ -34,7 +34,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
   deploy:
-    needs: build-and-push-docker
+    needs: build_and_push_docker_image
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -52,17 +52,20 @@ jobs:
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v3
       - name: Initialise terraform
-        run: terraform init -backend-config="key=${{ job.environment.name }}"
+        run: terraform init -backend-config="key=${{ vars.ENVIRONMENT_NAME }}"
         working-directory: infra/terraform
       - name: Create the AWS infrastructure
-        run: terraform apply -auto-approve -var="ssh_pub_key=${{ vars.SSH_PUB_KEY }}" -var="environment_name=${{ job.environment.name }}"
+        run: terraform apply -auto-approve -var="ssh_pub_key=${{ vars.SSH_PUB_KEY }}" -var="environment_name=${{ vars.ENVIRONMENT_NAME }}"
         working-directory: infra/terraform
       - name: Install Ansible
         run: |
           sudo apt update
           sudo apt install -y ansible
+      - uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIV_KEY }}
       - name: Deploy on EC2
-        run: ansible-playbook -i inventory_aws_ec2.yml playbook.yml
+        run: ansible-playbook -i ${{ vars.ENVIRONMENT_NAME }}_inventory_aws_ec2.yml playbook.yml
         working-directory: infra/ansible
 
 
