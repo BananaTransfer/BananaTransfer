@@ -7,7 +7,7 @@ import { AppService } from './app.service';
 import { AppController } from './app.controller';
 
 import { AuthModule } from './auth/auth.module';
-import { DatabaseModule } from './database/database.module';
+// import { DatabaseModule } from './database/database.module';
 import { FileModule } from './file/file.module';
 import { ServiceModule } from './service/service.module';
 import { UserModule } from './user/user.module';

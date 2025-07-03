@@ -25,6 +25,7 @@ describe('AppController', () => {
 
       appController.renderHello(mockResponse);
 
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockResponse.render).toHaveBeenCalledWith('index');
     });
   });

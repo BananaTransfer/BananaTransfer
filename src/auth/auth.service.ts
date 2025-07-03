@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import { User } from './models/User';
 
 @Injectable()
 export class AuthService {
-  async validateUser(username: string, password: string): Promise<any> {
+  async validateUser(username: string, password: string): Promise<User | null> {
     // Replace with your user lookup logic
-    const user = {
+    const user: User = {
       username: 'test',
       passwordHash: await bcrypt.hash('testpass', 10),
     };
@@ -14,8 +15,9 @@ export class AuthService {
       user.username === username &&
       (await bcrypt.compare(password, user.passwordHash))
     ) {
-      return { username: user.username };
+      return user;
     }
+
     return null;
   }
 }
