@@ -3,8 +3,6 @@ on:
   push:
     branches: ["main"]
 jobs:
-  execute_code_quality_check_workflow:
-    uses: .github/workflows/code_quality_check.yaml@main
   build_and_push_docker_image:
     runs-on: ubuntu-latest
     permissions:
@@ -13,6 +11,8 @@ jobs:
     steps:
       - name: Clone the repository
         uses: actions/checkout@v4
+      - name: Validate the code quality
+        uses: ./.github/actions/code_quality_check
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:

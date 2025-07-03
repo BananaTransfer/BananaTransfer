@@ -1,8 +1,10 @@
-name: Code quality checks
+name: Validate code quality on PR to main
 on:
   pull_request:
     branches: [ "main" ]
 jobs:
-  execute_code_quality_check_workflow:
-    uses: .github/workflows/code_quality_check.yaml@main
+  execute_code_quality_check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ./.github/actions/code_quality_check
 
