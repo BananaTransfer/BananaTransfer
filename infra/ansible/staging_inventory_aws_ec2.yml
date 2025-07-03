@@ -5,3 +5,5 @@ regions:
 filters:
   tag:project: bananatransfer
   tag:environment: staging
+compose:
+  ansible_user: admin
