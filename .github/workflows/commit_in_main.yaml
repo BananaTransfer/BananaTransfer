@@ -67,6 +67,8 @@ jobs:
           pipx install --include-deps ansible
       - name: Install amazon.aws.aws_ec2 ansible plugin dependencies
         run: pipx inject ansible boto3 botocore
+      - name: Add docker collection for ansible
+        run: ansible-galaxy collection install community.docker
       - uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIV_KEY }}

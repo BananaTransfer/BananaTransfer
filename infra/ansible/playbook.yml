@@ -44,11 +44,6 @@
       pip:
         name: docker
         executable: pip3
-
-    - name: Install community.docker collection
-      ansible.builtin.ansible_galaxy_collection:
-        name: community.docker
-
     - name: Ensure docker service is running
       service:
         name: docker
@@ -78,7 +73,8 @@
         group: root
         mode: '0644'
 
-    - name: Deploy Docker Compose application
-      community.docker.docker_compose:
+    - name: Deploy Docker Compose application using Compose V2
+      community.docker.docker_compose_v2:
         project_src: /opt/app
         state: present
+
