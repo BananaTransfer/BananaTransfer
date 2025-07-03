@@ -9,6 +9,11 @@ variable "environment_name" {
   default = "staging"
 }
 
+variable "ssh_pub_key" {
+  description = "Public key deployed on the host to allow SSH connection"
+  type = string
+}
+
 terraform {
   backend "s3" {
     bucket = "bananatransfer-deployment-state"
@@ -80,10 +85,16 @@ resource "aws_vpc_security_group_ingress_rule" "server_sg_allow_ssh_ipv4" {
 
 # EC2 instance configuration
 
+resource "aws_key_pair" "server_ssh_key" {
+  key_name = "${local.app}_${var.environment_name}_server_ssh_key"
+  public_key = var.ssh_pub_key
+}
+
 resource "aws_instance" "server" {
   instance_type = "t3a.nano"
   ami = "TODO find debian AMI"
   vpc_security_group_ids = [aws_security_group.server_sg.id]
+  key_name = aws_key_pair.server_ssh_key.key_name
 
   tags = {
     Name = "${local.app}_${var.environment_name}_server"
