@@ -4,7 +4,7 @@ on:
     branches: ["main"]
 jobs:
   execute_code_quality_check_workflow:
-    uses: .github/workflows/shared/code_quality_check.yaml
+    uses: .github/workflows/shared/code_quality_check.yaml@${{ github.sha }}
   build_and_push_docker_image:
     runs-on: ubuntu-latest
     permissions:
