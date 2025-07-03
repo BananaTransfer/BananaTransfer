@@ -4,5 +4,5 @@ on:
     branches: [ "main" ]
 jobs:
   execute_code_quality_check_workflow:
-    uses: .github/workflows/shared/code_quality_check.yaml@${{ github.sha }}
+    uses: .github/workflows/shared/code_quality_check.yaml@main
 
