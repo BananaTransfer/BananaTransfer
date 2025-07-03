@@ -1,12 +1,10 @@
 locals {
-  region = "ew-west-1"
   app = "bananatransfer"
 }
 
 variable "environment_name" {
   description = "Will be used to generate the resource name. Only use char and underscore"
   type = string
-  default = "staging"
 }
 
 variable "ssh_pub_key" {
@@ -16,9 +14,8 @@ variable "ssh_pub_key" {
 
 terraform {
   backend "s3" {
-    bucket = "bananatransfer-deployment-state"
-    key    = "staging"
-    region = local.region
+    bucket = "bananatransfer-terraform-deployment-state"
+    region = "eu-west-1"
   }
 
   required_providers {
@@ -30,10 +27,12 @@ terraform {
 }
 
 provider "aws" {
-  region = local.region
+  region = "eu-west-1"
   default_tags {
-    project = local.app
-    environment = var.environment_name
+      tags = {
+          project = local.app
+          environment = var.environment_name
+      }
   }
 }
 
@@ -93,7 +92,7 @@ resource "aws_key_pair" "server_ssh_key" {
 
 resource "aws_instance" "server" {
   instance_type = "t3a.nano"
-  ami = "TODO find debian AMI"
+  ami = "ami-0fbb72557598f5284" # debian 12
   vpc_security_group_ids = [aws_security_group.server_sg.id]
   key_name = aws_key_pair.server_ssh_key.key_name
   associate_public_ip_address = true

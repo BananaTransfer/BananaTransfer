@@ -1,12 +1,8 @@
-name: NestJS test CI
+name: Code quality checks
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-
+  workflow_call:
 jobs:
-  test:
+  test_code:
     runs-on: ubuntu-latest
     steps:
       - name: Clone the repository
