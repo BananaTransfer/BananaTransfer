@@ -36,6 +36,34 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-
+  deploy:
+    needs: build-and-push-docker
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Clone the repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - name: Configure the AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: eu-west-1
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+      - name: Initialise terraform
+        run: terraform init
+        working-directory: infra/terraform
+      - name: Create the AWS infrastructure
+        run: terraform apply -auto-approve
+        working-directory: infra/terraform
+      - name: Install Ansible
+        run: |
+          sudo apt update
+          sudo apt install -y ansible
+      - name: Deploy on EC2
+        run: ansible-playbook -i inventory_aws_ec2.yml playbook-yml
+        working-directory: infra/ansible
 
 
