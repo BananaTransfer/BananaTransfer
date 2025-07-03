@@ -73,8 +73,8 @@ jobs:
       - name: Deploy on EC2
         run: |
           ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ${{ vars.ENVIRONMENT_NAME }}_inventory_aws_ec2.yml playbook.yml \
-            -e "github_username=${{ github.actor }}" \
-            -e "github_token=${{ secrets.GITHUB_TOKEN }}" \
+            -e "github_username=${{ secrets.DOCKER_REPO_USER }}" \
+            -e "github_token=${{ secrets.DOCKER_REPO_TOKEN }}" \
             -u admin
         working-directory: infra/ansible
 
