@@ -45,11 +45,11 @@
         state: started
         enabled: true
 
-#    - name: Login to GitHub Container Registry (ghcr.io)
-#      community.docker.docker_login:
-#        registry_url: ghcr.io
-#        username: "{{ ghcr_username }}"
-#        password: "{{ ghcr_token }}"
+    - name: Login to GitHub Container Registry (ghcr.io)
+      community.docker.docker_login:
+        registry_url: ghcr.io
+        username: "{{ ghcr_username }}"
+        password: "{{ ghcr_token }}"
 
   tasks:
     - name: Ensure /opt/app directory exists
