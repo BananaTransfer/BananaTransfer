@@ -1,0 +1,84 @@
+---
+- name: Deploy Docker Compose Application on Debian 12
+  hosts: all
+  become: true
+  vars:
+    ghcr_username: "{{ github_username }}"
+    ghcr_token: "{{ github_token }}"
+  pre_tasks:
+    - name: Install prerequisites for Docker
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+        state: present
+        update_cache: true
+
+    - name: Add Docker GPG key
+      ansible.builtin.apt_key:
+        url: https://download.docker.com/linux/debian/gpg
+        state: present
+
+    - name: Add Docker repository
+      ansible.builtin.apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable
+        state: present
+        filename: docker
+
+    - name: Install Docker and dependencies
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - python3-pip
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+        update_cache: true
+
+    - name: Install Docker SDK for Python
+      pip:
+        name: docker
+        executable: pip3
+
+    - name: Install community.docker collection
+      ansible.builtin.ansible_galaxy_collection:
+        name: community.docker
+
+    - name: Ensure docker service is running
+      service:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Login to GitHub Container Registry (ghcr.io)
+      community.docker.docker_login:
+        registry_url: ghcr.io
+        username: "{{ ghcr_username }}"
+        password: "{{ ghcr_token }}"
+
+  tasks:
+    - name: Ensure /opt/app directory exists
+      file:
+        path: /opt/app
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Copy docker-compose.yml to the server
+      copy:
+        src: docker-compose.yml
+        dest: /opt/app/docker-compose.yml
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Deploy Docker Compose application
+      community.docker.docker_compose:
+        project_src: /opt/app
+        state: present

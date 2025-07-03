@@ -1,0 +1,12 @@
+name: Validate code quality on PR to main
+on:
+  pull_request:
+    branches: [ "main" ]
+jobs:
+  execute_code_quality_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone the repository
+        uses: actions/checkout@v4
+      - uses: ./.github/actions/code_quality_check
+
