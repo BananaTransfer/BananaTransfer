@@ -1,14 +1,7 @@
-import {
-  Controller,
-  Post,
-  Body,
-  Request,
-  UseGuards,
-  Get,
-} from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
+import { Controller, Req, UseGuards, Get } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './local-auth.guard';
+import { Request } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -23,7 +16,7 @@ export class AuthController {
   // This route is protected by the LocalAuthGuard
   @UseGuards(LocalAuthGuard)
   @Get('profile')
-  getProfile(@Request() req) {
+  getProfile(@Req() req: Request) {
     return req.user;
   }
 }
