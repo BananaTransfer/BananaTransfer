@@ -63,7 +63,8 @@ jobs:
       - name: Install Ansible
         run: |
           sudo apt update
-          sudo apt install -y ansible boto3 botocore
+          sudo apt install -y python3-pip
+          pip install ansible boto3 botocore
       - name: Add docker collection for ansible
         run: ansible-galaxy collection install community.docker
       - uses: webfactory/ssh-agent@v0.9.0
