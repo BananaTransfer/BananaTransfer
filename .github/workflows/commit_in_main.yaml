@@ -60,11 +60,13 @@ jobs:
             -var="ssh_pub_key=${{ vars.SSH_PUB_KEY }}" \
             -var="environment_name=${{ vars.ENVIRONMENT_NAME }}"
         working-directory: infra/terraform
+      - name: setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
       - name: Install Ansible
-        run: |
-          sudo apt update
-          sudo apt install -y python3-pip
-          pip install ansible boto3 botocore
+        run: pip install -y ansible boto3 botocore
       - name: Add docker collection for ansible
         run: ansible-galaxy collection install community.docker
       - uses: webfactory/ssh-agent@v0.9.0
@@ -72,7 +74,7 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_PRIV_KEY }}
       - name: Deploy on EC2
         run: |
-          ansible-playbook -i ${{ vars.ENVIRONMENT_NAME }}_inventory_aws_ec2.yml playbook.yml \
+          ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ${{ vars.ENVIRONMENT_NAME }}_inventory_aws_ec2.yml playbook.yml \
             -e "github_username=${{ github.actor }}" \
             -e "github_token=${{ secrets.GITHUB_TOKEN }}"
         working-directory: infra/ansible
