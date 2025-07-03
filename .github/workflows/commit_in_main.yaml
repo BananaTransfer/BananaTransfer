@@ -55,7 +55,10 @@ jobs:
         run: terraform init -backend-config="key=${{ vars.ENVIRONMENT_NAME }}"
         working-directory: infra/terraform
       - name: Create the AWS infrastructure
-        run: terraform apply -auto-approve -var="ssh_pub_key=${{ vars.SSH_PUB_KEY }}" -var="environment_name=${{ vars.ENVIRONMENT_NAME }}"
+        run: |
+          terraform apply -auto-approve \
+            -var="ssh_pub_key=${{ vars.SSH_PUB_KEY }}" \
+            -var="environment_name=${{ vars.ENVIRONMENT_NAME }}"
         working-directory: infra/terraform
       - name: Install Ansible
         run: |
@@ -65,7 +68,10 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIV_KEY }}
       - name: Deploy on EC2
-        run: ansible-playbook -i ${{ vars.ENVIRONMENT_NAME }}_inventory_aws_ec2.yml playbook.yml
+        run: |
+          ansible-playbook -i ${{ vars.ENVIRONMENT_NAME }}_inventory_aws_ec2.yml playbook.yml \
+            -e "github_username=${{ github.actor }}" \
+            -e "github_token=${{ secrets.GITHUB_TOKEN }}"
         working-directory: infra/ansible
 
 

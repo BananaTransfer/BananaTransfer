@@ -1,0 +1,6 @@
+services:
+  server:
+    image: ghcr.io/bananatransfer/bananatransfer:latest
+    restart: always
+    ports:
+      - "80:3000"

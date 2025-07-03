@@ -1,5 +1,6 @@
 .git
 .idea
+.github
 
 dist
 node_modules
@@ -7,6 +8,7 @@ node_modules
 documents
 Dockerfile
 README.md
+docker-compose.yaml
 
 .gitignore
 .dockerignore
