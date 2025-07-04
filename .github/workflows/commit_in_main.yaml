@@ -40,8 +40,9 @@ jobs:
       contents: read
     environment:
       name: staging
+      url: https://staging.bananatransfer.ansermoz.dev
     env:
-      DOMAIN: ${{ vars.ENVIRONMENT_NAME }}.bananatransfer.ansermoz.dev
+      DOMAIN: https://staging.bananatransfer.ansermoz.dev # GitHub action doesn't have a variable to reference the env url
     steps:
       - name: Clone the repository
         uses: actions/checkout@v4
