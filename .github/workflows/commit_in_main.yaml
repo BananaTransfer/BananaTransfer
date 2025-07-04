@@ -45,7 +45,7 @@ jobs:
       name: staging
       url: https://staging.bananatransfer.ansermoz.dev
     env:
-      DOMAIN: https://staging.bananatransfer.ansermoz.dev # GitHub action doesn't have a variable to reference the env url
+      DOMAIN: staging.bananatransfer.ansermoz.dev
     steps:
       - name: Clone the repository
         uses: actions/checkout@v4
