@@ -18,12 +18,12 @@
         update_cache: true
 
     - name: Add Docker GPG key
-      ansible.builtin.apt_key:
+      apt_key:
         url: https://download.docker.com/linux/debian/gpg
         state: present
 
     - name: Add Docker repository
-      ansible.builtin.apt_repository:
+      apt_repository:
         repo: deb [arch=amd64] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable
         state: present
         filename: docker
@@ -72,4 +72,5 @@
       community.docker.docker_compose_v2:
         project_src: /opt/app
         state: present
+        pull: always
 
