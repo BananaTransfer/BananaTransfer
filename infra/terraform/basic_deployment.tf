@@ -7,6 +7,11 @@ variable "environment_name" {
   type = string
 }
 
+variable "domain" {
+  description = "The domain hosted on AWS Route53 that will redirect traffic to the server instance"
+  type = string
+}
+
 variable "ssh_pub_key" {
   description = "Public key deployed on the host to allow SSH connection"
   type = string
@@ -116,7 +121,7 @@ data "aws_route53_zone" "domain" {
 
 resource "aws_route53_record" "bananatransfer_subdomain" {
   zone_id = data.aws_route53_zone.domain.zone_id
-  name    = "${var.environment_name}.bananatransfer.ansermoz.dev"
+  name    = var.domain
   type    = "A"
   ttl     = 300
   records = [aws_instance.server.public_ip]

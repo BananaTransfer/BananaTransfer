@@ -5,6 +5,7 @@
   vars:
     ghcr_username: "{{ github_username }}"
     ghcr_token: "{{ github_token }}"
+    domain: "{{ domain }}"
   pre_tasks:
     - name: Install prerequisites for Docker
       apt:
@@ -56,16 +57,24 @@
       file:
         path: /opt/app
         state: directory
-        owner: root
-        group: root
-        mode: '0755'
+        owner: admin
+        group: admin
+        mode: '0644'
 
     - name: Copy docker-compose.yml to the server
       copy:
-        src: ../../../docker-compose.yaml
+        src: docker-compose.yaml
         dest: /opt/app/docker-compose.yml
-        owner: root
-        group: root
+        owner: admin
+        group: admin
+        mode: '0644'
+
+    - name: Generate the Caddyfile
+      template:
+        src: Caddyfile
+        dest: /opt/app/Caddyfile
+        owner: admin
+        group: admin
         mode: '0644'
 
     - name: Deploy Docker Compose application using Compose V2
