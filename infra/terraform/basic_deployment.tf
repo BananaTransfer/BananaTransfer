@@ -107,3 +107,17 @@ resource "aws_instance" "server" {
     volume_type = "gp3"
   }
 }
+
+# domain redirection
+
+data "aws_route53_zone" "domain" {
+  name = "ansermoz.dev"
+}
+
+resource "aws_route53_record" "bananatransfer_subdomain" {
+  zone_id = data.aws_route53_zone.domain.zone_id
+  name    = "${var.environment_name}.bananatransfer.ansermoz.dev"
+  type    = "A"
+  ttl     = 300
+  records = [aws_instance.server.public_ip]
+}
