@@ -2,9 +2,6 @@ name: Docker Build and Publish
 on:
   push:
     branches: ["main"]
-
-env:
-  DOMAIN: ${var.environment_name}.bananatransfer.ansermoz.dev
 jobs:
   build_and_push_docker_image:
     runs-on: ubuntu-latest
@@ -43,6 +40,8 @@ jobs:
       contents: read
     environment:
       name: staging
+    env:
+      DOMAIN: ${{ vars.ENVIRONMENT_NAME }}.bananatransfer.ansermoz.dev
     steps:
       - name: Clone the repository
         uses: actions/checkout@v4
