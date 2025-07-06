@@ -1,0 +1,54 @@
+@startuml
+
+enum TransferStatus {
+    PENDING_RETRIEVAL
+    RETRIEVED
+}
+
+class User {
+    id: bigserial
+    username: text
+}
+
+class LocalUser {
+    password_hash: text
+    private_key_encrypted: text
+    public_key: text
+}
+
+class RemoteUser {
+    domain: text
+}
+
+class PublicKeyHash {
+    id: bigserial
+    hash: varchar
+}
+
+class Transfer {
+    id: bigserial
+    symmetric_key_encrypted: text
+    status: TransferStatus
+}
+
+class File {
+    id: bigserial
+    s3_path: text
+}
+
+LocalUser -up-|> User
+RemoteUser -up-|> User
+
+LocalUser "0..1" --> "1" PublicKeyHash: own >
+
+User "0..1" --> "*" PublicKeyHash: associated to >
+
+LocalUser "*" --> "*" PublicKeyHash: trust >
+
+Transfer "*" -- "1" PublicKeyHash: send >
+
+Transfer "*" -- "1" PublicKeyHash: received >
+
+Transfer "1" -up- "0..1" File
+
+@enduml
