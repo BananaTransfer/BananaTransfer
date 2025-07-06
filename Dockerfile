@@ -8,10 +8,10 @@ RUN npm install --omit=dev
 
 FROM base AS builder
 
-# add only in the builder the library necesseray for build
+# add only in the builder the library necessary for build
 RUN npm install
 
-# the files are copied after the installation to avoid reinstalling everytime we change our
+# the files are copied after the installation to avoid reinstalling every time we change our
 # applicative code
 COPY . .
 
