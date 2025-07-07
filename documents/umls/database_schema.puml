@@ -25,10 +25,11 @@ class User {
 }
 
 class LocalUser {
-    private_key_encrypted: text
-    public_key: text
-    password_hash_salt: text
     last_login: timestamp
+    password_hash_salt: text
+    private_key_encrypted: text
+    private_key_kdf_salt: text 32bits
+    public_key: text
     key_created_at: timestamp
 }
 
