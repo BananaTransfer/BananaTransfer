@@ -30,6 +30,7 @@ The private key generation and its , encryption and decryption of the files dire
 
 The user can generate their private keys in the web-console of the server of their organization. The generation of the key directly happens in the browser. The generated private key is a RSA 4096-bit key.
 The private key is then encrypted with a 64-char master-password before stored on the server. The user will store the master-password to decrypt the private key in his password vault.
+To encrypt the private key, we use PBKDF2 as a key derivation function to derive a symmetric key from the master-password (with SHA-256 as the hashing algorithm, 32 bytes for the salt and 100'000 iterations). The symmetric key is then used to encrypt the private key with AES-GCM.
 
 ### Send File
 
@@ -57,6 +58,6 @@ With the decrypted symmetric key the browser then decrypts the file itself (usin
 
 * AES-GCM ensures the authenticity and integrity of the encrypted file and the content. We choose that a file share isn't additionally signed by the sender user with a asymmetric private key. To implement a signature of the transfer, every user would need an an additional key pair to sign the files they send, since it is not a best practice to use the same key pairs for encryption and signing. An asymmetric signature of the files would add a lot of complexity to the system without adding a real benefit in security, since to verify the signature we would need to fetch the public key of the sender from the same server as we already received the encrypted file.
 * The Web Crypto API is used to encrypt and decrypt the files and keys in the browser. It is a standard API that is supported by all major browsers. It provides a secure way to perform cryptographic operations in the browser.
-* AES-GCM and RSA-OEAP are used for encryption and decryption of the files and keys. Both algorithms are widely used and considered secure. They are supported by the Web Crypto API in the browser.
+* The algorithms AES-GCM, RSA-OEAP, SHA-256 and BPKDF2 are used for encryption, decryption, hashing and key derivation. They are widely used and considered secure. They are supported by the Web Crypto API in the browser.
 * The private key is generated in the browser and encrypted with a master-password before stored on the server. This ensures that the private key is not stored in plain text on the server and can only be decrypted by the user who knows the master-password.
 * A hash of the public key of a recipient is stored in the database of the sender server to detect modifications of the public key of the recipient and to remember the recipients of a user.
