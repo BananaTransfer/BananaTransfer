@@ -1,54 +1,63 @@
 @startuml
 
+enum UserStatus {
+    ACTIVE
+    DISABLED
+    BLOCKED
+    DELETED
+    EXTERNAL
+}
+
 enum TransferStatus {
-    PENDING_RETRIEVAL
+    CREATED
+    PENDING
     RETRIEVED
+    DELETED
+    EXPIRED
+    REFUSED
 }
 
 class User {
     id: bigserial
     username: text
+    created_at: timestamp
+    status: UserStatus
 }
 
 class LocalUser {
-    password_hash: text
     private_key_encrypted: text
     public_key: text
+    password_hash_salt: text
+    last_login: timestamp
+    key_created_at: timestamp
 }
 
 class RemoteUser {
     domain: text
 }
 
-class PublicKeyHash {
-    id: bigserial
-    hash: varchar
-}
-
-class Transfer {
+class FileTransfer {
     id: bigserial
     symmetric_key_encrypted: text
+    signature_sender: text
     status: TransferStatus
+    created_at: timestamp
+    subject: varchar
+    s3_path: text [optional]
 }
 
-class File {
-    id: bigserial
-    s3_path: text
+class TrustedRecipient {
+    public_key_hash: text
+    created_at: timestamp
 }
 
 LocalUser -up-|> User
 RemoteUser -up-|> User
 
-LocalUser "0..1" --> "1" PublicKeyHash: own >
+User "1" -- "*" FileTransfer: sends >
+User "1" -- "*" FileTransfer: receives >
 
-User "0..1" --> "*" PublicKeyHash: associated to >
-
-LocalUser "*" --> "*" PublicKeyHash: trust >
-
-Transfer "*" -- "1" PublicKeyHash: send >
-
-Transfer "*" -- "1" PublicKeyHash: received >
-
-Transfer "1" -up- "0..1" File
+LocalUser "1" -- "*" TrustedRecipient: knows/trusts >
+TrustedRecipient "*" -- "1" User: associated to >
 
 @enduml

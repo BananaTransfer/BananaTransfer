@@ -9,26 +9,22 @@
 * orphaned row: row not referenced from anywhere 
 
 ### key considerations
-* a user may receive a transfer from another user he doesn't know or trust yet.
-* various user may trust another user, but not with the same associated public key.
-* when a local user rotate it's keys, the owned public key hash is changed but the previous one is kept until orphaned 
+* a user may receive a transfer from another user they don't know or trust yet.
+* a user may trust another user, but not with the same associated public key.
+* when a local user rotate it's keys, the hash of the public key changes, changed but the previous one is kept until orphaned.
 
-#### Transfer situations
+#### TransferStatus descriptions
+* CREATED: Sender created the transfer and uploaded the file to their server but didn't already sent it / notified remote server about it
+* PENDING: Sender notified recipient server about file but transfer wasn't accepted yet by recipient
+* RETRIEVED: Status of the transfer when recipient accepted the transfer and fetched the file
+* DELETED: File was deleted by sender or recipient
+* REFUSED: Transfer was refused by recipient
+* EXPIRED: Transfer has expired, f.ex. because recipient has changed its keys
 
-##### Sender is local destination is remote
-* when the transfer is initiated, the transfer is created in DB with the status PENDING_RETRIEVAL
-* when the transfer is retrieved from the remote, the file is removed and the status change to RETRIEVED
-* if the sender delete the transfer in any status, the row is deleted
-##### Sender is remote destination is local
-* when the notification is received, the transfer is created in DB with the status PENDING_RETRIEVAL
-* when the receiver ask to retrieve the file and the process complete successfully, the status become RETRIEVED 
-  * if it fail, the status stay PENDING_RETRIEVAL
-* if the receiver delete the transfer in any status, the row is deleted
-
-##### Sender is local destination is local
-* how to manage the deletion of a transfer per one user in the different state ? 
+> if the fetch from remote server fails, when the file is in the status PENDING, the status stays the same.
+> if the recipient tries to fetch the file but the sender already has deleted it the recipient server updated the status to DELETED too.
+> it is only possible to delete a transfer in the status CREATED and PENDING. If the transfer is already received by the other server it isn't possible.
 
 ### required integrity constraint
-* a public key hash must at least be owned by a local user or associated with a user
 * a user can either be local or remote
-* a transfer must be associated to at least one owned public key hash at all time
+* a transfer is associated to one sender and recipient, at least one of them must be local user
