@@ -12,6 +12,7 @@ usrr -> brwr: Check available files
 brwr -> srvr: Get list of files shared with user
 usrr -> brwr: Select file to download
 brwr -> srvr: Request to fetch file
+srvr -> srvr: DNS lookup sender server
 srvr -> srvs: Get file from sender server
 srvs -> srvr: Send file if it is available
 srvr -> srvs: Confirm file reception
