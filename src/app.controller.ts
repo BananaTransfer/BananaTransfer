@@ -19,6 +19,6 @@ export class AppController {
   // hello world with a rendered HTML response (uses template engine pug)
   @Get('')
   renderHello(@Res() res: Response): void {
-    res.render('index');
+    res.render('landingpage');
   }
 }
