@@ -5,7 +5,8 @@ enum UserStatus {
     DISABLED
     BLOCKED
     DELETED
-    EXTERNAL
+    EXTERNAL_ACTIVE
+    EXTERNAL_BLOCKED
 }
 
 enum TransferStatus {
@@ -52,6 +53,12 @@ class TrustedRecipient {
     created_at: timestamp
 }
 
+class Log {
+    id: bigserial
+    text: text
+    created_at: timestamp
+}
+
 LocalUser -up-|> User
 RemoteUser -up-|> User
 
@@ -60,5 +67,8 @@ User "1" -- "*" FileTransfer: receives >
 
 LocalUser "1" -- "*" TrustedRecipient: knows/trusts >
 TrustedRecipient "*" -- "1" User: associated to >
+
+User "0..1" -- "*" Log: logs >
+FileTransfer "0..1" -- "*" Log: logs >
 
 @enduml
