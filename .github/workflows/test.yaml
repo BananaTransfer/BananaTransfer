@@ -17,4 +17,3 @@ jobs:
         working-directory: infra/ansible
       - name: Add docker collection for ansible
         run: ansible-galaxy collection install community.docker
-        working-directory: infra/ansible
