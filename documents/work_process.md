@@ -1,6 +1,19 @@
 # Workflow and GitHub Development Process
 
+## Group Meetings
+Every week on Monday right after our previous meeting for a restropective and debriefing on our previous tasks.
 
+
+The purpose of this meeting: 
+- Discuss and reach consensus on major decisions 
+- Create new tasks
+
+A second week meeting will occur if necessary
+
+## Group Communication Channel
+* **Teams**: weekly or bi-weekly meetings
+* **GitHub**: For task-related issues
+* **Telegram**: Informal discussion
 
 ## GitHub Project
 
@@ -21,10 +34,10 @@ Direct commits on the main branch are only allowed for the following actions:
 
 
 ### Status
-- Todo: New issues that are not yet assigned and worked on
-- In progress: Task that are currently being worked on
-- In reviews: Pull request relating to the task is created and is awaiting reviews
-- Done: Completed task
+- **Todo**: New issues that are not yet assigned and worked on
+- **In progress**: Task that are currently being worked on
+- **In reviews**: Pull request relating to the task is created and is awaiting reviews
+- **Done**: Completed task
 
 ### Creating Issue
 All issues are related to a task to be achieved
