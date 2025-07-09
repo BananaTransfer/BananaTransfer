@@ -69,11 +69,14 @@ jobs:
             -var="environment_name=${{ vars.ENVIRONMENT_NAME }}" \
             -var="domain=${{ env.DOMAIN }}"
         working-directory: infra/terraform
+      - name: Install python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
       - name: Install Ansible
-        run: |
-          sudo apt update
-          sudo apt install -y python3-pip
-          pip install ansible boto3 botocore
+        run: pip install -r requirements.txt
+        working-directory: infra/ansible
       - name: Add docker collection for ansible
         run: ansible-galaxy collection install community.docker
       - uses: webfactory/ssh-agent@v0.9.0
