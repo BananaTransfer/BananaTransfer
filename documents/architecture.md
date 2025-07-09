@@ -75,6 +75,27 @@ the private key can be used to decrypt the symmetric key (RSA-OAEP).
 As in the sending process the Web Crypto API is used for the decryption.
 With the decrypted symmetric key the browser then decrypts the file itself (using AES256-GCM) and lets the user to download the file to the computer.
 
+### Communication between two servers of different organizations
+
+When a user sends a transfer to an user of another organization, the file is first uploaded to the server of the sender organization and the recipient server is notified about the transfer. As soon as the recipient accepts the transfer, their server fetches the encrypted file from the sender server.
+
+All communication between the servers is done via HTTPS. The servers verify the TLS certificate of the other server if it corresponds to the hostname of the server.
+To find the server of the recipient organization, the sender server uses the DNS to resolve the domain of the recipient organization:
+To configure BananaTransfer for a domain, the DNS zone of the domain needs to have a TXT record with the name `_bananatransfer.domain.com` and with the hostname of the server that is hosting the BananaTransfer service for that domain. This hostname is then resolved with an additional DNS request to find the IP address of the server.
+
+For example: if the sender `user1@domainsender.com` wants to send a file to `user2@domainrecipient.com`, the following steps are taken:
+
+* The sender server of ansermoz.dev first resolves the DNS TXT record `_bananatransfer.domainrecipient.com` to find the hostname of the BananaTransfer server for the domain `domainrecipient.com`. The hostname found in the TXT record is for example `bt.domainrecipient.com`.
+* The sender server then sends a DNS request to resolve the hostname `bt.domainrecipient.com` to an IP address.
+* The server of `bt.domainrecipient.com` is then contacted via HTTPS. The TLS certificate of the server is verified to correspond to the hostname.
+
+On any incoming connection from another server, the same verification is done:
+
+* The TLS certificate of the incoming connection is verified to correspond to the hostname of the server.
+* The recipient server looks up the DNS TXT record for the indicated domain `domainsender.com` to find the hostname of the BananaTransfer server for that domain. (f.ex. `srvbt.domainsender.com`).
+* The hostname is resolved to an IP address and the file is fetched from the sender server.
+* The hostname and IP address is then used to check if it corresponds to the hostname and IP from which the request was received, to prevent spoofing attacks.
+
 ### Further explanations about the System and Architecture choices
 
 * AES256-GCM ensures the authenticity and integrity of the encrypted file and the content. We choose that a file share isn't additionally signed by the sender user with a asymmetric private key. To implement a signature of the transfer, every user would need an an additional key pair to sign the files they send, since it is not a best practice to use the same key pairs for encryption and signing. An asymmetric signature of the files would add a lot of complexity to the system without adding a real benefit in security, since to verify the signature we would need to fetch the public key of the sender from the same server as we already received the encrypted file.
@@ -84,5 +105,6 @@ With the decrypted symmetric key the browser then decrypts the file itself (usin
 * A hash of the public key of a recipient is stored in the database of the sender server to detect modifications of the public key of the recipient and to remember the recipients of a user.
 
 ### Security Cnsiderations
+
 * Browsers should be up-to-date
 * Should be used exclusively with HTTPS 
