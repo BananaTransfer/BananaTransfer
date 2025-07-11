@@ -53,6 +53,16 @@ jobs:
         uses: actions/checkout@v4
       - name: Deploy
         uses: ./.github/actions/deploy
+        with:
+          AWS_ACCESS_KEY_ID: secrets.AWS_ACCESS_KEY_ID
+          AWS_SECRET_ACCESS_KEY: secrets.AWS_SECRET_ACCESS_KEY
+          ENVIRONMENT_NAME: vars.ENVIRONMENT_NAME
+          SSH_PUB_KEY: vars.SSH_PUB_KEY
+          SSH_PRIV_KEY: secrets.SSH_PRIV_KEY
+          INTERNAL_DOMAIN: vars.INTERNAL_DOMAIN
+          EXTERNAL_DOMAIN: vars.EXTERNAL_DOMAIN
+          DOCKER_REPO_USER: secrets.DOCKER_REPO_USER
+          DOCKER_REPO_TOKEN: secrets.DOCKER_REPO_TOKEN
   deploy_ansermoz:
     needs: build_and_push_docker_image
     runs-on: ubuntu-latest
@@ -66,4 +76,14 @@ jobs:
         uses: actions/checkout@v4
       - name: Deploy
         uses: ./.github/actions/deploy
+        with:
+          AWS_ACCESS_KEY_ID: secrets.AWS_ACCESS_KEY_ID
+          AWS_SECRET_ACCESS_KEY: secrets.AWS_SECRET_ACCESS_KEY
+          ENVIRONMENT_NAME: vars.ENVIRONMENT_NAME
+          SSH_PUB_KEY: vars.SSH_PUB_KEY
+          SSH_PRIV_KEY: secrets.SSH_PRIV_KEY
+          INTERNAL_DOMAIN: vars.INTERNAL_DOMAIN
+          EXTERNAL_DOMAIN: vars.EXTERNAL_DOMAIN
+          DOCKER_REPO_USER: secrets.DOCKER_REPO_USER
+          DOCKER_REPO_TOKEN: secrets.DOCKER_REPO_TOKEN
 

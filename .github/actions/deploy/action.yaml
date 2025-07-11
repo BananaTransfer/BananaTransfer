@@ -1,4 +1,32 @@
 name: "AWS deploy"
+inputs:
+  AWS_ACCESS_KEY_ID:
+    description: 'AWS access key for the account the deployment must take place in'
+    required: true
+  AWS_SECRET_ACCESS_KEY:
+    description: 'AWS secret access key for AWS_ACCESS_KEY_ID'
+    required: true
+  ENVIRONMENT_NAME:
+    description: 'Name used in every deployment artifact (server name, s3 bucket, ...)'
+    required: true
+  SSH_PUB_KEY:
+    description: 'SSH key to be deployed on the server to be able to connect on it'
+    required: true
+  SSH_PRIV_KEY:
+    description: 'SSH private key associated to the SSH_PUB_KEY'
+    required: true
+  INTERNAL_DOMAIN:
+    description: 'DNS record to be created on a domain managed by AWS route 53. Will be associated to the server IP'
+    required: true
+  EXTERNAL_DOMAIN:
+    description: 'DNS record that will be used by user to access the server. Either a CNAME to the INTERNAL_DOMAIN or the INTERNAL_DOMAIN itself'
+    required: true
+  DOCKER_REPO_USER:
+    description: 'User used by the server to retrieve the docker image from GitHub artifact repository'
+    required: true
+  DOCKER_REPO_TOKEN:
+    description: 'Token associated to DOCKER_REPO_USER'
+    required: true
 runs:
   using: "composite"
   steps:
@@ -6,20 +34,22 @@ runs:
       uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-region: eu-west-1
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-access-key-id: ${{ inputs.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ inputs.AWS_SECRET_ACCESS_KEY }}
     - name: Install Terraform
       uses: hashicorp/setup-terraform@v3
     - name: Initialise terraform
-      run: terraform init -backend-config="key=${{ vars.ENVIRONMENT_NAME }}"
+      run: terraform init -backend-config="key=${{ inputs.ENVIRONMENT_NAME }}"
       working-directory: infra/terraform
+      shell: bash
     - name: Create the AWS infrastructure
       run: |
         terraform apply -auto-approve \
-          -var="ssh_pub_key=${{ vars.SSH_PUB_KEY }}" \
-          -var="environment_name=${{ vars.ENVIRONMENT_NAME }}" \
-          -var="domain=${{ env.INTERNAL_DOMAIN }}"
+          -var="ssh_pub_key=${{ inputs.SSH_PUB_KEY }}" \
+          -var="environment_name=${{ inputs.ENVIRONMENT_NAME }}" \
+          -var="domain=${{ inputs.INTERNAL_DOMAIN }}"
       working-directory: infra/terraform
+      shell: bash
     - name: Install python 3.10
       uses: actions/setup-python@v5
       with:
@@ -28,16 +58,19 @@ runs:
     - name: Install Ansible
       run: pip install -r requirements.txt
       working-directory: infra/ansible
+      shell: bash
     - name: Add docker collection for ansible
       run: ansible-galaxy collection install community.docker
+      shell: bash
     - uses: webfactory/ssh-agent@v0.9.0
       with:
-        ssh-private-key: ${{ secrets.SSH_PRIV_KEY }}
+        ssh-private-key: ${{ inputs.SSH_PRIV_KEY }}
     - name: Deploy on EC2
       run: |
-        ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ${{ vars.ENVIRONMENT_NAME }}_inventory_aws_ec2.yml playbook.yml \
-          -e "github_username=${{ secrets.DOCKER_REPO_USER }}" \
-          -e "github_token=${{ secrets.DOCKER_REPO_TOKEN }}" \
-          -e "domain=${{ env.EXTERNAL_DOMAIN }}" \
+        ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ${{ inputs.ENVIRONMENT_NAME }}_inventory_aws_ec2.yml playbook.yml \
+          -e "github_username=${{ inputs.DOCKER_REPO_USER }}" \
+          -e "github_token=${{ inputs.DOCKER_REPO_TOKEN }}" \
+          -e "domain=${{ inputs.EXTERNAL_DOMAIN }}" \
           -u admin
       working-directory: infra/ansible
+      shell: bash
