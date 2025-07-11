@@ -49,6 +49,8 @@ jobs:
       name: saul
       url: bananatransfer.saul.ch
     steps:
+      - name: Clone the repository
+        uses: actions/checkout@v4
       - name: Deploy
         uses: ./.github/actions/deploy
   deploy_ansermoz:
@@ -60,6 +62,8 @@ jobs:
       name: ansermoz
       url: bananatransfer.ansermoz.dev
     steps:
+      - name: Clone the repository
+        uses: actions/checkout@v4
       - name: Deploy
         uses: ./.github/actions/deploy
 
