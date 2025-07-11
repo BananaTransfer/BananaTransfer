@@ -1,9 +1,11 @@
 name: Docker Build and Publish
 on:
   push:
-    branches: ["main"]
-    paths-ignore:
-      - "documents/**"
+#on:
+#  push:
+#    branches: ["main"]
+#    paths-ignore:
+#      - "documents/**"
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
