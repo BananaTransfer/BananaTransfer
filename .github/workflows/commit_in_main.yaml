@@ -38,57 +38,50 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-  deploy:
+  deploy_saul:
     needs: build_and_push_docker_image
     runs-on: ubuntu-latest
     permissions:
       contents: read
     environment:
-      name: staging
-      url: https://staging.bananatransfer.ansermoz.dev
-    env:
-      DOMAIN: staging.bananatransfer.ansermoz.dev
+      name: saul
+      url: bananatransfer.saul.ch
     steps:
       - name: Clone the repository
         uses: actions/checkout@v4
-      - name: Configure the AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - name: Deploy
+        uses: ./.github/actions/deploy
         with:
-          aws-region: eu-west-1
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      - name: Install Terraform
-        uses: hashicorp/setup-terraform@v3
-      - name: Initialise terraform
-        run: terraform init -backend-config="key=${{ vars.ENVIRONMENT_NAME }}"
-        working-directory: infra/terraform
-      - name: Create the AWS infrastructure
-        run: |
-          terraform apply -auto-approve \
-            -var="ssh_pub_key=${{ vars.SSH_PUB_KEY }}" \
-            -var="environment_name=${{ vars.ENVIRONMENT_NAME }}" \
-            -var="domain=${{ env.DOMAIN }}"
-        working-directory: infra/terraform
-      - name: Install python 3.10
-        uses: actions/setup-python@v5
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          ENVIRONMENT_NAME: ${{ vars.ENVIRONMENT_NAME }}
+          SSH_PUB_KEY: ${{ vars.SSH_PUB_KEY }}
+          SSH_PRIV_KEY: ${{ secrets.SSH_PRIV_KEY }}
+          INTERNAL_DOMAIN: ${{ vars.INTERNAL_DOMAIN }}
+          EXTERNAL_DOMAIN: ${{ vars.EXTERNAL_DOMAIN }}
+          DOCKER_REPO_USER: ${{ secrets.DOCKER_REPO_USER }}
+          DOCKER_REPO_TOKEN: ${{ secrets.DOCKER_REPO_TOKEN }}
+  deploy_ansermoz:
+    needs: build_and_push_docker_image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    environment:
+      name: ansermoz
+      url: bananatransfer.ansermoz.dev
+    steps:
+      - name: Clone the repository
+        uses: actions/checkout@v4
+      - name: Deploy
+        uses: ./.github/actions/deploy
         with:
-          python-version: '3.10'
-          cache: 'pip'
-      - name: Install Ansible
-        run: pip install -r requirements.txt
-        working-directory: infra/ansible
-      - name: Add docker collection for ansible
-        run: ansible-galaxy collection install community.docker
-      - uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIV_KEY }}
-      - name: Deploy on EC2
-        run: |
-          ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ${{ vars.ENVIRONMENT_NAME }}_inventory_aws_ec2.yml playbook.yml \
-            -e "github_username=${{ secrets.DOCKER_REPO_USER }}" \
-            -e "github_token=${{ secrets.DOCKER_REPO_TOKEN }}" \
-            -e "domain=${{ env.DOMAIN }}" \
-            -u admin
-        working-directory: infra/ansible
-
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          ENVIRONMENT_NAME: ${{ vars.ENVIRONMENT_NAME }}
+          SSH_PUB_KEY: ${{ vars.SSH_PUB_KEY }}
+          SSH_PRIV_KEY: ${{ secrets.SSH_PRIV_KEY }}
+          INTERNAL_DOMAIN: ${{ vars.INTERNAL_DOMAIN }}
+          EXTERNAL_DOMAIN: ${{ vars.EXTERNAL_DOMAIN }}
+          DOCKER_REPO_USER: ${{ secrets.DOCKER_REPO_USER }}
+          DOCKER_REPO_TOKEN: ${{ secrets.DOCKER_REPO_TOKEN }}
 
