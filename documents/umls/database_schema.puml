@@ -5,8 +5,6 @@ enum UserStatus {
     DISABLED
     BLOCKED
     DELETED
-    EXTERNAL_ACTIVE
-    EXTERNAL_BLOCKED
 }
 
 enum TransferStatus {
@@ -22,10 +20,10 @@ class User {
     id: bigserial
     username: text
     created_at: timestamp
-    status: UserStatus
 }
 
 class LocalUser {
+    status: UserStatus
     last_login: timestamp
     password_hash_salt: text
     private_key_encrypted: text
