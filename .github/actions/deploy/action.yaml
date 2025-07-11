@@ -68,7 +68,7 @@ runs:
     - name: Fill the missing filter tag in the ansible dynamic inventory
       run: |
         cp partial_inventory_aws_ec2.yml inventory.yml
-        echo "filters.tag:environment: ${{ inputs.ENVIRONMENT_NAME }}" >> inventory.yml
+        echo "  tag:environment: ${{ inputs.ENVIRONMENT_NAME }}" >> inventory.yml
       working-directory: infra/ansible
       shell: bash
     - name: Deploy on EC2
