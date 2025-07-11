@@ -65,9 +65,15 @@ runs:
     - uses: webfactory/ssh-agent@v0.9.0
       with:
         ssh-private-key: ${{ inputs.SSH_PRIV_KEY }}
+    - name: Fill the missing filter tag in the ansible dynamic inventory
+      run: |
+        cp partial_inventory_aws_ec2.yml inventory.yml
+        echo "filters.tag:environment: ${{ inputs.ENVIRONMENT_NAME }}" >> inventory.yml
+      working-directory: infra/ansible
+      shell: bash
     - name: Deploy on EC2
       run: |
-        ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ${{ inputs.ENVIRONMENT_NAME }}_inventory_aws_ec2.yml playbook.yml \
+        ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory.yml playbook.yml \
           -e "github_username=${{ inputs.DOCKER_REPO_USER }}" \
           -e "github_token=${{ inputs.DOCKER_REPO_TOKEN }}" \
           -e "domain=${{ inputs.EXTERNAL_DOMAIN }}" \
