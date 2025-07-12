@@ -88,7 +88,10 @@ jobs:
             -e "github_username=${{ secrets.DOCKER_REPO_USER }}" \
             -e "github_token=${{ secrets.DOCKER_REPO_TOKEN }}" \
             -e "domain=${{ env.DOMAIN }}" \
+            -e "db_user=${{ secrets.DB_USER }}" \
+            -e "db_pass=${{ secrets.DB_PASS }}" \
+            -e "s3_client_id=${{ secrets.S3_CLIENT_ID }}" \
+            -e "s3_client_secret=${{ secrets.S3_CLIENT_SECRET }}" \
+            -e "s3_bucket=bananatransfer_${{ vars.ENVIRONMENT_NAME }}_s3_bucket" \
             -u admin
         working-directory: infra/ansible
-
-

@@ -126,3 +126,10 @@ resource "aws_route53_record" "bananatransfer_subdomain" {
   ttl     = 300
   records = [aws_instance.server.public_ip]
 }
+
+# Provision S3 bucket
+
+resource "aws_s3_bucket" "bananatransfer_s3_bucket" {
+  bucket = "${local.app}_${var.environment_name}_s3_bucket"
+  force_destroy = true
+}

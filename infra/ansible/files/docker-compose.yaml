@@ -14,5 +14,28 @@ services:
   server:
     image: ghcr.io/bananatransfer/bananatransfer:latest
     restart: always
+    environment:
+      PORT: 3000
+
+      DB_HOST: database
+      DB_PORT: 5432
+      DB_USER: $DB_USER
+      DB_PASS: $DB_PASS
+      DB_NAME: bananatransfer
+
+      S3_ENDPOINT: s3.eu-west-1.amazonaws.com
+      S3_REGION: eu-west-1
+      S3_CLIENT_ID: $S3_CLIENT_ID
+      S3_CLIENT_SECRET: $S3_CLIENT_SECRET
+      S3_BUCKET: $S3_BUCKET
+  database:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: $DB_USER
+      POSTGRES_PASSWORD: $DB_PASS
+      POSTGRES_DB: bananatransfer
+    volumes:
+      - pg_data:/var/lib/postgresql/data
 volumes:
   caddy_data:
+  pg_data:
