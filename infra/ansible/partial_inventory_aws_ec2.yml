@@ -1,0 +1,7 @@
+# miss filters.tag:environment: <ENVIRONMENT_NAME> that is automatically added in the workflow
+---
+plugin: amazon.aws.aws_ec2
+regions:
+  - eu-west-1
+filters:
+  tag:project: bananatransfer

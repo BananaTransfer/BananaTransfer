@@ -1,69 +1,181 @@
 doctype html
-html
-    head
-        title BananaTransfer - Secure File Transfer
-        link(rel="stylesheet", href="/css/bootstrap.min.css")
-        link(rel="stylesheet", href="/css/style.css")
-        meta(name="viewport", content="width=device-width, initial-scale=1")
-        link(rel="preconnect", href="https://fonts.googleapis.com")
-        link(rel="preconnect", href="https://fonts.gstatic.com", crossorigin)
-        link(href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap", rel="stylesheet")
-    body
-        .container.mt-5
-            .row.justify-content-center
-                .col-md-10
-                    .text-center.mb-5
-                        h1.display-4.text-primary BananaTransfer
-                        p.lead End-to-End Encrypted File Sharing Service
-                    
-                    .row
-                        .col-md-6
-                            .card.h-100
-                                .card-body
-                                    h3.card-title.text-primary Secure by Design
-                                    ul.list-unstyled
-                                        li Files encrypted E2E with asymmetric cryptography
-                                        li Personal key pairs generated in your browser
-                                        li Private keys encrypted with your 64-char secret
-                                        li Server never sees your decryption keys
-                        
-                        .col-md-6
-                            .card.h-100
-                                .card-body
-                                    h3.card-title.text-success How It Works
-                                    ul.list-unstyled
-                                        li Create account (username@domain)
-                                        li Generate key pair in browser
-                                        li Upload files encrypted with recipient's public key
-                                        li Recipients decrypt with their private key
-                    
-                    .row.mt-4
-                        .col-md-4
-                            .card.text-center
-                                .card-body
-                                    h5.card-title Cross-Server Transfer
-                                    p.card-text Share files securely between different servers
-                        
-                        .col-md-4
-                            .card.text-center
-                                .card-body
-                                    h5.card-title Key Management
-                                    p.card-text Rotate keys, change passwords, manage your security
-                        
-                        .col-md-4
-                            .card.text-center
-                                .card-body
-                                    h5.card-title Administrator Controls
-                                    p.card-text Storage limits and server management tools
-                    
-                    .row.mt-5
-                        .col-12.text-center
-                            .btn-group.gap-3
-                                a.btn.btn-primary.btn-lg.disabled(href="") Create Account
-                                a.btn.btn-outline-primary.btn-lg.disabled(href="") Sign In
-                    
-                    .row.mt-4
-                        .col-12
-                            .alert.alert-info
-                                h6.alert-heading Zero-Knowledge Architecture
-                                p.mb-0 Your files are encrypted before leaving your browser. The server only stores encrypted data and never has access to your private keys or the 64-character decryption secret you store in your password vault.
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title BananaTransfer - Secure File Sharing
+    link(rel="icon", href="/favicon/favicon.ico", type="image/x-icon")
+    link(rel="stylesheet", href="/css/bootstrap.min.css")
+    link(rel="stylesheet", href="/css/style.css")
+    link(rel="stylesheet", href="/font/bootstrap-icons.min.css")
+
+  body
+    // Navbar
+    nav.navbar.navbar-expand-lg.navbar-light.bg-light.shadow-sm
+      .container
+        a.navbar-brand(href="#")
+          img(src="/images/logo.png", alt="BananaTransfer", height="32")
+          |  BananaTransfer
+        ul.navbar-nav.ms-auto
+          li.nav-item
+            a.nav-link(href="/login") Login
+          li.nav-item
+            a.nav-link(href="/signup") Sign Up
+
+    // Main Content
+    main.container.mt-5
+      section.text-center.mb-5
+        h1.display-4 BananaTransfer
+        p.lead Secure file sharing with end-to-end encryption
+
+      // Secure by Design
+      section.mb-5
+        h2.mb-4.text-center Secure by Design
+        .row.row-cols-1.row-cols-md-2.row-cols-lg-3.g-4
+
+          .col
+            .card.h-100.shadow-sm
+              .card-body
+                h5.card-title
+                  i.bi.bi-shield-lock.me-2
+                  | End-to-End Encryption
+                p.card-text Your Files are encrypted with symmetric and asymmetric cryptography before leaving your browser.
+                p.card-text The server only store the encrypted data and never have access to the content of your shared or received files.
+
+          .col
+            .card.h-100.shadow-sm
+              .card-body
+                h5.card-title
+                  i.bi.bi-key.me-2
+                  | Decentralized Key Management
+                p.card-text Personal key pairs are generated in your browser and stored encrypted on your organizations server.
+                p.card-text The server never has access to your private keys or the 64-character decryption secret you store in your password vault.
+                p.card-text Rotate keys, change passwords, and manage your security.
+          
+          .col
+            .card.h-100.shadow-sm
+              .card-body
+                h5.card-title
+                  i.bi.bi-github.me-2
+                  | Open Source and Self-Hosted
+                p.card-text The source code is available on GitHub, allowing for transparency and community contributions.
+                p.card-text You can host your own BananaTransfer server, ensuring full control over your data and security.
+
+          .col
+            .card.h-100.shadow-sm
+              .card-body
+                h5.card-title
+                  i.bi.bi-browser-chrome.me-2
+                  | Browser-Based and Multi-Platform
+                p.card-text No need for additional software. Everything runs in your browser.
+                p.card-text Works on all modern browsers, including mobile devices, ensuring accessibility for all users and from anywhere.
+
+          .col
+            .card.h-100.shadow-sm
+              .card-body
+                h5.card-title
+                  i.bi.bi-diagram-3.me-2
+                  | Cross-Server Transfer
+                p.card-text Share files securely between different servers and organizations.
+
+          
+          .col
+            .card.h-100.shadow-sm
+              .card-body
+                h5.card-title
+                  i.bi.bi-emoji-smile.me-2
+                  | User-Friendly Interface
+                p.card-text Designed for ease of use, making secure file sharing accessible to everyone.
+
+
+      // How it works
+      section.mb-5
+        h2.mb-4.text-center How it works
+
+        .container
+          .row.justify-content-center.mb-4
+            .col-md-8.col-lg-8
+              .card.h-100.shadow-sm
+                .card-body.text-center
+                  h4.card-title Create your account
+                  p.text-muted TODO: mockup login/register page
+                  ul.text-start
+                    li Register and create your account on your organization's BananaTransfer server (username@domain)
+
+          .row.justify-content-center.mb-4
+            .col-md-8.col-lg-8
+              .card.h-100.shadow-sm
+                .card-body.text-center
+                  h4.card-title Generate your key pair
+                  p.text-muted TODO: mockup key generation page
+                  ul.text-start
+                    li Generate your personal key pair in the browser.
+                    li Keys are stored encrypted with your 64-character master-password.
+                    li The server doesn’t have access to your private key or master-password.
+
+          .row.justify-content-center.mb-4
+            .col-md-8.col-lg-8
+              .card.h-100.shadow-sm
+                .card-body.text-center
+                  h4.card-title Share files
+                  p.text-muted TODO: mockup share page
+                  ul.text-start
+                    li Select the recipient and file
+                    li Files are encrypted in the browser with the recipient's public key
+                    li Encrypted files uploaded to the server
+                    li Recipient is notified
+
+          .row.justify-content-center
+            .col-md-8.col-lg-8
+              .card.h-100.shadow-sm
+                .card-body.text-center
+                  h4.card-title Receive files
+                  p.text-muted TODO: mockup receive page
+                  ul.text-start
+                    li View files shared with you
+                    li Files encrypted with your public key
+                    li Download and decrypt in-browser with your private key
+                    li Decrypted files saved to your browser and downloadable
+
+      // Team behind BananaTransfer
+      section.mb-5
+        h2.mb-4.text-center The Team behind BananaTransfer
+        .row.row-cols-1.row-cols-md-2.row-cols-lg-4.g-4
+          .col
+            .card.h-100.shadow-sm
+              .card-body
+                h5.card-title Gwenaël Ansermoz
+                p.card-text Student at HEIG-VD (CH) in Computer Science and Communication Systems (Data Engineering)
+                p.card-text Working part-time as a developer
+                p.card-text Likes golfing with his grandmother and cycling 
+
+          .col
+            .card.h-100.shadow-sm
+              .card-body
+                h5.card-title Glodi Domingos
+                p.card-text Student at HEIG-VD (CH) in Computer Science and Communication Systems (IT Security)
+                p.card-text Working part-time as SOC analyst and WAF administrator
+
+                p.card-text Likes dancing, all kinds of sports and festivals
+
+          .col
+            .card.h-100.shadow-sm
+              .card-body
+                h5.card-title Dominik Saul
+                p.card-text Student at HEIG-VD (CH) in Computer Science and Communication Systems (IT Security)
+                p.card-text Working part-time as a developer and system administrator
+                p.card-text Likes climbing, surfing and swimming in the lake
+
+          .col
+            .card.h-100.shadow-sm
+              .card-body
+                h5.card-title Maxime Schaller
+                p.card-text Student at HEIG-VD (CH) in Computer Science and Communication Systems (Data Engineering)
+                p.card-text Working part-time as an IT and data analysis intern
+                p.card-text Likes fantasy baseball, k-pop and playing Just Dance
+
+
+    // Footer
+    footer.bg-light.py-4.mt-5
+      .container.text-center
+        small.text-muted &copy; 2025 BananaTransfer. All rights reserved.

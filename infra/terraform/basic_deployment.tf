@@ -48,7 +48,7 @@ data "aws_vpc" "default" {
 }
 
 resource "aws_security_group" "server_sg" {
-  name        = "server_sg"
+  name        = "${local.app}_${var.environment_name}_server_sg"
   vpc_id      = data.aws_vpc.default.id
 }
 
