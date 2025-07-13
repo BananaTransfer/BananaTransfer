@@ -18,10 +18,10 @@ curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
 sudo apt-get install -y nodejs
 ```
 
-## Project setup
+## Project setup for local development
 
 ```bash
-$ npm install
+npm install
 ```
 
 Create file `.env` with the configuration variables
@@ -30,49 +30,46 @@ Create file `.env` with the configuration variables
 PORT=3000
 DB_HOST=localhost
 DB_PORT=5432
-DB_USER=youruser
-DB_PASS=yourpass
-DB_NAME=yourdb
+DB_USER=bananatransfer_user
+DB_PASS=bananatransfer_password
+DB_NAME=bananatransfer
+```
+
+Start the local infrastructure with: 
+```bash
+docker compose up 
+```
+
+Then you can run the app in watch mode with
+```bash
+npm run start:dev
 ```
 
 ## Compile and run the project
 
 ```bash
 # development
-$ npm run start
+npm run start
 
 # watch mode
-$ npm run start:dev
+npm run start:dev
 
 # production mode
-$ npm run start:prod
+npm run start:prod
 ```
 
 ## Run tests
 
 ```bash
 # unit tests
-$ npm run test
+npm run test
 
 # e2e tests
-$ npm run test:e2e
+npm run test:e2e
 
 # test coverage
-$ npm run test:cov
+npm run test:cov
 ```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
 
 ## Resources
 
