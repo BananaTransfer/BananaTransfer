@@ -8,31 +8,24 @@ export class FileService {
   private bucket: string;
 
   constructor() {
-    this.s3Client = new S3Client({
-      region: process.env.S3_REGION,
-      endpoint: process.env.S3_ENDPOINT,
-      credentials: {
-        accessKeyId: process.env.S3_CLIENT_ID,
-        secretAccessKey: process.env.S3_CLIENT_SECRET,
-      },
-    } as any as S3ClientConfig);
+    if (process.env.S3_ENDPOINT) {
+      // for local deployment or deployment with custom S3 server
+      this.s3Client = new S3Client({
+        region: process.env.S3_REGION,
+        endpoint: process.env.S3_ENDPOINT,
+        credentials: {
+          accessKeyId: process.env.S3_CLIENT_ID,
+          secretAccessKey: process.env.S3_CLIENT_SECRET,
+        },
+      } as any as S3ClientConfig);
+    } else {
+      // for cloud deployment using AWS S3 and EC2 attached role
+      this.s3Client = new S3Client({
+        region: process.env.S3_REGION,
+      } as any as S3ClientConfig);
+    }
 
     this.bucket = process.env.S3_BUCKET as string;
-
-    // USAGE EXAMPLE:
-    // this.s3Client
-    //   .send(new ListBucketsCommand())
-    //   .then((data) => {
-    //     console.log('List of available buckets: ');
-    //     if (data.Buckets) {
-    //       for (const bucket of data.Buckets) {
-    //         console.log(bucket.Name);
-    //       }
-    //     }
-    //   })
-    //   .catch((err) => {
-    //     console.error(`Could not list buckets, err ${err}`);
-    //   });
   }
 
   getFileData(): string {
