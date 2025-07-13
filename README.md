@@ -20,6 +20,12 @@ sudo apt-get install -y nodejs
 
 ## Project setup
 
+Setup the project git hooks:
+```bash
+make setup
+```
+
+Install the required dependencies:
 ```bash
 $ npm install
 ```
