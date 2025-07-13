@@ -85,7 +85,7 @@ runs:
           -e "domain=${{ inputs.EXTERNAL_DOMAIN }}" \
           -e "db_user=${{ inputs.DB_USER }}" \
           -e "db_pass=${{ inputs.DB_PASS }}" \
-          -e "s3_bucket=bananatransfer_${{ inputs.ENVIRONMENT_NAME }}_s3_bucket" \
+          -e "s3_bucket=bananatransfer-${{ inputs.ENVIRONMENT_NAME }}-s3-bucket" \
           -u admin
       working-directory: infra/ansible
       shell: bash

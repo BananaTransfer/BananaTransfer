@@ -92,7 +92,7 @@ resource "aws_vpc_security_group_ingress_rule" "server_sg_allow_ssh_ipv4" {
 # Provision S3 bucket
 
 resource "aws_s3_bucket" "s3_bucket" {
-  bucket = "${local.app}_${var.environment_name}_s3_bucket"
+  bucket = "${local.app}-${var.environment_name}-s3-bucket"
   force_destroy = true
 }
 
