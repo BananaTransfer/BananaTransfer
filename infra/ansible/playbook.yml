@@ -84,7 +84,7 @@
 
     - name: Generate the .env
       template:
-        src: .env
+        src: env_template
         dest: /opt/app/.env
         owner: admin
         group: admin
