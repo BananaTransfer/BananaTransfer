@@ -11,6 +11,8 @@ services:
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
+    depends_on:
+      - server
   server:
     image: ghcr.io/bananatransfer/bananatransfer:latest
     restart: always
@@ -25,6 +27,8 @@ services:
 
       S3_REGION: eu-west-1
       S3_BUCKET: $S3_BUCKET
+    depends_on:
+      - database
   database:
     image: postgres:17-alpine
     environment:
