@@ -23,10 +23,7 @@ services:
       DB_PASS: $DB_PASS
       DB_NAME: bananatransfer
 
-      S3_ENDPOINT: s3.eu-west-1.amazonaws.com
       S3_REGION: eu-west-1
-      S3_CLIENT_ID: $S3_CLIENT_ID
-      S3_CLIENT_SECRET: $S3_CLIENT_SECRET
       S3_BUCKET: $S3_BUCKET
   database:
     image: postgres:17-alpine

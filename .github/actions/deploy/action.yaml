@@ -27,6 +27,12 @@ inputs:
   DOCKER_REPO_TOKEN:
     description: 'Token associated to DOCKER_REPO_USER'
     required: true
+  DB_USER:
+    description: 'User of the postgresql database'
+    required: true
+  DB_PASS:
+    description: 'Password of the postgresql user'
+    required: true
 runs:
   using: "composite"
   steps:
@@ -77,6 +83,9 @@ runs:
           -e "github_username=${{ inputs.DOCKER_REPO_USER }}" \
           -e "github_token=${{ inputs.DOCKER_REPO_TOKEN }}" \
           -e "domain=${{ inputs.EXTERNAL_DOMAIN }}" \
+          -e "db_user=${{ inputs.DB_USER }}" \
+          -e "db_pass=${{ inputs.DB_PASS }}" \
+          -e "s3_bucket=bananatransfer_${{ inputs.ENVIRONMENT_NAME }}_s3_bucket" \
           -u admin
       working-directory: infra/ansible
       shell: bash

@@ -10,8 +10,6 @@
     db_user: "{{ db_user }}"
     db_pass: "{{ db_pass }}"
 
-    s3_client_id: "{{ s3_client_id }}"
-    s3_client_secret: "{{ s3_client_secret }}"
     s3_bucket: "{{ s3_bucket }}"
   pre_tasks:
     - name: Install prerequisites for Docker
