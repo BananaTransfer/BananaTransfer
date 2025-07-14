@@ -14,6 +14,7 @@
 * a user may receive a transfer from another user they don't know or trust yet.
 * a user may trust another user, but not with the same associated public key.
 * when a local user rotate it's keys, the hash of the public key changes, changed but the previous one is kept until orphaned.
+* in the TransferLog table, the history and logs of a transfer are saved to be able to track the transfer and its status.
 
 #### TransferStatus descriptions
 

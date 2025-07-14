@@ -9,11 +9,22 @@ enum UserStatus {
 
 enum TransferStatus {
     CREATED
-    PENDING
+    SENT
     RETRIEVED
     DELETED
     EXPIRED
     REFUSED
+}
+
+enum LogInfo {
+    TRANSFER_CREATED
+    TRANSFER_SENT_FAILED
+    TRANSFER_SENT
+    TRANSFER_RETRIEVED_FAILED
+    TRANSFER_RETRIEVED
+    TRANSFER_DELETED
+    TRANSFER_EXPIRED
+    TRANSFER_REFUSED
 }
 
 class User {
@@ -52,9 +63,9 @@ class TrustedRecipient {
     created_at: timestamp
 }
 
-class Log {
+class TransferLog {
     id: bigserial
-    text: text
+    info: LogInfo
     created_at: timestamp
 }
 
@@ -67,7 +78,7 @@ User "1" -- "*" FileTransfer: receives >
 LocalUser "1" -- "*" TrustedRecipient: knows/trusts >
 TrustedRecipient "*" -- "1" User: associated to >
 
-User "0..1" -- "*" Log: logs >
-FileTransfer "0..1" -- "*" Log: logs >
+User "0..1" -- "*" TransferLog: logs >
+FileTransfer "1" -- "*" TransferLog: logs >
 
 @enduml
