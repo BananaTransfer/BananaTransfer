@@ -3,7 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { Response } from 'express';
 
-// this file contains the unit tests to verify the controller's behavior
+// this file contains the unit tests to verify the app controller's behavior
 
 describe('AppController', () => {
   let appController: AppController;
@@ -17,8 +17,14 @@ describe('AppController', () => {
     appController = app.get<AppController>(AppController);
   });
 
-  describe('root', () => {
-    it('should return "Hello World!"', () => {
+  describe('appController', () => {
+    it('controller should be defined', () => {
+      expect(appController).toBeDefined();
+    });
+  });
+
+  describe('/ (landing-page)', () => {
+    it('/ should return landing-page (index)', () => {
       const mockResponse = {
         render: jest.fn(),
       } as any as Response;
