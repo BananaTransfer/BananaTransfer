@@ -42,6 +42,7 @@ class FileTransfer {
     signature_sender: text
     status: TransferStatus
     created_at: timestamp
+    filename: varchar
     subject: varchar
     s3_path: text [optional]
 }
