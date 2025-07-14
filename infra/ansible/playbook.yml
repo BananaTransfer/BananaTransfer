@@ -6,6 +6,11 @@
     ghcr_username: "{{ github_username }}"
     ghcr_token: "{{ github_token }}"
     domain: "{{ domain }}"
+
+    db_user: "{{ db_user }}"
+    db_pass: "{{ db_pass }}"
+
+    s3_bucket: "{{ s3_bucket }}"
   pre_tasks:
     - name: Install prerequisites for Docker
       apt:
@@ -59,7 +64,7 @@
         state: directory
         owner: admin
         group: admin
-        mode: '0644'
+        mode: '0640'
 
     - name: Copy docker-compose.yml to the server
       copy:
@@ -67,7 +72,7 @@
         dest: /opt/app/docker-compose.yml
         owner: admin
         group: admin
-        mode: '0644'
+        mode: '0640'
 
     - name: Generate the Caddyfile
       template:
@@ -75,7 +80,15 @@
         dest: /opt/app/Caddyfile
         owner: admin
         group: admin
-        mode: '0644'
+        mode: '0640'
+
+    - name: Generate the .env
+      template:
+        src: env_template
+        dest: /opt/app/.env
+        owner: admin
+        group: admin
+        mode: '0640'
 
     - name: Deploy Docker Compose application using Compose V2
       community.docker.docker_compose_v2:
