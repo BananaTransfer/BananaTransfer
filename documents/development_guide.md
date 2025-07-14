@@ -13,7 +13,8 @@ Before opening a PR, you must check that:
 * the project build `npm run build`
 
 All those tests will be done for you by the GitHub actions once you open the PR, but we prefer 
-if you check those things before commiting. 
+if you check those things before commiting. If you ran the `make setup` script when installing 
+the repository you will have a pre-commit hook ensuring all those test passes before accepting your commit.
 
 ### Git 
 
