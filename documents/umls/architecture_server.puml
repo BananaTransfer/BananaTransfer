@@ -1,0 +1,27 @@
+@startuml
+title Architecture Server
+
+rectangle "BananaTransfer Server" as srv {
+    rectangle "Node.js" as node {
+        rectangle "Frontend \n(pug templates)" as frontend
+        rectangle "Backend /api \n(NestJS)" as backend {
+            rectangle "auth module \n(user authentication)" as auth
+            rectangle "database module \n(access to db)" as db_mod
+            rectangle "file module \n(create and access transfers)" as file
+            rectangle "service module \n(transfer api for other servers)" as api
+            rectangle "user module \n(manage user account / keys)" as usr
+        }
+    }
+    rectangle "Database \nPostgreSQL" as db
+    rectangle "Bucket \nS3 / MinIO" as s3
+}
+
+db_mod -down-> db: "query/save"
+file -down-> s3: "fetch/save"
+auth --> db_mod
+file --> db_mod
+api --> db_mod
+usr --> db_mod
+api --> file
+
+@enduml

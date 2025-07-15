@@ -1,0 +1,49 @@
+@startuml
+title System Architecture
+
+actor "User" as user
+
+rectangle "Browser" as browser {
+  rectangle "HTMX" as htmx
+}
+
+rectangle "AWS Cloud" as aws {
+    rectangle "BananaTransfer Server 1" as srv {
+        rectangle "Node.js" as node {
+            rectangle "Frontend \n(pug templates)" as frontend
+            rectangle "Backend /api \n(NestJS)" as backend
+        }
+        rectangle "Database \nPostgreSQL" as db
+        rectangle "Bucket \nS3 / MinIO" as s3
+    }
+
+    rectangle "BananaTransfer Server 2" as srv_2 {
+        rectangle "Node.js" as node_2 {
+            rectangle "Frontend \n(pug templates)" as frontend_2
+            rectangle "Backend / api\n(NestJS)" as backend_2
+        }
+        rectangle "Database \nPostgreSQL" as db_2
+        rectangle "Bucket \nS3 / MinIO" as s3_2
+    }
+}
+
+rectangle "GitHub" as github {
+    rectangle "Code \nrepository" as repo
+    rectangle "GitHub \nActions" as actions
+}
+
+user -up-> browser: "access the app"
+browser -right-> frontend: "fetch HTML/CSS/JS"
+htmx -right-> backend: "api requests"
+
+backend -down-> db: "query/save"
+backend -down-> s3: "fetch/save"
+
+backend_2 <-> backend: "exchange about transfers"
+backend_2 -down-> db_2: "query/save"
+backend_2 -down-> s3_2: "fetch/save"
+
+actions --> repo: "fetch code \n and run tests"
+actions -left-> aws: "deploy servers with \nTerraform and Ansible"
+
+@enduml
