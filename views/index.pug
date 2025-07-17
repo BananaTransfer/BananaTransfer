@@ -16,21 +16,39 @@ html(lang="en")
         a.navbar-brand(href="#")
           img(src="/images/logo.png", alt="BananaTransfer", height="32")
           |  BananaTransfer
-        //ul.navbar-nav.ms-auto
-        //  li.nav-item
-        //    a.nav-link(href="/login") Login
-        //  li.nav-item
-        //    a.nav-link(href="/signup") Sign Up
+        ul.navbar-nav.ms-auto
+          li.nav-item
+            a.nav-link(href="/login") Login
+          li.nav-item
+            a.nav-link(href="/signup") Sign Up
 
     // Main Content
     main.container.mt-5
-      section.text-center.mb-5
-        h1.display-4 BananaTransfer
-        p.lead Decentralized secure file sharing with end-to-end encryption
+      section.hero-section
+        .container
+          h1.hero-title BananaTransfer
+          .logo_background
+            img(src="/images/logo.png", alt="BananaTransfer", height="150")
+          p.hero-subtitle Decentralized secure file sharing with end-to-end encryption
+          .feature-highlight
+            h3 
+              i.bi.bi-shield-check.me-2
+              | The most secure way to share files with your team
+            p Zero-knowledge architecture means your files are encrypted before they leave your device. Nobody else can see your data.
+          .stats-section
+            .row.text-center
+              .col-md-4
+                .stat-number 100%
+                .stat-label End-to-End Encrypted
+              .col-md-4
+                .stat-number 99.9%
+                .stat-label Uptime Guarantee
+              .col-md-4
+                .stat-number 24/7
+                .stat-label Expert Support
 
       // Secure by Design
-      section.mb-5
-        h2.mb-4.text-center Secure by Design
+      section.mb-5.mt-5
         .row.row-cols-1.row-cols-md-2.row-cols-lg-3.g-4
 
           .col
@@ -38,45 +56,65 @@ html(lang="en")
               .card-body
                 h5.card-title
                   i.bi.bi-shield-lock.me-2
-                  | End-to-End Encryption
-                p.card-text Your Files are encrypted with symmetric and asymmetric cryptography before leaving your browser.
-                p.card-text The server only store the encrypted data and never have access to the content of your shared or received files.
+                  | Military-Grade Encryption
+                p.card-text Your files are protected with AES-256 encryption and RSA-4096 key exchange - the same security standards used by governments and banks.
+                p.card-text Our zero-knowledge architecture ensures that even BananaTransfer can't access your files.
+                .mt-3
+                  small.text-muted
+                    i.bi.bi-check-circle.me-1
+                    | GDPR Compliant
 
           .col
             .card.h-100.shadow-sm
               .card-body
                 h5.card-title
                   i.bi.bi-key.me-2
-                  | Decentralized Key Management
-                p.card-text Personal key pairs are generated in your browser and stored encrypted on your organizations server.
-                p.card-text The server never has access to your private keys or the 64-character decryption secret you store in your password vault.
-                p.card-text Rotate keys, change passwords, and manage your security.
+                  | Self-Managed Security
+                p.card-text You control your own encryption keys. Generate, store, and manage them entirely within your organization.
+                p.card-text Your master password never leaves your device, giving you complete control over your data.
+                .mt-3
+                  small.text-muted
+                    i.bi.bi-check-circle.me-1
+                    | Decentralized Key Management
           
           .col
             .card.h-100.shadow-sm
               .card-body
                 h5.card-title
                   i.bi.bi-github.me-2
-                  | Open Source and Self-Hosted
-                p.card-text The source code is available on GitHub, allowing for transparency and community contributions.
+                  | Open Source Trust
+                p.card-text Complete transparency with our open-source codebase. No black boxes, no hidden backdoors.
                 p.card-text You can host your own BananaTransfer server, ensuring full control over your data and security.
+                .mt-3
+                  small.text-muted
+                    i.bi.bi-check-circle.me-1
+                    | Your choice, your control
 
           .col
             .card.h-100.shadow-sm
               .card-body
                 h5.card-title
                   i.bi.bi-browser-chrome.me-2
-                  | Browser-Based and Multi-Platform
-                p.card-text No need for additional software. Everything runs in your browser.
-                p.card-text Works on all modern browsers, including mobile devices, ensuring accessibility for all users and from anywhere.
+                  | Works Everywhere
+                p.card-text No downloads, no installations. Access your secure files from any device, anywhere in the world.
+                p.card-text Optimized for desktop, tablet, and mobile with a responsive design that adapts to your workflow.
+                .mt-3
+                  small.text-muted
+                    i.bi.bi-check-circle.me-1
+                    | Cross-platform compatibility
 
           .col
             .card.h-100.shadow-sm
               .card-body
                 h5.card-title
                   i.bi.bi-diagram-3.me-2
-                  | Cross-Server Transfer
-                p.card-text Share files securely between different servers and organizations.
+                  | Enterprise Federation
+                p.card-text Seamlessly share files between different organizations and servers while maintaining end-to-end encryption.
+                p.card-text Perfect for partnerships, client collaboration, and multi-company projects.
+                .mt-3
+                  small.text-muted
+                    i.bi.bi-check-circle.me-1
+                    | Scalable architecture
 
           
           .col
@@ -84,95 +122,194 @@ html(lang="en")
               .card-body
                 h5.card-title
                   i.bi.bi-emoji-smile.me-2
-                  | User-Friendly Interface
-                p.card-text Designed for ease of use, making secure file sharing accessible to everyone.
+                  | Intuitive Design
+                p.card-text Security doesn't have to be complicated. Our user-friendly interface makes secure file sharing as easy as email.
+                p.card-text Onboard your team in minutes with our guided setup and comprehensive documentation.
+                .mt-3
+                  small.text-muted
+                    i.bi.bi-check-circle.me-1
+                    | 5-minutes setup
 
 
       // How it works
       section.mb-5
-        h2.mb-4.text-center How it works
+        h2.mb-4.text-center Get Started in Minutes
+        p.text-center.lead.mb-5 Setting up secure file sharing has never been easier
 
-        .container
+        .step-cards-container
           .row.justify-content-center.mb-4
-            .col-md-8.col-lg-8
-              .card.h-100.shadow-sm
-                .card-body.text-center
-                  h4.card-title Create your account
-                  p.text-muted TODO: mockup login/register page
-                  ul.text-start
-                    li Register and create your account on your organization's BananaTransfer server (username@domain)
+            .col-md-10.col-lg-10
+              .mockup-container.step-card
+                .step-number.step-1 1
+                .card.h-100.shadow-sm
+                  .card-body.text-center
+                    h4.card-title Create Your Account
+                    p.text-muted Sign up takes less than 2 minutes
+                    
+                    .mockup-placeholder
+                      .mockup-text
+                        i.bi.bi-person-plus
+                        | Registration Form Interface
+
+                    .text-center
+                      ul.text-start.mt-3.d-inline-block
+                        li Register with your organization's BananaTransfer server
+                        li Choose a strong password for your account
+                        li Verify your email address to activate
+
+
 
           .row.justify-content-center.mb-4
-            .col-md-8.col-lg-8
-              .card.h-100.shadow-sm
-                .card-body.text-center
-                  h4.card-title Generate your key pair
-                  p.text-muted TODO: mockup key generation page
-                  ul.text-start
-                    li Generate your personal key pair in the browser.
-                    li Keys are stored encrypted with your 64-character master-password.
-                    li The server doesn’t have access to your private key or master-password.
+            .col-md-10.col-lg-10
+              .mockup-container.step-card
+                .step-number.step-2 2
+                .card.h-100.shadow-sm
+                  .card-body.text-center
+                    h4.card-title Generate Your Keys
+                    p.text-muted Automatic key generation with one click
+                    
+                    .mockup-placeholder
+                      .mockup-text
+                        i.bi.bi-key-fill
+                        | Key Generation Interface
+                      
+                    .text-center
+                      ul.text-start.mt-3.d-inline-block
+                        li Your browser generates a unique RSA-4096 key pair
+                        li Keys are encrypted with your personal 64-character master-password
+                        li The server doesn’t have access to your private key or master-password.
 
           .row.justify-content-center.mb-4
-            .col-md-8.col-lg-8
-              .card.h-100.shadow-sm
-                .card-body.text-center
-                  h4.card-title Share files
-                  p.text-muted TODO: mockup share page
-                  ul.text-start
-                    li Select the recipient and file
-                    li Files are encrypted in the browser with the recipient's public key
-                    li Encrypted files uploaded to the server
-                    li Recipient is notified
+            .col-md-10.col-lg-10
+              .mockup-container.step-card
+                .step-number.step-3 3
+                .card.h-100.shadow-sm
+                  .card-body.text-center
+                    h4.card-title Share Files
+                    p.text-muted Drag, drop, and share instantly
+                    
+                    .mockup-placeholder
+                      .mockup-text
+                        i.bi.bi-cloud-upload-fill
+                        | File Sharing Interface
+                        
+                    .text-center
+                      ul.text-start.mt-3.d-inline-block
+                        li Select recipients from your organization
+                        li Drag and drop files or browse to upload
+                        li Files are encrypted automatically before upload
+                        li Recipients get notified immediately
 
-          .row.justify-content-center
-            .col-md-8.col-lg-8
-              .card.h-100.shadow-sm
-                .card-body.text-center
-                  h4.card-title Receive files
-                  p.text-muted TODO: mockup receive page
-                  ul.text-start
-                    li View files shared with you
-                    li Files encrypted with your public key
-                    li Download and decrypt in-browser with your private key
-                    li Decrypted files saved to your browser and downloadable
+          .row.justify-content-center.mb-4
+            .col-md-10.col-lg-10
+              .mockup-container.step-card
+                .step-number.step-4 4
+                .card.h-100.shadow-sm
+                  .card-body.text-center
+                    h4.card-title Receive & Download
+                    p.text-muted Access your files from anywhere
+                    
+                    .mockup-placeholder
+                      .mockup-text
+                        i.bi.bi-cloud-download-fill
+                        | File Receiving Dashboard
+                        
+                    .text-center
+                      ul.text-start.mt-3.d-inline-block
+                        li View all files shared with you in one place
+                        li Files decrypt automatically when you download
+                        li Access from any device with your credentials
+                        li Download history and audit trails available
+                    .mt-3
+                      small.text-warning
+                        i.bi.bi-clock.me-1
+                        | Files available 24/7
 
       // Team behind BananaTransfer
       section.mb-5
         h2.mb-4.text-center The Team behind BananaTransfer
+        p.text-center.lead.mb-5 Meet the talented individuals building the future of decentralized secure file sharing
         .row.row-cols-1.row-cols-md-2.row-cols-lg-4.g-4
           .col
-            .card.h-100.shadow-sm
-              .card-body
-                h5.card-title Gwenaël Ansermoz
-                p.card-text Student at HEIG-VD (CH) in Computer Science and Communication Systems (Data Engineering)
-                p.card-text Working part-time as a developer
-                p.card-text Likes golfing with his grandmother and cycling 
+            .team-card.h-100
+              .team-photo-container
+                img.team-photo(src="/images/team/member1.jpg", alt="Gwenaël Ansermoz", onerror="this.src='/images/team/placeholder.jpg'")
+                .team-overlay
+                  .team-role Data Engineering
+              .team-content
+                h5.team-name Gwenaël Ansermoz
+                p.team-education HEIG-VD (CH) - Computer Science & Communication Systems
+                p.team-position Part-time Developer
+                .team-interests
+                  span.interest-tag
+                    i.bi.bi-heart.me-1
+                    | Golf with grandma
+                  span.interest-tag
+                    i.bi.bi-bicycle.me-1
+                    | Cycling
 
           .col
-            .card.h-100.shadow-sm
-              .card-body
-                h5.card-title Glodi Domingos
-                p.card-text Student at HEIG-VD (CH) in Computer Science and Communication Systems (IT Security)
-                p.card-text Working part-time as SOC analyst and WAF administrator
-
-                p.card-text Likes dancing, all kinds of sports and festivals
+            .team-card.h-100
+              .team-photo-container
+                img.team-photo(src="/images/team/member2.jpg", alt="Glodi Domingos", onerror="this.src='/images/team/placeholder.jpg'")
+                .team-overlay
+                  .team-role IT Security
+              .team-content
+                h5.team-name Glodi Domingos
+                p.team-education HEIG-VD (CH) - Computer Science & Communication Systems
+                p.team-position SOC Analyst & WAF Administrator
+                .team-interests
+                  span.interest-tag
+                    i.bi.bi-music-note.me-1
+                    | Dancing
+                  span.interest-tag
+                    i.bi.bi-trophy.me-1
+                    | Sports
+                  span.interest-tag
+                    i.bi.bi-calendar-event.me-1
+                    | Festivals
 
           .col
-            .card.h-100.shadow-sm
-              .card-body
-                h5.card-title Dominik Saul
-                p.card-text Student at HEIG-VD (CH) in Computer Science and Communication Systems (IT Security)
-                p.card-text Working part-time as a developer and system administrator
-                p.card-text Likes climbing, surfing and swimming in the lake
+            .team-card.h-100
+              .team-photo-container
+                img.team-photo(src="/images/team/member3.jpg", alt="Dominik Saul", onerror="this.src='/images/team/placeholder.jpg'")
+                .team-overlay
+                  .team-role IT Security
+              .team-content
+                h5.team-name Dominik Saul
+                p.team-education HEIG-VD (CH) - Computer Science & Communication Systems
+                p.team-position Developer & System Administrator
+                .team-interests
+                  span.interest-tag
+                    i.bi.bi-ladder.me-1
+                    | Climbing
+                  span.interest-tag
+                    i.bi.bi-water.me-1
+                    | Surfing
+                  span.interest-tag
+                    i.bi.bi-droplet.me-1
+                    | Swimming
 
           .col
-            .card.h-100.shadow-sm
-              .card-body
-                h5.card-title Maxime Schaller
-                p.card-text Student at HEIG-VD (CH) in Computer Science and Communication Systems (Data Engineering)
-                p.card-text Working part-time as an IT and data analysis intern
-                p.card-text Likes fantasy baseball, k-pop and playing Just Dance
+            .team-card.h-100
+              .team-photo-container
+                img.team-photo(src="/images/team/member4.jpg", alt="Maxime Schaller", onerror="this.src='/images/team/placeholder.jpg'")
+                .team-overlay
+                  .team-role Data Engineering
+              .team-content
+                h5.team-name Maxime Schaller
+                p.team-education HEIG-VD (CH) - Computer Science & Communication Systems
+                p.team-position IT & Data Analysis Intern
+                .team-interests
+                  span.interest-tag
+                    i.bi.bi-controller.me-1
+                    | Just Dance Expert
+                  span.interest-tag
+                    i.bi.bi-music-note-beamed.me-1
+                    | K-pop
+                  span.interest-tag
+                    i.bi.bi-trophy-fill.me-1
+                    | Fantasy Baseball
 
 
     // Footer
