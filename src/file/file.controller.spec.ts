@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigModule } from '@nestjs/config';
 import { FileController } from './file.controller';
 import { FileService } from './file.service';
 
@@ -7,6 +8,7 @@ describe('FileController', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
+      imports: [ConfigModule.forRoot({ isGlobal: true })],
       controllers: [FileController],
       providers: [FileService],
     }).compile();
