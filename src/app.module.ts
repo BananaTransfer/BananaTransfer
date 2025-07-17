@@ -9,7 +9,7 @@ import { AppController } from './app.controller';
 import { AuthModule } from './auth/auth.module';
 import { DatabaseModule } from './database/database.module';
 import { FileModule } from './file/file.module';
-import { ServiceModule } from './service/service.module';
+import { TransferModule } from './transfer/transfer.module';
 import { UserModule } from './user/user.module';
 
 // The root module that organizes your NestJS application. It imports other modules, controllers, and providers (services).
@@ -23,7 +23,7 @@ import { UserModule } from './user/user.module';
     AuthModule,
     DatabaseModule,
     FileModule,
-    ServiceModule,
+    TransferModule,
     UserModule,
   ],
   controllers: [AppController],
