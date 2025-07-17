@@ -5,6 +5,8 @@ A server does have a Web-interface for their users, with a DB and server to stor
 
 ## Architecture and Tech-Stack
 
+![architecture.png](umls/dist/architecture.png)
+
 * Web-server with server-side rendering
   * Node.js with the Nest.js framework
   * pug as a templating engine
@@ -103,8 +105,15 @@ On any incoming connection from another server, the same verification is done:
 * The algorithms AES256-GCM, RSA-OAEP, SHA-256 and PBKDF2 are used for encryption, decryption, hashing and key derivation. They are widely used and considered secure. They are supported by the Web Crypto API in the browser.
 * The private key is generated in the browser and encrypted with a master-password before stored on the server. This ensures that the private key is not stored in plain text on the server and can only be decrypted by the user who knows the master-password.
 * A hash of the public key of a recipient is stored in the database of the sender server to detect modifications of the public key of the recipient and to remember the recipients of a user.
+* The logs for share transfer are stored in the databases of the servers. They contain for example information about the status changes of a transfer and by who it was done.
+* In the application config file it is possible to configure after how many days a transfer expires (by default 30 days, file is deleted but information and logs about transfer are kept) and after how many days the information and logs about a transfer are deleted from the database (by default 90 days).
+* In the first version of the application, the logic to be able to blocklist an user or a whole domain for one user or the whole organization on a server is not implemented. It is possible to implement this in a future version of the application. However this feature would require additional logic and menus in the application for the users to access and manage their blocklist. Additionally, it would require to implement user permissions to manage who can manage the blocklist for the whole organization.
 
 ### Security Cnsiderations
 
 * Browsers should be up-to-date
 * Should be used exclusively with HTTPS 
+
+### Server/Code Architecture
+
+![architecture_server.png](umls/dist/architecture_server.png)
