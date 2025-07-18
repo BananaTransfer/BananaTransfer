@@ -41,12 +41,3 @@ Direct commits on the main branch are only allowed for the following actions:
 
 ### Creating Issue
 All issues are related to a task to be achieved
-
-
-### Branch naming convention
-```markdown
-main                    
-├── feature/<name-of-the-feature> # New features
-
-
-```
