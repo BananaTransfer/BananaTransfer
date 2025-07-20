@@ -5,6 +5,8 @@ A server does have a Web-interface for their users, with a DB and server to stor
 
 ## Architecture and Tech-Stack
 
+![architecture.png](umls/dist/architecture.png)
+
 * Web-server with server-side rendering
   * Node.js with the Nest.js framework
   * pug as a templating engine
@@ -111,3 +113,7 @@ On any incoming connection from another server, the same verification is done:
 
 * Browsers should be up-to-date
 * Should be used exclusively with HTTPS 
+
+### Server/Code Architecture
+
+![architecture_server.png](umls/dist/architecture_server.png)
