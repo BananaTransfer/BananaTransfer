@@ -7,7 +7,7 @@ import { AppService } from './app.service';
 import { AppController } from './app.controller';
 
 import { AuthModule } from './auth/auth.module';
-// import { DatabaseModule } from './database/database.module';
+import { DatabaseModule } from './database/database.module';
 import { FileModule } from './file/file.module';
 import { TransferModule } from './transfer/transfer.module';
 import { UserModule } from './user/user.module';
@@ -21,8 +21,7 @@ import { UserModule } from './user/user.module';
       rootPath: join(__dirname, '..', 'public'),
     }),
     AuthModule,
-    // TODO: uncomment this when database is ready
-    // DatabaseModule,
+    DatabaseModule,
     FileModule,
     TransferModule,
     UserModule,
