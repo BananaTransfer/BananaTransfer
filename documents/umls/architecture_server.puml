@@ -18,9 +18,9 @@ rectangle "BananaTransfer Server" as srv {
 
 db_mod -down-> db: "query/save"
 file -down-> s3: "fetch/save"
-auth --> db_mod
+auth --> usr
 file --> db_mod
-transfer --> db_mod
+transfer --> usr
 usr --> db_mod
 transfer --> file
 
