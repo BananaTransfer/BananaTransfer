@@ -13,7 +13,8 @@ Before opening a PR, you must check that:
 * the project build `npm run build`
 
 All those tests will be done for you by the GitHub actions once you open the PR, but we prefer 
-if you check those things before commiting. 
+if you check those things before commiting. If you ran the `make setup` script when installing 
+the repository you will have a pre-commit hook ensuring all those test passes before accepting your commit.
 
 ### Git 
 
@@ -35,13 +36,16 @@ Currently, we have two different CI/CD workflows:
   * build and push a docker image of our sever tagged with 'latest' on the package repository of our GitHub organisation
   * deploy this latest build on our AWS staging environment
 
-#### Staging deployment
+#### Deployment
 
 ##### Credentials
 
 All the credentials needed for the deployment are stored in GitHub secrets. Each of those credentials must 
 respect the least privilege principle. For example, the credentials for AWS are for a special IAM user having only 
 access to the resources required by our terraform deployment. 
+
+The EC2 instances also have a role attached to them to manage their access to other AWS resources. Like an S3 access
+role dynamically created that only allows operation on the S3 bucket associated with the instance and nothing else.
 
 ##### Process
 
@@ -53,6 +57,12 @@ configuring a DNS entry dynamically to be able to access the instance.
 With Ansible, we install docker on the EC2 instance created (the instance is located using an Ansible dynamic inventory),
 login to the organization Docker registry, and deploy our app using a simple docker-compose. It's important to note
 that this docker-compose uses Caddy to automatically provision HTTPS certificates from LetsEncrypt.
+
+#### Databases
+
+The postgresql databases are hosted on the same server as our applicative code but in a separate docker container. 
+This decision has been made to try to keep our cost as low as possible. The database is only accessible from within
+the host as defined by our firewall configuration.
 
 ### Dockerfile
 

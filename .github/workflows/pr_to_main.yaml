@@ -2,12 +2,25 @@ name: Validate code quality on PR to main
 on:
   pull_request:
     branches: [ "main" ]
+    paths:
+      - "src/**"
+      - "test/**"
+      - "views/**"
+      - ".prettierrc"
+      - "eslint.config.mjs"
+      - "nest-cli.json"
+      - "package.json"
+      - "package-lock.json"
+      - "tsconfig.build.json"
+      - "tsconfig.json"
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 jobs:
   execute_code_quality_check:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Clone the repository
         uses: actions/checkout@v4

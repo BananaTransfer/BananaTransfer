@@ -48,7 +48,7 @@ data "aws_vpc" "default" {
 }
 
 resource "aws_security_group" "server_sg" {
-  name        = "server_sg"
+  name        = "${local.app}_${var.environment_name}_server_sg"
   vpc_id      = data.aws_vpc.default.id
 }
 
@@ -88,6 +88,68 @@ resource "aws_vpc_security_group_ingress_rule" "server_sg_allow_ssh_ipv4" {
   to_port           = 22
 }
 
+
+# Provision S3 bucket
+
+resource "aws_s3_bucket" "s3_bucket" {
+  bucket = "${local.app}-${var.environment_name}-s3-bucket"
+  force_destroy = true
+}
+
+# Create IAM role with S3 bucket access for EC2 instance
+
+## Policy to allow EC2 server to assume the S3 role
+data "aws_iam_policy_document" "ec2_policy_assume_s3_role" {
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["ec2.amazonaws.com"]
+    }
+
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+## Create the role for S3 access
+resource "aws_iam_role" "s3_access_role" {
+  name               = "${local.app}_${var.environment_name}_s3_access_role"
+  assume_role_policy = data.aws_iam_policy_document.ec2_policy_assume_s3_role.json
+}
+
+
+## Policy document that configure the S3 access
+data "aws_iam_policy_document" "s3_access_policy" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:*"
+    ]
+
+    resources = [
+      aws_s3_bucket.s3_bucket.arn,
+      "${aws_s3_bucket.s3_bucket.arn}/*",
+    ]
+  }
+}
+
+resource "aws_iam_policy" "s3_access_policy" {
+  name               = "${local.app}_${var.environment_name}_s3_access_policy"
+  policy = data.aws_iam_policy_document.s3_access_policy.json
+}
+
+## Attach the S3 access policy to the role
+resource "aws_iam_role_policy_attachment" "s3_access_policy_role_attachement" {
+  role = aws_iam_role.s3_access_role.name
+  policy_arn = aws_iam_policy.s3_access_policy.arn
+}
+
+resource "aws_iam_instance_profile" "s3_instance_profile" {
+  name = "${local.app}_${var.environment_name}_s3_instance_profile"
+  role = aws_iam_role.s3_access_role.name
+}
+
 # EC2 instance configuration
 
 resource "aws_key_pair" "server_ssh_key" {
@@ -101,6 +163,7 @@ resource "aws_instance" "server" {
   vpc_security_group_ids = [aws_security_group.server_sg.id]
   key_name = aws_key_pair.server_ssh_key.key_name
   associate_public_ip_address = true
+  iam_instance_profile = aws_iam_instance_profile.s3_instance_profile.name
 
   tags = {
     Name = "${local.app}_${var.environment_name}_server"
