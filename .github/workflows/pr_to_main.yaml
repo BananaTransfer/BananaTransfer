@@ -19,6 +19,8 @@ concurrency:
 jobs:
   execute_code_quality_check:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Clone the repository
         uses: actions/checkout@v4
