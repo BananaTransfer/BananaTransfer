@@ -109,7 +109,7 @@ On any incoming connection from another server, the same verification is done:
 * In the application config file it is possible to configure after how many days a transfer expires (by default 30 days, file is deleted but information and logs about transfer are kept) and after how many days the information and logs about a transfer are deleted from the database (by default 90 days).
 * In the first version of the application, the logic to be able to blocklist an user or a whole domain for one user or the whole organization on a server is not implemented. It is possible to implement this in a future version of the application. However this feature would require additional logic and menus in the application for the users to access and manage their blocklist. Additionally, it would require to implement user permissions to manage who can manage the blocklist for the whole organization.
 
-### Security Cnsiderations
+### Security Considerations
 
 * Browsers should be up-to-date
 * Should be used exclusively with HTTPS
