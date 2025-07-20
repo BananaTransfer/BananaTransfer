@@ -112,7 +112,7 @@ On any incoming connection from another server, the same verification is done:
 ### Security Cnsiderations
 
 * Browsers should be up-to-date
-* Should be used exclusively with HTTPS 
+* Should be used exclusively with HTTPS
 
 ### Server/Code Architecture
 
