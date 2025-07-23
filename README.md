@@ -1,5 +1,42 @@
-# BananaTransfer
-BananaTransfer
+<div align="center">
+  <img src="public/images/logo.png" alt="Logo" width="200"/>
+</div>
+
+# BananaTransfer  
+## Decentralized Secure File Sharing with End-to-End Encryption
+**BananaTransfer** is the most secure way to share files with your team, featuring zero-knowledge architecture and complete transparency via open-source code. Your files are encrypted before they leave your device—nobody else can see your data.
+
+## Features
+- End-to-End Encryption: Files are protected with AES-256 encryption and RSA-4096 key exchange—security standards trusted by banks and governments.
+- Zero-Knowledge Architecture: Even BananaTransfer can’t access your files.
+- Self-Managed Security: You control your encryption keys. Your master password never leaves your device.
+- Open Source: No black boxes, no hidden backdoors. Host your own server for full control.
+- Cross-Platform: Access BananaTransfer from any device, anywhere. No downloads required.
+- Enterprise Federation: Share files securely between organizations while maintaining end-to-end encryption.
+- Intuitive & Fast: Secure file sharing is as easy as email. Onboard your team in minutes.
+
+## How It Works
+1. Create Your Account: Sign up with your organization’s BananaTransfer server. Registration takes less than 5 minutes!
+2. Generate Your Keys: Automatic RSA-4096 key generation in your browser. Your keys and master password never leave your device.
+3. Share Files: Drag, drop, and share files instantly. Files are encrypted before upload, recipients are notified immediately.
+4. Receive & Download: Access shared files from any device, anywhere, anytime. Files decrypt automatically upon download.
+
+## Secure by Design:
+- Military-Grade Encryption: AES-256 and RSA-4096 for file transfer and storage.
+- Self-Managed Keys: Total ownership of your encryption keys and master password.
+- Open Source Trust: Audit, fork, or self-host BananaTransfer.
+- Works Everywhere: Responsive design for desktop, tablet, and mobile.
+- Enterprise Federation: Scalable for partnerships and multi-organization workflows.
+- User-Friendly: 5-minute setup, guided onboarding for end users.
+
+## Meet the team
+
+| Gwenaël Ansermoz | Glodi Domingos | Dominik Saul | Maxime Schaller |
+|:-----------------|:---------------|:-------------|:----------------|
+| Data Engineering | IT Security | IT Security | Data Engineering |
+
+## Support
+Any questions? [Open an issue](https://github.com/BananaTransfer/BananaTransfer/issues)
 
 ## Install Node.js
 
