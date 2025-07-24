@@ -4,7 +4,7 @@
 
 # BananaTransfer  
 ## Decentralized Secure File Sharing with End-to-End Encryption
-**BananaTransfer** is the most secure way to share files with your team, featuring zero-knowledge architecture and complete transparency via open-source code. Your files are encrypted before they leave your device—nobody else can see your data.
+Despite the rise of cloud-based file sharing platforms like SwissTransfer, and WeTransfer, or even some services trying to offer better security features like Tresorit, there remains a gap in the market for a truly decentralized, secure, and user-controlled file sharing solution. Existing services often rely on centralized infrastructure, exposing users to risks around privacy, data ownership, and single points of failure. **BananaTransfer** addresses these limitations by introducing an innovative approach allowing users to share files securely and privately, without depending on intermediaries or centralized servers. **BananaTransfer** is the most secure way to share files with your team, featuring zero-knowledge architecture and complete transparency via open-source code. Your files are encrypted before they leave your device - your data remains yours and you don't rely on cloud providers' servers to transfer and store your data.
 
 ## Features
 - End-to-End Encryption: Files are protected with AES-256 encryption and RSA-4096 key exchange—security standards trusted by banks and governments.
