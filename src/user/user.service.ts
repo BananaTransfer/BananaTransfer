@@ -1,10 +1,42 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UserService {
-  getUser(): string {
+  private readonly envDomain: string;
+
+  constructor(private configService: ConfigService) {
+    const envDomain = this.configService.get<string>('DOMAIN');
+    if (!envDomain) {
+      throw new Error('Default domain is not set in environment variables');
+    }
+    this.envDomain = envDomain;
+  }
+
+  getUserInfo(): { username: string } {
     // TODO: get current user info from db
-    return 'Hello User!';
+    return { username: 'test' };
+  }
+
+  getUser(username: string): { username: string } {
+    // TODO: get local or remote user from db
+    const parsedUser: { user: string; domain: string; isLocal: boolean } =
+      this.parseUsername(username);
+    if (parsedUser.isLocal) {
+      return this.getLocalUser();
+    } else {
+      return this.getRemoteUser();
+    }
+  }
+
+  getLocalUser(): { username: string } {
+    // TODO: get local user from db
+    return { username: 'test' };
+  }
+
+  getRemoteUser(): { username: string } {
+    // TODO: get remote user from db
+    return { username: 'test' };
   }
 
   getPrivateKey(): string {
@@ -35,5 +67,41 @@ export class UserService {
     // console.log(`Trusting public key for user ${username}:`);
     // console.log(`Recipient: ${recipient}`);
     // console.log(`Public Key: ${publicKey}`);
+  }
+
+  getKnownRecipients(): string[] {
+    // TODO: get known recipients of current user from the db
+    return ['recipient1', 'recipient2', 'recipient3'];
+  }
+
+  createLocalUser(): void {
+    // TODO: implement logic to create a local user in the DB
+    // used when someone signs up
+  }
+
+  createRemoteUser(): void {
+    // TODO: implement logic to create a remote user in the DB
+    // used when sending/receiving a transfer to/from a remote user
+  }
+
+  private parseUsername(username: string): {
+    user: string;
+    domain: string;
+    isLocal: boolean;
+  } {
+    const regex = /^([^@]+)@([^@]+)$/;
+    let user: string;
+    let domain: string;
+
+    if (regex.test(username)) {
+      [user, domain] = username.split('@');
+    } else {
+      user = username;
+      domain = this.envDomain;
+    }
+
+    const isLocal = domain === this.envDomain;
+
+    return { user, domain, isLocal };
   }
 }

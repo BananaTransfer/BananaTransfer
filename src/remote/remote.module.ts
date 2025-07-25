@@ -7,8 +7,8 @@ import { UserService } from '../user/user.service';
 // This module handles all service related operations that are done by the external servers
 
 @Module({
-  providers: [RemoteService, TransferService, UserService],
   controllers: [RemoteController],
+  providers: [RemoteService, TransferService, UserService],
   exports: [RemoteService],
 })
 export class RemoteModule {}

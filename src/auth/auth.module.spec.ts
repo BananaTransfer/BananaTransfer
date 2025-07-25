@@ -3,13 +3,14 @@ import { AuthModule } from './auth.module';
 import { AuthService } from './auth.service';
 import { LocalStrategy } from './local.strategy';
 import { LocalAuthGuard } from './local-auth.guard';
+import { ConfigModule } from '@nestjs/config';
 
 describe('AuthModule', () => {
   let module: TestingModule;
 
   beforeAll(async () => {
     module = await Test.createTestingModule({
-      imports: [AuthModule],
+      imports: [AuthModule, ConfigModule.forRoot({ isGlobal: true })],
     }).compile();
   });
 

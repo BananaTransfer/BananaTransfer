@@ -9,13 +9,17 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import { TransferService } from './transfer.service';
+import { UserService } from '../user/user.service';
 import { LocalAuthGuard } from '../auth/local-auth.guard';
 
 // all routes in this controller are protected by the LocalAuthGuard and require authentication
 @UseGuards(LocalAuthGuard)
 @Controller('transfer')
 export class TransferController {
-  constructor(private readonly transferService: TransferService) {}
+  constructor(
+    private readonly transferService: TransferService,
+    private readonly userService: UserService,
+  ) {}
 
   // endpoint to get transfers list page
   @Get('')
@@ -27,7 +31,8 @@ export class TransferController {
   // endpoint to get new transfer page
   @Get('new')
   renderNewTransfer(@Res() res: Response): void {
-    res.render('new');
+    const knownRecipients = this.userService.getKnownRecipients();
+    res.render('new', { knownRecipients });
   }
 
   // endpoint to fetch the data of a transfer by ID

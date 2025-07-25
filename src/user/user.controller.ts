@@ -20,15 +20,15 @@ export class UserController {
   // endpoint to get settings page
   @Get('settings')
   renderSettings(@Res() res: Response): void {
-    const user = this.userService.getUser();
+    const user = this.userService.getUserInfo();
     res.render('settings', { user });
   }
 
   // endpoint to get page to create/update private key
-  @Get('user-keys')
+  @Get('create-keys')
   renderUserKeysPage(@Res() res: Response): void {
-    const user = this.userService.getUser();
-    res.render('user-keys', { user });
+    const user = this.userService.getUserInfo();
+    res.render('create-keys', { user });
   }
 
   // endpoint to get encrypted private key from user in the frontend

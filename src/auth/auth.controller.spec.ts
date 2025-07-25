@@ -20,5 +20,12 @@ describe('AuthController', () => {
     });
   });
 
+  describe('authService', () => {
+    it('service should be defined', () => {
+      const authService = authController['authService'];
+      expect(authService).toBeDefined();
+    });
+  });
+
   // TODO: Add tests for all endpoints
 });

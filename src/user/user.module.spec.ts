@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user.module';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
@@ -8,7 +9,7 @@ describe('UserModule', () => {
 
   beforeAll(async () => {
     module = await Test.createTestingModule({
-      imports: [UserModule],
+      imports: [UserModule, ConfigModule.forRoot({ isGlobal: true })],
     }).compile();
   });
 

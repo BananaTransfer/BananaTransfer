@@ -29,7 +29,7 @@ describe('DatabaseModule (with Testcontainers)', () => {
 
     // Now create the testing module
     testingModule = await Test.createTestingModule({
-      imports: [ConfigModule.forRoot({ isGlobal: true }), DatabaseModule],
+      imports: [DatabaseModule, ConfigModule.forRoot({ isGlobal: true })],
     }).compile();
   });
 

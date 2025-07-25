@@ -9,7 +9,7 @@ describe('TransferModule', () => {
 
   beforeAll(async () => {
     module = await Test.createTestingModule({
-      imports: [ConfigModule.forRoot({ isGlobal: true }), TransferModule],
+      imports: [TransferModule, ConfigModule.forRoot({ isGlobal: true })],
     }).compile();
   });
 
