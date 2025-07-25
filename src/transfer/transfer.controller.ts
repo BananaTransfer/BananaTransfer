@@ -2,12 +2,13 @@ import {
   Controller,
   Get,
   Post,
+  Req,
   Res,
   Param,
   Body,
   UseGuards,
 } from '@nestjs/common';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 
 import { TransferService } from './transfer.service';
 import { UserService } from '../user/user.service';
@@ -24,23 +25,27 @@ export class TransferController {
 
   // endpoint to get transfers list page
   @Get('')
-  renderTransfersList(@Res() res: Response): void {
-    const transfers = this.transferService.getTransferList();
-    res.render('list', { transfers });
+  renderTransfersList(@Req() req: Request, @Res() res: Response): void {
+    // const transfers = this.transferService.getTransferList(req.user.id;
+    //res.render('list', { transfers });
   }
 
   // endpoint to get new transfer page
   @Get('new')
-  renderNewTransfer(@Res() res: Response): void {
-    const knownRecipients = this.userService.getKnownRecipients();
-    res.render('new', { knownRecipients });
+  renderNewTransfer(@Req() req: Request, @Res() res: Response): void {
+    // const knownRecipients = this.userService.getKnownRecipients(req.user.id);
+    //res.render('new', { knownRecipients });
   }
 
   // endpoint to fetch the data of a transfer by ID
   @Get('fetch/:id')
-  fetchTransfer(@Param('id') id: string, @Res() res: Response): void {
-    const result = this.transferService.fetchTransfer(id);
-    res.download(result);
+  fetchTransfer(
+    @Param('id') id: number,
+    @Req() req: Request,
+    @Res() res: Response,
+  ): void {
+    // const result = this.transferService.fetchTransfer(id, req.user.id);
+    // res.download(result);
   }
 
   // endpoint to add a new transfer
@@ -52,21 +57,21 @@ export class TransferController {
 
   // endpoint to accept a transfer by ID
   @Post('accept/:id')
-  acceptTransfer(@Param('id') id: string, @Res() res: Response): void {
+  acceptTransfer(@Param('id') id: number, @Res() res: Response): void {
     this.transferService.acceptTransfer(id);
     res.redirect('/transfer/list');
   }
 
   // endpoint to refuse a transfer by ID
   @Post('refuse/:id')
-  refuseTransfer(@Param('id') id: string, @Res() res: Response): void {
+  refuseTransfer(@Param('id') id: number, @Res() res: Response): void {
     this.transferService.refuseTransfer(id);
     res.redirect('/transfer/list');
   }
 
   // endpoint to delete a transfer by ID
   @Post('delete/:id')
-  deleteTransfer(@Param('id') id: string, @Res() res: Response): void {
+  deleteTransfer(@Param('id') id: number, @Res() res: Response): void {
     this.transferService.deleteTransfer(id);
     res.redirect('/transfer/list');
   }

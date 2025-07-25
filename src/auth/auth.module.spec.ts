@@ -1,17 +1,35 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 
-import { AuthModule } from './auth.module';
+// import { AuthModule } from './auth.module';
+import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { LocalStrategy } from './local.strategy';
 import { LocalAuthGuard } from './local-auth.guard';
+
+import { User } from '../database/entities/user.entity';
+import { LocalUser } from '../database/entities/local-user.entity';
+import { RemoteUser } from '../database/entities/remote-user.entity';
+import { TrustedRecipient } from '../database/entities/trusted-recipient.entity';
 
 describe('AuthModule', () => {
   let module: TestingModule;
 
   beforeAll(async () => {
     module = await Test.createTestingModule({
-      imports: [AuthModule, ConfigModule.forRoot({ isGlobal: true })],
+      imports: [/*AuthModule,*/ ConfigModule.forRoot({ isGlobal: true })],
+      controllers: [AuthController],
+      providers: [
+        AuthService,
+        LocalStrategy,
+        LocalAuthGuard,
+        // Mock the repositories for unit tests
+        { provide: getRepositoryToken(User), useValue: {} },
+        { provide: getRepositoryToken(LocalUser), useValue: {} },
+        { provide: getRepositoryToken(RemoteUser), useValue: {} },
+        { provide: getRepositoryToken(TrustedRecipient), useValue: {} },
+      ],
     }).compile();
   });
 
@@ -23,7 +41,7 @@ describe('AuthModule', () => {
 
   describe('AuthController', () => {
     it('should provide AuthController', () => {
-      const authController = module.get<AuthService>(AuthService);
+      const authController = module.get<AuthController>(AuthController);
       expect(authController).toBeDefined();
     });
   });

@@ -1,14 +1,26 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { S3Client, ListBucketsCommand } from '@aws-sdk/client-s3';
 import { S3ClientConfig } from '@aws-sdk/client-s3/dist-types/S3Client';
+
+import { TransferStatus, LogInfo } from '../database/entities/enums';
+import { FileTransfer } from '../database/entities/file-transfer.entity';
+import { TransferLog } from '../database/entities/transfer-log.entity';
 
 @Injectable()
 export class TransferService {
   private s3Client: S3Client;
   private bucket: string;
 
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    @InjectRepository(FileTransfer)
+    private fileTransferRepository: Repository<FileTransfer>,
+    @InjectRepository(TransferLog)
+    private transferLogRepository: Repository<TransferLog>,
+  ) {
     const isLocal = !!this.configService.get<string>('S3_ENDPOINT');
     this.s3Client = new S3Client({
       region: this.configService.get<string>('S3_REGION'),
@@ -36,14 +48,38 @@ export class TransferService {
   }
 
   // local transfer handling methods
-  getTransferList(): string {
+  async getTransferList(userId: number): Promise<FileTransfer[]> {
     // TODO: implement logic to fetch list of all incoming and outgoing transfers of a user
-    return 'List of local transfers';
+    return this.fileTransferRepository.find({
+      where: [{ sender: { id: userId } }, { receiver: { id: userId } }],
+      relations: ['sender', 'receiver'],
+    });
   }
 
-  fetchTransfer(id: string): string {
-    // TODO: implement logic to fetch transfer data by ID
-    return `Transfer data for ID ${id}`;
+  async getTransferDetails(
+    transferId: number,
+    userId: number,
+  ): Promise<[FileTransfer, TransferLog[]]> {
+    // TODO: Get transfer details including logs
+    const transfer = await this.fileTransferRepository.findOne({
+      where: [
+        { id: transferId, sender: { id: userId } },
+        { id: transferId, receiver: { id: userId } },
+      ],
+      relations: ['sender', 'receiver'],
+    });
+    if (!transfer) {
+      throw new NotFoundException(`Transfer with ID ${transferId} not found`);
+    }
+    const logs = await this.transferLogRepository.find({
+      where: { fileTransfer: { id: transferId } },
+    });
+    return [transfer, logs];
+  }
+
+  fetchTransfer(id: number, userId: number): string {
+    // TODO: implement logic to fetch transfer content by ID
+    return `Transfer data for ID ${id} and user ID ${userId}`;
   }
 
   newTransfer(transferData: any): string {
@@ -51,17 +87,17 @@ export class TransferService {
     return 'New transfer created with data: ' + JSON.stringify(transferData);
   }
 
-  acceptTransfer(id: string): string {
+  acceptTransfer(id: number): string {
     // TODO: implement logic to accept a transfer by ID
     return `Transfer with ID ${id} accepted`;
   }
 
-  refuseTransfer(id: string): string {
+  refuseTransfer(id: number): string {
     // TODO: implement logic to refuse a transfer by ID
     return `Transfer with ID ${id} refused`;
   }
 
-  deleteTransfer(id: string): string {
+  deleteTransfer(id: number): string {
     // TODO: implement logic to delete a transfer by ID
     return `Transfer with ID ${id} deleted`;
   }
@@ -76,7 +112,7 @@ export class TransferService {
     return `New transfer notification received: ${JSON.stringify(transferData)}`;
   }
 
-  remoteFetchTransfer(id: string): string {
+  remoteFetchTransfer(id: number): string {
     // TODO: implement logic to fetch transfer data by ID
     // check if transfer exists, send back a NotFoundException if not
     // return transfer data
@@ -84,14 +120,14 @@ export class TransferService {
     return `Transfer data for ID ${id}`;
   }
 
-  remoteRefuseTransfer(id: string): string {
+  remoteRefuseTransfer(id: number): string {
     // TODO: implement logic to refuse a transfer by ID
     // check if transfer exists, send back a NotFoundException if not
     // update the transfer status to "REFUSED"
     return `Transfer with ID ${id} refused`;
   }
 
-  remoteDeleteTransfer(id: string): string {
+  remoteDeleteTransfer(id: number): string {
     // TODO: implement logic to delete a transfer by ID
     // check if transfer exists, send back a NotFoundException if not
     // check if transfer status is "SENT", send back a BadRequestException if not

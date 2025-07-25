@@ -1,7 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { TransferService } from './transfer.service';
 import { MinioContainer, StartedMinioContainer } from '@testcontainers/minio';
+
+import { FileTransfer } from '../database/entities/file-transfer.entity';
+import { TransferLog } from '../database/entities/transfer-log.entity';
 
 describe('TransferService (with Testcontainers MinIO)', () => {
   jest.setTimeout(60000);
@@ -23,7 +27,12 @@ describe('TransferService (with Testcontainers MinIO)', () => {
     // Now create the testing module
     const module: TestingModule = await Test.createTestingModule({
       imports: [ConfigModule.forRoot({ isGlobal: true })],
-      providers: [TransferService],
+      providers: [
+        TransferService,
+        // Mock the repositories for unit tests
+        { provide: getRepositoryToken(FileTransfer), useValue: {} },
+        { provide: getRepositoryToken(TransferLog), useValue: {} },
+      ],
     }).compile();
 
     service = module.get<TransferService>(TransferService);

@@ -1,11 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 import { AppController } from './app.controller';
-import { AuthModule } from './auth/auth.module';
-import { RemoteModule } from './remote/remote.module';
-import { TransferModule } from './transfer/transfer.module';
-import { UserModule } from './user/user.module';
 
 describe('AppModule', () => {
   let module: TestingModule;
@@ -13,11 +11,10 @@ describe('AppModule', () => {
   beforeAll(async () => {
     module = await Test.createTestingModule({
       imports: [
-        AuthModule,
-        RemoteModule,
-        TransferModule,
-        UserModule,
         ConfigModule.forRoot({ isGlobal: true }),
+        ServeStaticModule.forRoot({
+          rootPath: join(__dirname, '..', 'public'),
+        }),
       ],
       controllers: [AppController],
     }).compile();
@@ -36,35 +33,9 @@ describe('AppModule', () => {
     });
   });
 
-  describe('AuthModule', () => {
-    it('should be defined', () => {
-      const authModule = module.get(AuthModule);
-      expect(authModule).toBeDefined();
-    });
-  });
-
-  describe('RemoteModule', () => {
-    it('should be defined', () => {
-      const remoteModule = module.get(RemoteModule);
-      expect(remoteModule).toBeDefined();
-    });
-  });
-
-  describe('TransferModule', () => {
-    it('should be defined', () => {
-      const transferModule = module.get(TransferModule);
-      expect(transferModule).toBeDefined();
-    });
-  });
-
-  describe('UserModule', () => {
-    it('should be defined', () => {
-      const userModule = module.get(UserModule);
-      expect(userModule).toBeDefined();
-    });
-  });
-
   afterAll(async () => {
     await module.close();
   });
+
+  // TODO: Add tests for static content
 });

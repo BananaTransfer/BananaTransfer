@@ -1,11 +1,28 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+
+import { UserStatus } from '../database/entities/enums';
+import { User } from '../database/entities/user.entity';
+import { LocalUser } from '../database/entities/local-user.entity';
+import { RemoteUser } from '../database/entities/remote-user.entity';
+import { TrustedRecipient } from '../database/entities/trusted-recipient.entity';
 
 @Injectable()
 export class UserService {
   private readonly envDomain: string;
 
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    @InjectRepository(User) private userRepository: Repository<User>,
+    @InjectRepository(LocalUser)
+    private localUserRepository: Repository<LocalUser>,
+    @InjectRepository(RemoteUser)
+    private remoteUserRepository: Repository<RemoteUser>,
+    @InjectRepository(TrustedRecipient)
+    private trustedRecipientRepository: Repository<TrustedRecipient>,
+  ) {
     const envDomain = this.configService.get<string>('DOMAIN');
     if (!envDomain) {
       throw new Error('Default domain is not set in environment variables');
@@ -18,25 +35,35 @@ export class UserService {
     return { username: 'test' };
   }
 
-  getUser(username: string): { username: string } {
+  async getUser(username: string): Promise<{ username: string }> {
     // TODO: get local or remote user from db
     const parsedUser: { user: string; domain: string; isLocal: boolean } =
       this.parseUsername(username);
     if (parsedUser.isLocal) {
-      return this.getLocalUser();
+      return await this.getLocalUser(username);
     } else {
-      return this.getRemoteUser();
+      return await this.getRemoteUser(username);
     }
   }
 
-  getLocalUser(): { username: string } {
+  private async getLocalUser(username: string): Promise<{ username: string }> {
     // TODO: get local user from db
-    return { username: 'test' };
+    const user = await this.localUserRepository.findOneBy({ username });
+    if (!user) {
+      // this will automatically return a 404 in the controller
+      throw new NotFoundException('Local user not found');
+    }
+    return user;
   }
 
-  getRemoteUser(): { username: string } {
+  private async getRemoteUser(username: string): Promise<{ username: string }> {
     // TODO: get remote user from db
-    return { username: 'test' };
+    const user = await this.remoteUserRepository.findOneBy({ username });
+    if (!user) {
+      // this will automatically return a 404 in the controller
+      throw new NotFoundException('Remote user not found');
+    }
+    return user;
   }
 
   getPrivateKey(): string {
@@ -69,7 +96,7 @@ export class UserService {
     // console.log(`Public Key: ${publicKey}`);
   }
 
-  getKnownRecipients(): string[] {
+  getKnownRecipients(userId: number): string[] {
     // TODO: get known recipients of current user from the db
     return ['recipient1', 'recipient2', 'recipient3'];
   }

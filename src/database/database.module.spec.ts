@@ -20,7 +20,6 @@ describe('DatabaseModule (with Testcontainers)', () => {
     postgresContainer = await new PostgreSqlContainer(
       'postgres:17-alpine',
     ).start();
-
     // Set env vars for NestJS to use the test DB
     process.env.DB_HOST = 'localhost';
     process.env.DB_PORT = postgresContainer.getPort().toString();
@@ -28,7 +27,7 @@ describe('DatabaseModule (with Testcontainers)', () => {
     process.env.DB_PASS = postgresContainer.getPassword();
     process.env.DB_NAME = postgresContainer.getDatabase();
 
-    // Now create the testing module
+    // Create the testing module
     testingModule = await Test.createTestingModule({
       imports: [DatabaseModule, ConfigModule.forRoot({ isGlobal: true })],
     }).compile();
@@ -36,7 +35,6 @@ describe('DatabaseModule (with Testcontainers)', () => {
 
   afterAll(async () => {
     await testingModule.close();
-
     await postgresContainer.stop();
   });
 
