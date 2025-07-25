@@ -31,12 +31,21 @@ Despite the rise of cloud-based file sharing platforms like SwissTransfer, and W
 
 ## Meet the team
 
+We are a core team of four bachelor’s students from HEIG-VD:
+
 | Gwenaël Ansermoz | Glodi Domingos | Dominik Saul | Maxime Schaller |
 |:-----------------|:---------------|:-------------|:----------------|
 | Data Engineering | IT Security | IT Security | Data Engineering |
 
+## Landing page and mockups
+While development of the application is still in progress, we have designed a landing page, which has been deployed online. You can access it at [https://bananatransfer.saul.ch/](https://bananatransfer.saul.ch/) or [https://bananatransfer.ansermoz.dev/](https://bananatransfer.ansermoz.dev/).
+We have also created mockups of the app's interface, which you can find in this repository in the [mockups](https://github.com/BananaTransfer/BananaTransfer/tree/main/documents/mockups/digital) folder.
+
 ## Support
 Any questions? [Open an issue](https://github.com/BananaTransfer/BananaTransfer/issues)
+
+## Project guide/contribute
+If you're interested in contributing to BananaTransfer, you are very welcome ! To get familiar with the project structure and understand how you can get involved, take a look at our [work process](https://github.com/BananaTransfer/BananaTransfer/blob/main/documents/work_process.md). It also outlines how our core team collaborates on a day-to-day basis.
 
 ## Install Node.js
 
