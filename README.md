@@ -31,7 +31,7 @@ Despite the rise of cloud-based file sharing platforms like SwissTransfer, and W
 
 ## Meet the team
 
-We are a core team of four bachelor’s students from HEIG-VD:
+We are a core team of four bachelor’s students from [HEIG-VD](https://heig-vd.ch/):
 
 | Gwenaël Ansermoz | Glodi Domingos | Dominik Saul | Maxime Schaller |
 |:-----------------|:---------------|:-------------|:----------------|
