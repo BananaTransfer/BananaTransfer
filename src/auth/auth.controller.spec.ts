@@ -20,5 +20,5 @@ describe('AuthController', () => {
     });
   });
 
-  // TODO: Add tests for endpoints/methods
+  // TODO: Add tests for all endpoints
 });

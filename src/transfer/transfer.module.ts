@@ -2,11 +2,12 @@ import { Module } from '@nestjs/common';
 import { TransferService } from './transfer.service';
 import { TransferController } from './transfer.controller';
 
-// This module handles all service related operations that are done by the external servers
+// This module handles all file sharing related operations that are done by the authenticated users
 
 @Module({
-  providers: [TransferService],
+  imports: [],
   controllers: [TransferController],
+  providers: [TransferService],
   exports: [TransferService],
 })
 export class TransferModule {}

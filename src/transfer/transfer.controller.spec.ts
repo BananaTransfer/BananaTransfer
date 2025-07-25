@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigModule } from '@nestjs/config';
 import { TransferController } from './transfer.controller';
 import { TransferService } from './transfer.service';
 
@@ -7,6 +8,7 @@ describe('TransferController', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
+      imports: [ConfigModule.forRoot({ isGlobal: true })],
       controllers: [TransferController],
       providers: [TransferService],
     }).compile();

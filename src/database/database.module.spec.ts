@@ -53,10 +53,4 @@ describe('DatabaseModule (with Testcontainers)', () => {
       expect(dataSource.isInitialized).toBe(true);
     });
   });
-
-  it('should connect to the database', () => {
-    const dataSource = testingModule.get<DataSource>(getDataSourceToken());
-    expect(dataSource).toBeDefined();
-    expect(dataSource.isInitialized).toBe(true);
-  });
 });
