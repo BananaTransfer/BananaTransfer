@@ -1,10 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigModule } from '@nestjs/config';
+
 import { AppController } from './app.controller';
 import { AuthModule } from './auth/auth.module';
 import { RemoteModule } from './remote/remote.module';
 import { TransferModule } from './transfer/transfer.module';
 import { UserModule } from './user/user.module';
-import { ConfigModule } from '@nestjs/config';
 
 describe('AppModule', () => {
   let module: TestingModule;

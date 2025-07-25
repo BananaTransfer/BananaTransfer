@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
+
 import { User } from './entities/user.entity';
 import { LocalUser } from './entities/local-user.entity';
 import { RemoteUser } from './entities/remote-user.entity';

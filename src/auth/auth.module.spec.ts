@@ -1,9 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigModule } from '@nestjs/config';
+
 import { AuthModule } from './auth.module';
 import { AuthService } from './auth.service';
 import { LocalStrategy } from './local.strategy';
 import { LocalAuthGuard } from './local-auth.guard';
-import { ConfigModule } from '@nestjs/config';
 
 describe('AuthModule', () => {
   let module: TestingModule;

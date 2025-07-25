@@ -1,9 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigModule } from '@nestjs/config';
+
 import { RemoteController } from './remote.controller';
 import { RemoteService } from './remote.service';
 import { TransferService } from '../transfer/transfer.service';
 import { UserService } from '../user/user.service';
-import { ConfigModule } from '@nestjs/config';
 
 describe('RemoteController', () => {
   let remoteController: RemoteController;

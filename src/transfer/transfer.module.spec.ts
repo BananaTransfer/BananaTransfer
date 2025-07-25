@@ -1,8 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigModule } from '@nestjs/config';
+
 import { TransferModule } from './transfer.module';
 import { TransferController } from './transfer.controller';
 import { TransferService } from './transfer.service';
-import { ConfigModule } from '@nestjs/config';
 
 describe('TransferModule', () => {
   let module: TestingModule;

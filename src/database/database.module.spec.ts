@@ -1,5 +1,4 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { DatabaseModule } from './database.module';
 import { ConfigModule } from '@nestjs/config';
 import { getDataSourceToken } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
@@ -7,6 +6,8 @@ import {
   PostgreSqlContainer,
   StartedPostgreSqlContainer,
 } from '@testcontainers/postgresql';
+
+import { DatabaseModule } from './database.module';
 
 describe('DatabaseModule (with Testcontainers)', () => {
   jest.setTimeout(60000);

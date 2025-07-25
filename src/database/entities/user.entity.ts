@@ -7,7 +7,6 @@ import {
   TableInheritance,
 } from 'typeorm';
 import { FileTransfer } from './file-transfer.entity';
-// import { TrustedRecipient } from './trusted-recipient.entity';
 import { TransferLog } from './transfer-log.entity';
 
 @Entity()
@@ -30,7 +29,4 @@ export class User {
 
   @OneToMany(() => TransferLog, (log) => log.user)
   logs: TransferLog[];
-
-  // @OneToMany(() => TrustedRecipient, (tr) => tr.user)
-  // trustedRecipientsOf: TrustedRecipient[];
 }
