@@ -18,7 +18,6 @@ describe('UserService', () => {
       providers: [
         UserService,
         // Mock the repositories for unit tests
-
         { provide: getRepositoryToken(User), useValue: {} },
         { provide: getRepositoryToken(LocalUser), useValue: {} },
         { provide: getRepositoryToken(RemoteUser), useValue: {} },
