@@ -31,6 +31,10 @@ export class UserService {
     this.envDomain = envDomain || 'default.local'; // Fallback to a default domain if not set
   }
 
+  getDomain(): string {
+    return this.envDomain;
+  }
+
   getUserInfo(): { username: string } {
     // TODO: get current user info from db
     return { username: 'test' };
