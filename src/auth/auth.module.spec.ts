@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 
 // import { AuthModule } from '@auth/auth.module';
 import { AuthController } from '@auth/controllers/auth.controller';
@@ -19,13 +19,28 @@ describe('AuthModule', () => {
 
   beforeAll(async () => {
     module = await Test.createTestingModule({
-      imports: [/*AuthModule,*/ ConfigModule.forRoot({ isGlobal: true })],
+      // imports: [/*AuthModule,*/ ConfigModule.forRoot({ isGlobal: true })],
       controllers: [AuthController],
       providers: [
         AuthService,
         LocalStrategy,
         LocalAuthGuard,
         UserService,
+        // Mock ConfigService
+        {
+          provide: ConfigService,
+          useValue: {
+            get: jest.fn((key: string) => {
+              if (key === 'DOMAIN') return 'test-domain.com';
+              if (key === 'S3_ENDPOINT') return 'http://localhost:9000';
+              if (key === 'S3_REGION') return 'us-east-1';
+              if (key === 'S3_CLIENT_ID') return 'test-access-key';
+              if (key === 'S3_CLIENT_SECRET') return 'test-secret-key';
+              if (key === 'S3_BUCKET') return 'test-bucket';
+              return undefined;
+            }),
+          },
+        },
         // Mock the repositories for unit tests
         { provide: getRepositoryToken(User), useValue: {} },
         { provide: getRepositoryToken(LocalUser), useValue: {} },

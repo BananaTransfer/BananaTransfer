@@ -24,11 +24,10 @@ export class UserService {
     private trustedRecipientRepository: Repository<TrustedRecipient>,
   ) {
     const envDomain = this.configService.get<string>('DOMAIN');
-    /*if (!envDomain) {
-      throw new Error('Default domain is not set in environment variables');
-    }*/
-    console.error('Default domain is not set in environment variables');
-    this.envDomain = envDomain || 'default.local'; // Fallback to a default domain if not set
+    if (!envDomain) {
+      throw new Error('Domain is not set in environment variables');
+    }
+    this.envDomain = envDomain;
   }
 
   getDomain(): string {
