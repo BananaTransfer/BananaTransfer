@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { UserStatus } from '../database/entities/enums';
+// import { UserStatus } from '../database/entities/enums';
 import { User } from '../database/entities/user.entity';
 import { LocalUser } from '../database/entities/local-user.entity';
 import { RemoteUser } from '../database/entities/remote-user.entity';
@@ -73,8 +73,8 @@ export class UserService {
 
   setUserKeys(privateKey: string, publicKey: string): void {
     // TODO: update the private and public key of the current user in the db
-    // console.log('Private Key:', privateKey);
-    // console.log('Public Key:', publicKey);
+    console.debug('Private Key:', privateKey);
+    console.debug('Public Key:', publicKey);
   }
 
   getPublicKey(username: string): string {
@@ -91,13 +91,14 @@ export class UserService {
 
   trustPublicKey(username: string, recipient: string, publicKey: string): void {
     // TODO: implement logic to trust and save the hash of the public key in the DB
-    // console.log(`Trusting public key for user ${username}:`);
-    // console.log(`Recipient: ${recipient}`);
-    // console.log(`Public Key: ${publicKey}`);
+    console.debug(`Trusting public key for user ${username}:`);
+    console.debug(`Recipient: ${recipient}`);
+    console.debug(`Public Key: ${publicKey}`);
   }
 
   getKnownRecipients(userId: number): string[] {
     // TODO: get known recipients of current user from the db
+    console.debug(`Fetching known recipients for user ID: ${userId}`);
     return ['recipient1', 'recipient2', 'recipient3'];
   }
 

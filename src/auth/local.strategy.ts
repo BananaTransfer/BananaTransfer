@@ -11,6 +11,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
   }
 
   validate(...args: any[]): unknown {
+    console.log('Validating user with args:', args);
     throw new UnauthorizedException();
   }
   /*async validate(username: string, password: string): Promise<any> {
