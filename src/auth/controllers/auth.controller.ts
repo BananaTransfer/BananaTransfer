@@ -3,19 +3,25 @@ import { Request, Response } from 'express';
 
 import { AuthService } from '@auth/services/auth.service';
 import { LocalAuthGuard } from '@auth/guards/local-auth.guard';
+import { UserService } from '@user/services/user.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly userService: UserService,
+  ) {}
 
   @Get('login')
   renderLogin(@Res() res: Response): void {
-    res.render('login');
+    const domain = this.userService.getDomain();
+    res.render('auth/login', { domain });
   }
 
   @Get('register')
   renderRegister(@Res() res: Response): void {
-    res.render('register');
+    const domain = this.userService.getDomain();
+    res.render('auth/register', { domain });
   }
 
   @Post('login')

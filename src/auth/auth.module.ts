@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { PassportModule } from '@nestjs/passport';
+import { UserModule } from '@user/user.module';
 
 import { AuthController } from '@auth/controllers/auth.controller';
 import { AuthService } from '@auth/services/auth.service';
@@ -9,7 +10,7 @@ import { LocalAuthGuard } from '@auth/guards/local-auth.guard';
 // This module handles authentication using Passport.js with a local strategy.
 
 @Module({
-  imports: [PassportModule],
+  imports: [PassportModule, UserModule],
   controllers: [AuthController],
   providers: [AuthService, LocalStrategy, LocalAuthGuard],
   exports: [AuthService],

@@ -1,40 +1,27 @@
-# TODO: create login page
-
-extends layout
+extends ../layout
 
 block content
-  style.
-    .bt-logo { width: 80px; margin: 0 auto 10px auto; display: block; }
-    .bt-form { max-width: 600px; margin: 0 auto; }
-    .bt-input { width: 100%; padding: 1.2em; background: #000; color: #fff; border: none; margin-bottom: 2em; font-size: 1.2em; }
-    .bt-input-domain { background: #673ab7; color: #fff; border: none; padding: 1.2em; font-size: 1.2em; }
-    .bt-btn { background: #000; color: #fff; border-radius: 12px; padding: 0.5em 1.5em; font-size: 1.2em; border: none; margin-left: 1em; }
-    .bt-link { color: #3b5fc0; }
-    .bt-center { text-align: center; }
-    .bt-label { margin-bottom: 0.5em; display: block; font-size: 1.1em; }
-    .bt-row { display: flex; }
-    .bt-row input { flex: 1; }
-    .bt-row .bt-input-domain { width: 180px; }
-    .bt-footer { margin-top: 3em; text-align: center; color: #444; }
-
-  .bt-center
-    h2(style="margin-top: 0.5em;") 
-      img.bt-logo(src="/logo.png" alt="BananaTransfer")
-      |  Sign in
-
-  form.bt-form(method="POST" action="/login")
-    .bt-label username
-    .bt-row
-      input.bt-input(type="text" name="username" placeholder="username" required)
-      span.bt-input-domain @domain.ch
-    .bt-label password
-    input.bt-input(type="password" name="password" placeholder="password" required)
-    .bt-row(style="justify-content: flex-end; align-items: center;")
-      span No account yet? 
-        a.bt-link(href="/register") Sign up
-      button.bt-btn(type="submit") Continue
-
-  .bt-footer
-    | Forgot your credentials?
-    br
-    | Please contact your domain administrator
+  .container
+    .row.justify-content-center
+      .col-md-6.col-lg-5
+        .text-center.mt-5
+          img(src="/images/logo.png" alt="BananaTransfer" style="width:80px;")
+          h2.mt-3.mb-4 Login
+        form(method="POST" action="/auth/login" class="bg-light p-4 rounded shadow-sm")
+          .mb-3
+            label.form-label(for="username") Username
+            .input-group
+              input.form-control(type="text" name="username" id="username" placeholder="username" required)
+              span.input-group-text @#{domain}
+          .mb-3
+            label.form-label(for="password") Password
+            input.form-control(type="password" name="password" id="password" placeholder="password" required)
+          .d-flex.justify-content-between.align-items-center.mb-3
+            span No account yet? 
+              a.ms-1(href="/auth/register") Register
+            button.btn.btn-dark(type="submit") Continue
+        .text-center.text-muted.mt-4
+          small
+            | Forgot your credentials?
+            br
+            | Please contact your domain administrator

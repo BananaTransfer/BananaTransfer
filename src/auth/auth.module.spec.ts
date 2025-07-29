@@ -7,6 +7,7 @@ import { AuthController } from '@auth/controllers/auth.controller';
 import { AuthService } from '@auth/services/auth.service';
 import { LocalStrategy } from '@auth/strategies/local.strategy';
 import { LocalAuthGuard } from '@auth/guards/local-auth.guard';
+import { UserService } from '@user/services/user.service';
 
 import { User } from '@database/entities/user.entity';
 import { LocalUser } from '@database/entities/local-user.entity';
@@ -24,6 +25,7 @@ describe('AuthModule', () => {
         AuthService,
         LocalStrategy,
         LocalAuthGuard,
+        UserService,
         // Mock the repositories for unit tests
         { provide: getRepositoryToken(User), useValue: {} },
         { provide: getRepositoryToken(LocalUser), useValue: {} },
