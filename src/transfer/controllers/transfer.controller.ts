@@ -39,18 +39,11 @@ export class TransferController {
 
   // endpoint to fetch the data of a transfer by ID
   @Get('fetch/:id')
-<<<<<<< HEAD:src/transfer/controllers/transfer.controller.ts
   fetchTransfer(/*
     @Param('id') id: number,
     @Req() req: Request,
     @Res() res: Response,
   */): void {
-=======
-  fetchTransfer() /*@Param('id') id: number,
-    @Req() req: Request,
-    @Res() res: Response,*/
-  : void {
->>>>>>> main:src/transfer/transfer.controller.ts
     // const result = this.transferService.fetchTransfer(id, req.user.id);
     // res.download(result);
   }
