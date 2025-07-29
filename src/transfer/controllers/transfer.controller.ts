@@ -2,7 +2,7 @@ import {
   Controller,
   Get,
   Post,
-  Req,
+  // Req,
   Res,
   Param,
   Body,
@@ -25,25 +25,25 @@ export class TransferController {
 
   // endpoint to get transfers list page
   @Get('')
-  renderTransfersList(@Req() req: Request, @Res() res: Response): void {
+  renderTransfersList(/*@Req() req: Request, @Res() res: Response*/): void {
     // const transfers = this.transferService.getTransferList(req.user.id;
     //res.render('list', { transfers });
   }
 
   // endpoint to get new transfer page
   @Get('new')
-  renderNewTransfer(@Req() req: Request, @Res() res: Response): void {
+  renderNewTransfer(/*@Req() req: Request, @Res() res: Response*/): void {
     // const knownRecipients = this.userService.getKnownRecipients(req.user.id);
     //res.render('new', { knownRecipients });
   }
 
   // endpoint to fetch the data of a transfer by ID
   @Get('fetch/:id')
-  fetchTransfer(
+  fetchTransfer(/*
     @Param('id') id: number,
     @Req() req: Request,
     @Res() res: Response,
-  ): void {
+  */): void {
     // const result = this.transferService.fetchTransfer(id, req.user.id);
     // res.download(result);
   }

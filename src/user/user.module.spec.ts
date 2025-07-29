@@ -42,7 +42,10 @@ describe('UserModule', () => {
         { provide: getRepositoryToken(User), useValue: mockRepository },
         { provide: getRepositoryToken(LocalUser), useValue: mockRepository },
         { provide: getRepositoryToken(RemoteUser), useValue: mockRepository },
-        { provide: getRepositoryToken(TrustedRecipient), useValue: mockRepository },
+        {
+          provide: getRepositoryToken(TrustedRecipient),
+          useValue: mockRepository,
+        },
       ],
     }).compile();
   });

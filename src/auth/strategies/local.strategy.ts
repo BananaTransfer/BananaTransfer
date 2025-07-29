@@ -10,7 +10,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     super();
   }
 
-  validate(...args: any[]): unknown {
+  validate(/*...args: any[]*/): unknown {
     throw new UnauthorizedException();
   }
   /*async validate(username: string, password: string): Promise<any> {
