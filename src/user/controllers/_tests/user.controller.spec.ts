@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { ConfigModule } from '@nestjs/config';
 import { ConfigService } from '@nestjs/config';
 
-// import { UserModule } from './user.module';
 import { UserController } from '@user/controllers/user.controller';
 import { UserService } from '@user/services/user.service';
 
@@ -11,20 +11,19 @@ import { LocalUser } from '@database/entities/local-user.entity';
 import { RemoteUser } from '@database/entities/remote-user.entity';
 import { TrustedRecipient } from '@database/entities/trusted-recipient.entity';
 
-describe('UserModule', () => {
-  let module: TestingModule;
+describe('UserController', () => {
+  let userController: UserController;
 
   const mockRepository = {
-    find: jest.fn(),
     findOne: jest.fn(),
     findOneBy: jest.fn(),
     create: jest.fn(),
     save: jest.fn(),
   };
 
-  beforeAll(async () => {
-    module = await Test.createTestingModule({
-      // imports: [/*UserModule,*/ ConfigModule.forRoot({ isGlobal: true })], // Commented Since there is no .env file for now
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      // imports: [ConfigModule.forRoot({ isGlobal: true })], // Commented Since there is no .env file for now
       controllers: [UserController],
       providers: [
         UserService,
@@ -40,30 +39,31 @@ describe('UserModule', () => {
         },
         // Mock the repositories for unit tests
         { provide: getRepositoryToken(User), useValue: mockRepository },
-        { provide: getRepositoryToken(LocalUser), useValue: mockRepository },
-        { provide: getRepositoryToken(RemoteUser), useValue: mockRepository },
-        { provide: getRepositoryToken(TrustedRecipient), useValue: mockRepository },
+        {
+          provide: getRepositoryToken(LocalUser),
+          useValue: mockRepository,
+        },
+
+        {
+          provide: getRepositoryToken(RemoteUser),
+          useValue: mockRepository,
+        },
+
+        {
+          provide: getRepositoryToken(TrustedRecipient),
+          useValue: mockRepository,
+        },
       ],
     }).compile();
+
+    userController = module.get<UserController>(UserController);
   });
 
-  describe('UserModule', () => {
-    it('module should be defined', () => {
-      expect(module).toBeDefined();
-    });
-  });
-
-  describe('UserController', () => {
-    it('should be defined', () => {
-      const userController = module.get<UserController>(UserController);
+  describe('userController', () => {
+    it('controller should be defined', () => {
       expect(userController).toBeDefined();
     });
   });
 
-  describe('UserService', () => {
-    it('should be defined', () => {
-      const userService = module.get<UserService>(UserService);
-      expect(userService).toBeDefined();
-    });
-  });
+  // TODO: Add tests for all endpoints
 });

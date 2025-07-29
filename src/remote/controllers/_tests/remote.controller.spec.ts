@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 
-// import { RemoteModule } from './remote.module';
 import { RemoteController } from '@remote/controllers/remote.controller';
 import { RemoteService } from '@remote/services/remote.service';
 import { TransferService } from '@transfer/services/transfer.service';
@@ -15,8 +14,8 @@ import { TrustedRecipient } from '@database/entities/trusted-recipient.entity';
 import { FileTransfer } from '@database/entities/file-transfer.entity';
 import { TransferLog } from '@database/entities/transfer-log.entity';
 
-describe('RemoteModule', () => {
-  let module: TestingModule;
+describe('RemoteController', () => {
+  let remoteController: RemoteController;
 
   const mockRepository = {
     find: jest.fn(),
@@ -26,9 +25,9 @@ describe('RemoteModule', () => {
     save: jest.fn(),
   };
 
-  beforeAll(async () => {
-    module = await Test.createTestingModule({
-      // imports: [/*RemoteModule,*/ ConfigModule.forRoot({ isGlobal: true })], // Commented Since there is no .env file for now
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      // imports: [ConfigModule.forRoot({ isGlobal: true })], // Commented Since there is no .env file for now
       controllers: [RemoteController],
       providers: [
         RemoteService,
@@ -58,39 +57,15 @@ describe('RemoteModule', () => {
         { provide: getRepositoryToken(TransferLog), useValue: mockRepository },
       ],
     }).compile();
+
+    remoteController = module.get<RemoteController>(RemoteController);
   });
 
-  describe('RemoteModule', () => {
-    it('module should be defined', () => {
-      expect(module).toBeDefined();
-    });
-  });
-
-  describe('RemoteController', () => {
-    it('should be defined', () => {
-      const remoteController = module.get<RemoteController>(RemoteController);
+  describe('remoteController', () => {
+    it('controller should be defined', () => {
       expect(remoteController).toBeDefined();
     });
   });
 
-  describe('RemoteService', () => {
-    it('should be defined', () => {
-      const remoteService = module.get<RemoteService>(RemoteService);
-      expect(remoteService).toBeDefined();
-    });
-  });
-
-  describe('TransferService', () => {
-    it('should be defined', () => {
-      const transferService = module.get<TransferService>(TransferService);
-      expect(transferService).toBeDefined();
-    });
-  });
-
-  describe('UserService', () => {
-    it('should be defined', () => {
-      const userService = module.get<UserService>(UserService);
-      expect(userService).toBeDefined();
-    });
-  });
+  // TODO: Add tests for all endpoints
 });

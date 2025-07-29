@@ -85,6 +85,16 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "moduleNameMapper": {
+      "^@auth/(.*)$": "<rootDir>/auth/$1",
+      "^@database/(.*)$": "<rootDir>/database/$1",
+      "^@remote/(.*)$": "<rootDir>/remote/$1",
+      "^@transfer/(.*)$": "<rootDir>/transfer/$1",
+      "^@user/(.*)$": "<rootDir>/user/$1",
+      "^@public/(.*)$": "<rootDir>/public/$1",
+      "^@views/(.*)$": "<rootDir>/../views/$1"
+    }
+
   }
 }

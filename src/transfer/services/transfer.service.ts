@@ -5,9 +5,9 @@ import { Repository } from 'typeorm';
 import { S3Client, ListBucketsCommand } from '@aws-sdk/client-s3';
 import { S3ClientConfig } from '@aws-sdk/client-s3/dist-types/S3Client';
 
-import { TransferStatus, LogInfo } from '../database/entities/enums';
-import { FileTransfer } from '../database/entities/file-transfer.entity';
-import { TransferLog } from '../database/entities/transfer-log.entity';
+import { TransferStatus, LogInfo } from '@database/entities/enums';
+import { FileTransfer } from '@database/entities/file-transfer.entity';
+import { TransferLog } from '@database/entities/transfer-log.entity';
 
 @Injectable()
 export class TransferService {
