@@ -1,5 +1,4 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { DatabaseModule } from './database.module';
 import { ConfigModule } from '@nestjs/config';
 import { getDataSourceToken } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
@@ -7,6 +6,8 @@ import {
   PostgreSqlContainer,
   StartedPostgreSqlContainer,
 } from '@testcontainers/postgresql';
+
+import { DatabaseModule } from './database.module';
 
 describe('DatabaseModule (with Testcontainers)', () => {
   jest.setTimeout(60000);
@@ -19,7 +20,6 @@ describe('DatabaseModule (with Testcontainers)', () => {
     postgresContainer = await new PostgreSqlContainer(
       'postgres:17-alpine',
     ).start();
-
     // Set env vars for NestJS to use the test DB
     process.env.DB_HOST = 'localhost';
     process.env.DB_PORT = postgresContainer.getPort().toString();
@@ -27,15 +27,14 @@ describe('DatabaseModule (with Testcontainers)', () => {
     process.env.DB_PASS = postgresContainer.getPassword();
     process.env.DB_NAME = postgresContainer.getDatabase();
 
-    // Now create the testing module
+    // Create the testing module
     testingModule = await Test.createTestingModule({
-      imports: [ConfigModule.forRoot({ isGlobal: true }), DatabaseModule],
+      imports: [DatabaseModule, ConfigModule.forRoot({ isGlobal: true })],
     }).compile();
   });
 
   afterAll(async () => {
     await testingModule.close();
-
     await postgresContainer.stop();
   });
 
@@ -52,11 +51,5 @@ describe('DatabaseModule (with Testcontainers)', () => {
       expect(dataSource).toBeDefined();
       expect(dataSource.isInitialized).toBe(true);
     });
-  });
-
-  it('should connect to the database', () => {
-    const dataSource = testingModule.get<DataSource>(getDataSourceToken());
-    expect(dataSource).toBeDefined();
-    expect(dataSource.isInitialized).toBe(true);
   });
 });

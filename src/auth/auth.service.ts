@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { User } from './models/User';
 
 @Injectable()
 export class AuthService {
-  async validateUser(username: string, password: string): Promise<User | null> {
+  /*async validateUser(username: string, password: string): Promise<User | null> {
     // Replace with your user lookup logic
     const user: User = {
       username: 'test',
@@ -19,5 +18,5 @@ export class AuthService {
     }
 
     return null;
-  }
+  }*/
 }

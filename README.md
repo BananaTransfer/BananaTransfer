@@ -83,14 +83,20 @@ npm install
 Create file `.env` with the configuration variables
 ```
 # .env
+# Environment configuration
 PORT=3000
 
+# Application configuration
+DOMAIN=domain.com
+
+# Database configuration
 DB_HOST=localhost
 DB_PORT=5432
 DB_USER=bananatransfer_user
 DB_PASS=bananatransfer_password
 DB_NAME=bananatransfer
 
+# S3 configuration
 S3_ENDPOINT=http://localhost:9000
 S3_REGION=eu-west-1
 S3_CLIENT_ID=minio_user

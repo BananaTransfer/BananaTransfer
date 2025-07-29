@@ -3,14 +3,13 @@ import { ConfigModule } from '@nestjs/config';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 
-import { AppService } from './app.service';
-import { AppController } from './app.controller';
-
 import { AuthModule } from './auth/auth.module';
 import { DatabaseModule } from './database/database.module';
-import { FileModule } from './file/file.module';
+import { RemoteModule } from './remote/remote.module';
 import { TransferModule } from './transfer/transfer.module';
 import { UserModule } from './user/user.module';
+
+import { AppController } from './app.controller';
 
 // The root module that organizes your NestJS application. It imports other modules, controllers, and providers (services).
 
@@ -22,11 +21,11 @@ import { UserModule } from './user/user.module';
     }),
     AuthModule,
     DatabaseModule,
-    FileModule,
+    RemoteModule,
     TransferModule,
     UserModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [],
 })
 export class AppModule {}
