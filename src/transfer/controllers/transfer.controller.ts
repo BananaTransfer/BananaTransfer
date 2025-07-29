@@ -12,10 +12,10 @@ import { Request, Response } from 'express';
 
 import { TransferService } from '@transfer/services/transfer.service';
 import { UserService } from '@user/services/user.service';
-import { LocalAuthGuard } from '@auth/guards/local-auth.guard';
+import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
 
-// all routes in this controller are protected by the LocalAuthGuard and require authentication
-@UseGuards(LocalAuthGuard)
+// all routes in this controller are protected by the JwtAuthGuard and require authentication
+@UseGuards(JwtAuthGuard)
 @Controller('transfer')
 export class TransferController {
   constructor(

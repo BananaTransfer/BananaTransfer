@@ -34,12 +34,21 @@ export class UserService {
     return this.envDomain;
   }
 
-  getUserInfo(): { username: string } {
+  async getUserInfo(username: string): Promise<LocalUser> {
     // TODO: get current user info from db
-    return { username: 'test' };
+    return await this.getLocalUser(username);
   }
 
-  async getUser(username: string): Promise<{ username: string }> {
+  async createUser(userData: {
+    username: string;
+    email: string;
+    passwordHash: string;
+  }): Promise<LocalUser> {
+    const user = this.localUserRepository.create(userData);
+    return await this.localUserRepository.save(user);
+  }
+
+  async getUser(username: string): Promise<User> {
     // TODO: get local or remote user from db
     const parsedUser: { user: string; domain: string; isLocal: boolean } =
       this.parseUsername(username);
@@ -50,17 +59,17 @@ export class UserService {
     }
   }
 
-  private async getLocalUser(username: string): Promise<{ username: string }> {
-    // TODO: get local user from db
+  private async getLocalUser(username: string): Promise<LocalUser> {
+    // get local user from db
     const user = await this.localUserRepository.findOneBy({ username });
     if (!user) {
-      // this will automatically return a 404 in the controller
+      // this will automatically return a 404 in the controller if user is not found
       throw new NotFoundException('Local user not found');
     }
     return user;
   }
 
-  private async getRemoteUser(username: string): Promise<{ username: string }> {
+  private async getRemoteUser(username: string): Promise<RemoteUser> {
     // TODO: get remote user from db
     const user = await this.remoteUserRepository.findOneBy({ username });
     if (!user) {

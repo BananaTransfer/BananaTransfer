@@ -15,13 +15,13 @@ export class LocalUser extends User {
   last_login: Date;
 
   @Column()
-  password_hash_salt: string;
+  password_hash: string;
 
   @Column()
   private_key_encrypted: string;
 
   @Column()
-  private_key_kdf_salt: string;
+  private_key_kdf: string;
 
   @Column()
   public_key: string;

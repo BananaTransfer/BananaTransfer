@@ -7,6 +7,8 @@ block content
         .text-center.mt-5
           img(src="/images/logo.png" alt="BananaTransfer" style="width:80px;")
           h2.mt-3.mb-4 Create an account
+        if error
+          .alert.alert-danger.text-center= error
         form(method="POST" action="/auth/register" class="bg-light p-4 rounded shadow-sm")
           .mb-3
             label.form-label(for="username") Username
@@ -36,3 +38,5 @@ block content
         emailInput.value = usernameInput.value ? usernameInput.value + '@' + domain : '';
       });
     });
+
+    // TODO: CHECK if PW match

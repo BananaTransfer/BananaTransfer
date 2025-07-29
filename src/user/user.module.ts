@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { JwtService } from '@nestjs/jwt';
 
 import { UserController } from '@user/controllers/user.controller';
 import { UserService } from '@user/services/user.service';
@@ -16,7 +17,7 @@ import { TrustedRecipient } from '@database/entities/trusted-recipient.entity';
     TypeOrmModule.forFeature([User, LocalUser, RemoteUser, TrustedRecipient]),
   ],
   controllers: [UserController],
-  providers: [UserService],
+  providers: [UserService, JwtService],
   exports: [UserService],
 })
 export class UserModule {}

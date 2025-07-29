@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 
 import { TransferController } from '@transfer/controllers/transfer.controller';
 import { TransferService } from '@transfer/services/transfer.service';
@@ -31,6 +32,7 @@ describe('TransferController', () => {
       providers: [
         TransferService,
         UserService,
+        JwtService,
         // Mock ConfigService
         {
           provide: ConfigService,

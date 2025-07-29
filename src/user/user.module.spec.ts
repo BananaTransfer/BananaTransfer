@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 
 // import { UserModule } from './user.module';
 import { UserController } from '@user/controllers/user.controller';
@@ -28,6 +29,7 @@ describe('UserModule', () => {
       controllers: [UserController],
       providers: [
         UserService,
+        JwtService,
         // Mock ConfigService
         {
           provide: ConfigService,

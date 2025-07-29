@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 
 import { AuthController } from '../auth.controller';
 import { AuthService } from '@auth/services/auth.service';
@@ -30,6 +31,7 @@ describe('AuthController', () => {
       providers: [
         AuthService,
         UserService,
+        JwtService,
         // Mock ConfigService
         {
           provide: ConfigService,

@@ -1,12 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 
 // import { AuthModule } from '@auth/auth.module';
 import { AuthController } from '@auth/controllers/auth.controller';
 import { AuthService } from '@auth/services/auth.service';
 import { LocalStrategy } from '@auth/strategies/local.strategy';
-import { LocalAuthGuard } from '@auth/guards/local-auth.guard';
+import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
 import { UserService } from '@user/services/user.service';
 
 import { User } from '@database/entities/user.entity';
@@ -24,8 +25,9 @@ describe('AuthModule', () => {
       providers: [
         AuthService,
         LocalStrategy,
-        LocalAuthGuard,
+        JwtAuthGuard,
         UserService,
+        JwtService,
         // Mock ConfigService
         {
           provide: ConfigService,
@@ -77,10 +79,10 @@ describe('AuthModule', () => {
     });
   });
 
-  describe('LocalAuthGuard', () => {
-    it('should provide LocalAuthGuard', () => {
-      const localAuthGuard = module.get<LocalAuthGuard>(LocalAuthGuard);
-      expect(localAuthGuard).toBeDefined();
+  describe('JwtAuthGuard', () => {
+    it('should provide JwtAuthGuard', () => {
+      const jwtAuthGuard = module.get<JwtAuthGuard>(JwtAuthGuard);
+      expect(jwtAuthGuard).toBeDefined();
     });
   });
 });
