@@ -3,11 +3,11 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { UserStatus } from '../database/entities/enums';
-import { User } from '../database/entities/user.entity';
-import { LocalUser } from '../database/entities/local-user.entity';
-import { RemoteUser } from '../database/entities/remote-user.entity';
-import { TrustedRecipient } from '../database/entities/trusted-recipient.entity';
+import { UserStatus } from '@database/entities/enums';
+import { User } from '@database/entities/user.entity';
+import { LocalUser } from '@database/entities/local-user.entity';
+import { RemoteUser } from '@database/entities/remote-user.entity';
+import { TrustedRecipient } from '@database/entities/trusted-recipient.entity';
 
 @Injectable()
 export class UserService {

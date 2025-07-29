@@ -10,9 +10,9 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 
-import { TransferService } from './transfer.service';
-import { UserService } from '../user/user.service';
-import { LocalAuthGuard } from '../auth/local-auth.guard';
+import { TransferService } from '@transfer/services/transfer.service';
+import { UserService } from '@user/services/user.service';
+import { LocalAuthGuard } from '@auth/guards/local-auth.guard';
 
 // all routes in this controller are protected by the LocalAuthGuard and require authentication
 @UseGuards(LocalAuthGuard)

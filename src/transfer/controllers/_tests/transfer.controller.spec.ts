@@ -2,9 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 
-// import { RemoteModule } from './remote.module';
-import { RemoteController } from '@remote/controllers/remote.controller';
-import { RemoteService } from '@remote/services/remote.service';
+import { TransferController } from '@transfer/controllers/transfer.controller';
 import { TransferService } from '@transfer/services/transfer.service';
 import { UserService } from '@user/services/user.service';
 
@@ -15,8 +13,8 @@ import { TrustedRecipient } from '@database/entities/trusted-recipient.entity';
 import { FileTransfer } from '@database/entities/file-transfer.entity';
 import { TransferLog } from '@database/entities/transfer-log.entity';
 
-describe('RemoteModule', () => {
-  let module: TestingModule;
+describe('TransferController', () => {
+  let transferController: TransferController;
 
   const mockRepository = {
     find: jest.fn(),
@@ -26,12 +24,11 @@ describe('RemoteModule', () => {
     save: jest.fn(),
   };
 
-  beforeAll(async () => {
-    module = await Test.createTestingModule({
-      // imports: [/*RemoteModule,*/ ConfigModule.forRoot({ isGlobal: true })], // Commented Since there is no .env file for now
-      controllers: [RemoteController],
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      // imports: [ConfigModule.forRoot({ isGlobal: true })], // Commented Since there is no .env file for now
+      controllers: [TransferController],
       providers: [
-        RemoteService,
         TransferService,
         UserService,
         // Mock ConfigService
@@ -53,44 +50,37 @@ describe('RemoteModule', () => {
         { provide: getRepositoryToken(User), useValue: mockRepository },
         { provide: getRepositoryToken(LocalUser), useValue: mockRepository },
         { provide: getRepositoryToken(RemoteUser), useValue: mockRepository },
-        { provide: getRepositoryToken(TrustedRecipient), useValue: mockRepository },
+        {
+          provide: getRepositoryToken(TrustedRecipient),
+          useValue: mockRepository,
+        },
         { provide: getRepositoryToken(FileTransfer), useValue: mockRepository },
         { provide: getRepositoryToken(TransferLog), useValue: mockRepository },
       ],
     }).compile();
+
+    transferController = module.get<TransferController>(TransferController);
   });
 
-  describe('RemoteModule', () => {
-    it('module should be defined', () => {
-      expect(module).toBeDefined();
+  describe('transferController', () => {
+    it('controller should be defined', () => {
+      expect(transferController).toBeDefined();
     });
   });
 
-  describe('RemoteController', () => {
-    it('should be defined', () => {
-      const remoteController = module.get<RemoteController>(RemoteController);
-      expect(remoteController).toBeDefined();
-    });
-  });
-
-  describe('RemoteService', () => {
-    it('should be defined', () => {
-      const remoteService = module.get<RemoteService>(RemoteService);
-      expect(remoteService).toBeDefined();
-    });
-  });
-
-  describe('TransferService', () => {
-    it('should be defined', () => {
-      const transferService = module.get<TransferService>(TransferService);
+  describe('transferService', () => {
+    it('service should be defined', () => {
+      const transferService = transferController['transferService'];
       expect(transferService).toBeDefined();
     });
   });
 
-  describe('UserService', () => {
-    it('should be defined', () => {
-      const userService = module.get<UserService>(UserService);
+  describe('userService', () => {
+    it('service should be defined', () => {
+      const userService = transferController['userService'];
       expect(userService).toBeDefined();
     });
   });
+
+  // TODO: Add tests for endpoints/methods
 });

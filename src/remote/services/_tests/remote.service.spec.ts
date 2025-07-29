@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { RemoteService } from './remote.service';
+import { RemoteService } from '@remote/services/remote.service';
 
 describe('RemoteService', () => {
   let remoteService: RemoteService;

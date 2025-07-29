@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
-import { TransferService } from './transfer.service';
+import { TransferService } from '@transfer/services/transfer.service';
 import { MinioContainer, StartedMinioContainer } from '@testcontainers/minio';
 
-import { FileTransfer } from '../database/entities/file-transfer.entity';
-import { TransferLog } from '../database/entities/transfer-log.entity';
+import { FileTransfer } from '@database/entities/file-transfer.entity';
+import { TransferLog } from '@database/entities/transfer-log.entity';
 
 describe('TransferService (with Testcontainers MinIO)', () => {
   jest.setTimeout(60000);
