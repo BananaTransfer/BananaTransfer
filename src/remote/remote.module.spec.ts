@@ -53,7 +53,10 @@ describe('RemoteModule', () => {
         { provide: getRepositoryToken(User), useValue: mockRepository },
         { provide: getRepositoryToken(LocalUser), useValue: mockRepository },
         { provide: getRepositoryToken(RemoteUser), useValue: mockRepository },
-        { provide: getRepositoryToken(TrustedRecipient), useValue: mockRepository },
+        {
+          provide: getRepositoryToken(TrustedRecipient),
+          useValue: mockRepository,
+        },
         { provide: getRepositoryToken(FileTransfer), useValue: mockRepository },
         { provide: getRepositoryToken(TransferLog), useValue: mockRepository },
       ],

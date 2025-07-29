@@ -1,9 +1,9 @@
 import {
   Controller,
   Get,
-  Post,
+  //Post,
   Res,
-  Param,
+  //Param,
   Body,
   UseGuards,
 } from '@nestjs/common';
@@ -37,7 +37,7 @@ export class UserController {
   getPrivateKey() {
     return this.userService.getPrivateKey();
   }
-
+  /*
   // endpoint to update private and public key of user
   @Post('set/user-keys')
   setUserKeys(
@@ -64,4 +64,5 @@ export class UserController {
   ): void {
     this.userService.trustPublicKey(username, recipient, publicKey);
   }
+   */
 }
