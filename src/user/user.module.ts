@@ -15,14 +15,7 @@ import { TransferLog } from '@database/entities/transfer-log.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([
-      User,
-      LocalUser,
-      RemoteUser,
-      TrustedRecipient,
-      FileTransfer,
-      TransferLog,
-    ]),
+    TypeOrmModule.forFeature([User, LocalUser, RemoteUser, TrustedRecipient]),
   ],
   controllers: [UserController],
   providers: [UserService],
