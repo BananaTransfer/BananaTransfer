@@ -2,16 +2,16 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 
-// import { AuthModule } from './auth.module';
-import { AuthController } from './auth.controller';
-import { AuthService } from './auth.service';
-import { LocalStrategy } from './local.strategy';
-import { LocalAuthGuard } from './local-auth.guard';
+// import { AuthModule } from '@auth/auth.module';
+import { AuthController } from '@auth/controllers/auth.controller';
+import { AuthService } from '@auth/services/auth.service';
+import { LocalStrategy } from '@auth/strategies/local.strategy';
+import { LocalAuthGuard } from '@auth/guards/local-auth.guard';
 
-import { User } from '../database/entities/user.entity';
-import { LocalUser } from '../database/entities/local-user.entity';
-import { RemoteUser } from '../database/entities/remote-user.entity';
-import { TrustedRecipient } from '../database/entities/trusted-recipient.entity';
+import { User } from '@database/entities/user.entity';
+import { LocalUser } from '@database/entities/local-user.entity';
+import { RemoteUser } from '@database/entities/remote-user.entity';
+import { TrustedRecipient } from '@database/entities/trusted-recipient.entity';
 
 describe('AuthModule', () => {
   let module: TestingModule;

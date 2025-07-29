@@ -1,16 +1,16 @@
 import {
   Controller,
   Get,
-  Post,
+  //Post,
   Res,
-  Param,
+  //Param,
   Body,
   UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
 
-import { UserService } from './user.service';
-import { LocalAuthGuard } from '../auth/local-auth.guard';
+import { UserService } from '@user/services/user.service';
+import { LocalAuthGuard } from '@auth/guards/local-auth.guard';
 
 // all routes in this controller are protected by the LocalAuthGuard and require authentication
 @UseGuards(LocalAuthGuard)
@@ -37,7 +37,7 @@ export class UserController {
   getPrivateKey() {
     return this.userService.getPrivateKey();
   }
-
+  /*
   // endpoint to update private and public key of user
   @Post('set/user-keys')
   setUserKeys(
@@ -64,4 +64,5 @@ export class UserController {
   ): void {
     this.userService.trustPublicKey(username, recipient, publicKey);
   }
+   */
 }

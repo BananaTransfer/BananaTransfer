@@ -2,7 +2,7 @@ import {
   Controller,
   Get,
   Post,
-  //Req,
+  // Req,
   Res,
   Param,
   Body,
@@ -10,9 +10,9 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 
-import { TransferService } from './transfer.service';
-import { UserService } from '../user/user.service';
-import { LocalAuthGuard } from '../auth/local-auth.guard';
+import { TransferService } from '@transfer/services/transfer.service';
+import { UserService } from '@user/services/user.service';
+import { LocalAuthGuard } from '@auth/guards/local-auth.guard';
 
 // all routes in this controller are protected by the LocalAuthGuard and require authentication
 @UseGuards(LocalAuthGuard)
@@ -39,10 +39,11 @@ export class TransferController {
 
   // endpoint to fetch the data of a transfer by ID
   @Get('fetch/:id')
-  fetchTransfer() /*@Param('id') id: number,
+  fetchTransfer(/*
+    @Param('id') id: number,
     @Req() req: Request,
-    @Res() res: Response,*/
-  : void {
+    @Res() res: Response,
+  */): void {
     // const result = this.transferService.fetchTransfer(id, req.user.id);
     // res.download(result);
   }

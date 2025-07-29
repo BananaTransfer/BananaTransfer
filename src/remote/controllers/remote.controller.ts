@@ -1,8 +1,8 @@
 import { Controller, Get, Post, Param, Body } from '@nestjs/common';
 
-import { RemoteService } from './remote.service';
-import { TransferService } from '../transfer/transfer.service';
-import { UserService } from '../user/user.service';
+import { RemoteService } from '@remote/services/remote.service';
+import { TransferService } from '@transfer/services/transfer.service';
+import { UserService } from '@user/services/user.service';
 
 // RemoteController is responsible for handling transfer-related requests from other remote servers
 

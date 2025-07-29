@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 
-// import { TransferModule } from './transfer.module';
 import { TransferController } from '@transfer/controllers/transfer.controller';
 import { TransferService } from '@transfer/services/transfer.service';
 import { UserService } from '@user/services/user.service';
@@ -14,8 +13,8 @@ import { TrustedRecipient } from '@database/entities/trusted-recipient.entity';
 import { FileTransfer } from '@database/entities/file-transfer.entity';
 import { TransferLog } from '@database/entities/transfer-log.entity';
 
-describe('TransferModule', () => {
-  let module: TestingModule;
+describe('TransferController', () => {
+  let transferController: TransferController;
 
   const mockRepository = {
     find: jest.fn(),
@@ -25,9 +24,9 @@ describe('TransferModule', () => {
     save: jest.fn(),
   };
 
-  beforeAll(async () => {
-    module = await Test.createTestingModule({
-      // imports: [/*TransferModule,*/ ConfigModule.forRoot({ isGlobal: true })], // Commented Since there is no .env file for now
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      // imports: [ConfigModule.forRoot({ isGlobal: true })], // Commented Since there is no .env file for now
       controllers: [TransferController],
       providers: [
         TransferService,
@@ -59,26 +58,29 @@ describe('TransferModule', () => {
         { provide: getRepositoryToken(TransferLog), useValue: mockRepository },
       ],
     }).compile();
+
+    transferController = module.get<TransferController>(TransferController);
   });
 
-  describe('TransferModule', () => {
-    it('module should be defined', () => {
-      expect(module).toBeDefined();
-    });
-  });
-
-  describe('TransferController', () => {
-    it('should be defined', () => {
-      const transferController =
-        module.get<TransferController>(TransferController);
+  describe('transferController', () => {
+    it('controller should be defined', () => {
       expect(transferController).toBeDefined();
     });
   });
 
-  describe('TransferService', () => {
-    it('should be defined', () => {
-      const transferService = module.get<TransferService>(TransferService);
+  describe('transferService', () => {
+    it('service should be defined', () => {
+      const transferService = transferController['transferService'];
       expect(transferService).toBeDefined();
     });
   });
+
+  describe('userService', () => {
+    it('service should be defined', () => {
+      const userService = transferController['userService'];
+      expect(userService).toBeDefined();
+    });
+  });
+
+  // TODO: Add tests for endpoints/methods
 });

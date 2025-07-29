@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 
-import { RemoteController } from './remote.controller';
-import { RemoteService } from './remote.service';
-import { TransferService } from '../transfer/transfer.service';
-import { UserService } from '../user/user.service';
+import { RemoteController } from '@remote/controllers/remote.controller';
+import { RemoteService } from '@remote/services/remote.service';
+import { TransferService } from '@transfer/services/transfer.service';
+import { UserService } from '@user/services/user.service';
 
 // This module handles all service related operations that are done by the external servers
 
