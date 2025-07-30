@@ -24,5 +24,6 @@ jobs:
     steps:
       - name: Clone the repository
         uses: actions/checkout@v4
-      - uses: ./.github/actions/code_quality_check
+      - name: Validate the code quality
+        uses: ./.github/actions/code_quality_check
 
