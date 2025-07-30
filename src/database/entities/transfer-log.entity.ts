@@ -17,7 +17,7 @@ export class TransferLog {
   @Column({ type: 'enum', enum: LogInfo })
   info: LogInfo;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamp' })
   created_at: Date;
 
   @ManyToOne(() => User, (user) => user.logs, { nullable: true })

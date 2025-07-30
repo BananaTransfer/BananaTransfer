@@ -13,10 +13,10 @@ export class TrustedRecipient {
   @PrimaryGeneratedColumn('increment')
   id: number;
 
-  @Column()
+  @Column({ type: 'text' })
   public_key_hash: string;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamp' })
   created_at: Date;
 
   @ManyToOne(() => LocalUser, (localUser) => localUser.trustedRecipients)
