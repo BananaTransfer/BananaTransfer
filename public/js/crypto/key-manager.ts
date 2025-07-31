@@ -6,6 +6,7 @@ export interface EncryptedPrivateKey {
   iv: Uint8Array;
 }
 
+// TODO - verify that the exported keys are compatible with the server endpoints
 /**
  * Essential key management operations
  */
@@ -22,12 +23,14 @@ export class KeyManager {
         hash: 'SHA-256',
       },
       true,
-      ['encrypt', 'decrypt'],
+      ['wrapKey', 'unwrapKey'],
     );
   }
 
   /**
    * Derive key from password using PBKDF2
+   * @param {string} password - Password used to derive key
+   * @param {Uint8Array} salt - Salt used to derive key
    */
   static async deriveKeyFromPassword(
     password: string,
@@ -57,6 +60,8 @@ export class KeyManager {
 
   /**
    * Encrypt private key with password
+   * @param {CryptoKey} privateKey - Private key to encrypt before sending to server
+   * @param {password} password - Password used to derive key
    */
   static async encryptPrivateKey(
     privateKey: CryptoKey,
@@ -66,12 +71,9 @@ export class KeyManager {
     const iv = SecurityUtils.generateIV();
 
     const derivedKey = await this.deriveKeyFromPassword(password, salt);
-    const privateKeyData = await crypto.subtle.exportKey(
-      'pkcs8',
-      privateKey,
-    );
+    const privateKeyData = await crypto.subtle.exportKey('pkcs8', privateKey);
 
-    const encryptedData = await crypto.subtle.encrypt(
+    const encryptedData: ArrayBuffer = await crypto.subtle.encrypt(
       { name: 'AES-GCM', iv },
       derivedKey,
       privateKeyData,
@@ -84,20 +86,22 @@ export class KeyManager {
 
   /**
    * Decrypt private key with password
+   * @param encryptedData - Encrypted private keys with IV and Salt
+   * @param password
    */
   static async decryptPrivateKey(
-    encrypted: EncryptedPrivateKey,
+    encryptedData: EncryptedPrivateKey,
     password: string,
   ): Promise<CryptoKey> {
     const derivedKey = await this.deriveKeyFromPassword(
       password,
-      encrypted.salt,
+      encryptedData.salt,
     );
 
     const decryptedData = await crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv: encrypted.iv },
+      { name: 'AES-GCM', iv: encryptedData.iv },
       derivedKey,
-      encrypted.encryptedData,
+      encryptedData.encryptedData,
     );
 
     const privateKey = await crypto.subtle.importKey(
@@ -105,7 +109,7 @@ export class KeyManager {
       decryptedData,
       { name: 'RSA-OAEP', hash: 'SHA-256' },
       true,
-      ['decrypt'],
+      ['unwrapKey'],
     );
 
     SecurityUtils.clearSensitiveData(new Uint8Array(decryptedData));
@@ -113,5 +117,37 @@ export class KeyManager {
     return privateKey;
   }
 
-  // TODO - Export/Import keypair with Wrapkey
+  /**
+   * Encrypt AES key with RSA public key (Key Exchange)
+   * @param aesKey - AES Key to encrypt (wrap) before sending it over the wire
+   * @param publicKey - Key used to encrypt (wrap) AES key
+   */
+  static async wrapAESKey(
+    aesKey: CryptoKey,
+    publicKey: CryptoKey,
+  ): Promise<ArrayBuffer> {
+    return await crypto.subtle.wrapKey('raw', aesKey, publicKey, {
+      name: 'RSA-OAEP',
+    });
+  }
+
+  /**
+   * Decrypt AES key with RSA private key (Key Exchange)
+   * @param wrappedKey - AES Key to decrypt (unwrap) before sending it over the wire
+   * @param privateKey - Key used to decrypt (unwrap) AES key
+   */
+  static async unwrapAESKey(
+    wrappedKey: ArrayBuffer,
+    privateKey: CryptoKey,
+  ): Promise<CryptoKey> {
+    return await crypto.subtle.unwrapKey(
+      'raw',
+      wrappedKey,
+      privateKey,
+      { name: 'RSA-OAEP' },
+      { name: 'AES-GCM', length: SecurityUtils.AES_LENGTH },
+      true,
+      ['encrypt', 'decrypt'],
+    );
+  }
 }

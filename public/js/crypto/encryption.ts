@@ -1,12 +1,22 @@
 import { SecurityUtils } from './security-utils';
 
-export interface EncryptedData {
-  ciphertext: ArrayBuffer;
+export interface StreamChunk {
+  encryptedData: ArrayBuffer;
   iv: Uint8Array;
+  chunkIndex: number;
+  isLastChunk: boolean;
+}
+
+export interface StreamingEncryptor {
+  processChunk(
+    chunk: Uint8Array,
+    isLastChunk?: boolean,
+  ): Promise<StreamChunk | null>;
+  finalize(): Promise<{ totalChunks: number; chunkSize: number }>;
 }
 
 /**
- * Essential file encryption using AES256-GCM
+ * Parallel streaming file encryption using AES256-GCM
  */
 export class FileEncryption {
   /**
@@ -15,61 +25,183 @@ export class FileEncryption {
   static async generateAESKey(): Promise<CryptoKey> {
     return await crypto.subtle.generateKey(
       { name: 'AES-GCM', length: SecurityUtils.AES_LENGTH },
-      false,
+      true,
       ['encrypt', 'decrypt'],
     );
   }
 
   /**
-   * Encrypt data with AES-GCM
+   * Create streaming encryptor for parallel upload + encryption
+   * @param {CryptoKey} key - AES key for file encryption
    */
-  static async encryptData(
-    data: ArrayBuffer,
-    key: CryptoKey,
-  ): Promise<EncryptedData> {
-    const iv = SecurityUtils.generateIV();
+  static createStreamingEncryptor(key: CryptoKey): StreamingEncryptor {
+    return new ParallelStreamingEncryptor(key);
+  }
 
-    const ciphertext = await crypto.subtle.encrypt(
-      { name: 'AES-GCM', iv },
-      key,
-      data,
+  /**
+   * Decrypt encrypted chunks back to original file data
+   * @param {StreamChunk[]} encryptedChunks - Received encrypted chunks to decrypt
+   * @param {CryptoKey} key - AES key for file encryption
+   */
+  static async decryptChunks(
+    encryptedChunks: StreamChunk[],
+    key: CryptoKey,
+  ): Promise<Uint8Array> {
+    // Validate input
+    if (!encryptedChunks || encryptedChunks.length === 0) {
+      throw new Error('No encrypted chunks provided');
+    }
+
+    // Sort chunks by index to ensure correct order
+    const sortedChunks = [...encryptedChunks].sort(
+      (a, b) => a.chunkIndex - b.chunkIndex,
     );
 
-    return { ciphertext, iv };
-  }
+    // Verify chunk completeness and integrity
+    const lastChunk = sortedChunks.find((chunk) => chunk.isLastChunk);
+    if (!lastChunk) {
+      throw new Error('No last chunk found, file may be incomplete');
+    }
 
-  /**
-   * Decrypt data with AES-GCM
-   */
-  static async decryptData(
-    encryptedData: EncryptedData,
-    key: CryptoKey,
-  ): Promise<ArrayBuffer> {
-    return await crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv: encryptedData.iv },
-      key,
-      encryptedData.ciphertext,
+    const expectedChunkCount = lastChunk.chunkIndex + 1;
+    if (sortedChunks.length !== expectedChunkCount) {
+      throw new Error(
+        `Missing chunks: received ${sortedChunks.length}, expected ${expectedChunkCount}`,
+      );
+    }
+
+    // Verify sequential chunk indices
+    for (let i = 0; i < expectedChunkCount; i++) {
+      if (sortedChunks[i].chunkIndex !== i) {
+        throw new Error(`Missing chunk with index ${i}`);
+      }
+    }
+
+    const decryptedChunks: Uint8Array[] = [];
+
+    // Decrypt each chunk atomically
+    for (const chunk of sortedChunks) {
+      try {
+        const decryptedData = await crypto.subtle.decrypt(
+          { name: 'AES-GCM', iv: chunk.iv },
+          key,
+          chunk.encryptedData,
+        );
+
+        decryptedChunks.push(new Uint8Array(decryptedData));
+      } catch (error) {
+        throw new Error(
+          `Failed to decrypt chunk ${chunk.chunkIndex}: ${error}`,
+        );
+      }
+    }
+
+    // Combine all decrypted chunks
+    const totalLength = decryptedChunks.reduce(
+      (sum, chunk) => sum + chunk.length,
+      0,
     );
+    const result = new Uint8Array(totalLength);
+
+    let offset = 0;
+    for (const chunk of decryptedChunks) {
+      result.set(chunk, offset);
+      offset += chunk.length;
+
+      // Clear sensitive data
+      SecurityUtils.clearSensitiveData(chunk);
+    }
+
+    return result;
+  }
+}
+
+/**
+ * Parallel streaming encryptor that processes chunks as they arrive
+ */
+class ParallelStreamingEncryptor implements StreamingEncryptor {
+  private readonly key: CryptoKey;
+  private buffer: Uint8Array;
+  private chunkIndex: number;
+  private readonly chunkSize: number;
+
+  constructor(key: CryptoKey) {
+    this.key = key;
+    this.buffer = new Uint8Array(0);
+    this.chunkIndex = 0;
+    this.chunkSize = SecurityUtils.CHUNK_SIZE;
   }
 
   /**
-   * Encrypt file
+   * Process incoming data chunk and encrypt when buffer is full
+   * @param chunk - Raw data chunk from upload stream
+   * @param isLastChunk - Whether this is the final chunk
    */
-  static async encryptFile(file: File, key: CryptoKey): Promise<EncryptedData> {
-    const fileBuffer = await file.arrayBuffer();
-    return await this.encryptData(fileBuffer, key);
+  async processChunk(
+    chunk: Uint8Array,
+    isLastChunk = false,
+  ): Promise<StreamChunk | null> {
+    // Append new data to buffer
+    const newBuffer = new Uint8Array(this.buffer.length + chunk.length);
+    newBuffer.set(this.buffer);
+    newBuffer.set(chunk, this.buffer.length);
+    this.buffer = newBuffer;
+
+    // Process complete chunks
+    if (
+      this.buffer.length >= this.chunkSize ||
+      (isLastChunk && this.buffer.length > 0)
+    ) {
+      const dataToEncrypt = isLastChunk
+        ? this.buffer
+        : this.buffer.slice(0, this.chunkSize);
+
+      // Generate unique IV for this chunk
+      const iv = SecurityUtils.generateIV();
+
+      // Encrypt chunk
+      const encryptedData = await crypto.subtle.encrypt(
+        { name: 'AES-GCM', iv },
+        this.key,
+        dataToEncrypt,
+      );
+
+      // Create result
+      const result: StreamChunk = {
+        encryptedData,
+        iv,
+        chunkIndex: this.chunkIndex++,
+        isLastChunk: isLastChunk && this.buffer.length <= this.chunkSize,
+      };
+
+      // Update buffer (remove processed data)
+      if (!isLastChunk) {
+        this.buffer = this.buffer.slice(this.chunkSize);
+      } else {
+        this.buffer = new Uint8Array(0);
+      }
+
+      // Clear sensitive data
+      SecurityUtils.clearSensitiveData(dataToEncrypt);
+
+      return result;
+    }
+
+    return null; // Not enough data to process yet
   }
 
   /**
-   * Decrypt file
+   * Finalize encryption and return metadata
    */
-  static async decryptFile(
-    encryptedData: EncryptedData,
-    key: CryptoKey,
-    originalName: string,
-    mimeType: string,
-  ): Promise<File> {
-    const decryptedBuffer = await this.decryptData(encryptedData, key);
-    return new File([decryptedBuffer], originalName, { type: mimeType });
+  async finalize(): Promise<{ totalChunks: number; chunkSize: number }> {
+    // Process any remaining data
+    if (this.buffer.length > 0) {
+      await this.processChunk(new Uint8Array(0), true);
+    }
+
+    return {
+      totalChunks: this.chunkIndex,
+      chunkSize: this.chunkSize,
+    };
   }
 }
