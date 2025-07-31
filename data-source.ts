@@ -7,8 +7,6 @@ import { TrustedRecipient } from './src/database/entities/trusted-recipient.enti
 import { FileTransfer } from './src/database/entities/file-transfer.entity';
 import { TransferLog } from './src/database/entities/transfer-log.entity';
 
-console.log('DB_HOST:', process.env.DB_HOST);
-
 export default new DataSource({
   type: 'postgres',
   host: process.env.DB_HOST,

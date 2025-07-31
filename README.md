@@ -157,7 +157,7 @@ npm run test:cov
 npx tsx src/database/connection-checker.ts
 
 # generate a new migration
-npm run migration:generate <name>
+npm run migration:generate src/database/migrations/<name>
 
 # run migrations scripts
 # (this will run all the ones that haven't been run yet)
