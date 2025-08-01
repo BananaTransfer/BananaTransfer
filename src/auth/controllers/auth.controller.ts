@@ -4,8 +4,8 @@ import {
   Post,
   Req,
   Res,
-  Body,
   Render,
+  Body,
   Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
@@ -30,13 +30,18 @@ export class AuthController {
   @Render('auth/login')
   renderLogin(@Req() req: CsrfRequest) {
     const domain = this.userService.getDomain();
-    return { domain, csrfToken: req.csrfToken() };
+    const csrfToken = req.csrfToken();
+    this.logger.log(`CSRF Token: ${csrfToken}`);
+    this.logger.log(`Domain: ${domain}`);
+    return { domain, csrfToken: csrfToken };
   }
 
   @Get('register')
   @Render('auth/register')
   renderRegister(@Req() req: CsrfRequest) {
     const domain = this.userService.getDomain();
+    this.logger.log(`Rendering register page for domain: ${domain}`);
+    this.logger.log(`CSRF Token: ${req.csrfToken()}`);
     return { domain, csrfToken: req.csrfToken() };
   }
 
@@ -49,7 +54,12 @@ export class AuthController {
     try {
       const user = await this.authService.validateUser(username, password);
       const jwt = await this.authService.login(user);
-      res.cookie('jwt', jwt.access_token, { httpOnly: true, secure: true });
+      res.cookie('jwt', jwt.access_token, {
+        httpOnly: true,
+        sameSite: 'strict',
+        // secure prevents the cookie to be sent in non https requests, this needs to be disabled in dev
+        secure: process.env.NODE_ENV !== 'dev',
+      });
       return res.redirect('/transfer');
     } catch (err) {
       this.logger.error(err);
@@ -76,7 +86,12 @@ export class AuthController {
         password,
       );
       const jwt = await this.authService.login(user);
-      res.cookie('jwt', jwt.access_token, { httpOnly: true, secure: true });
+      res.cookie('jwt', jwt.access_token, {
+        httpOnly: true,
+        sameSite: 'strict',
+        // secure prevents the cookie to be sent in non https requests, this needs to be disabled in dev
+        secure: process.env.NODE_ENV !== 'dev',
+      });
       return res.redirect('/transfer');
     } catch (err) {
       this.logger.error(err);

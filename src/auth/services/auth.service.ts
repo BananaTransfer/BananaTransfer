@@ -51,7 +51,8 @@ export class AuthService {
     const user = await this.userService.createUser({
       username,
       email,
-      passwordHash: hashedPassword,
+      password_hash: hashedPassword,
+      status: UserStatus.ACTIVE,
     });
     return user;
   }

@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-//import { UserStatus } from '@database/entities/enums';
+import { UserStatus } from '@database/entities/enums';
 import { User } from '@database/entities/user.entity';
 import { LocalUser } from '@database/entities/local-user.entity';
 import { RemoteUser } from '@database/entities/remote-user.entity';
@@ -42,7 +42,8 @@ export class UserService {
   async createUser(userData: {
     username: string;
     email: string;
-    passwordHash: string;
+    password_hash: string;
+    status: UserStatus;
   }): Promise<LocalUser> {
     const user = this.localUserRepository.create(userData);
     return await this.localUserRepository.save(user);

@@ -2,7 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import * as cookieParser from 'cookie-parser';
-import csurf from 'csurf';
+import * as csurf from 'csurf';
+import * as express from 'express';
 
 import { AppModule } from './app.module';
 
@@ -14,6 +15,7 @@ async function bootstrap() {
   app.useStaticAssets(join(__dirname, 'public')); // serve static assets (bootstrap CSS)
   app.setBaseViewsDir(join(__dirname, '../views')); // set the base directory for views templates
   app.setViewEngine('pug'); // set the view engine to Pug
+  app.use(express.urlencoded({ extended: true })); // parse URL-encoded bodies (as sent by HTML forms)
   app.use(cookieParser()); // parse cookies from the request
   app.use(
     // Enable CSRF protection module
@@ -21,9 +23,10 @@ async function bootstrap() {
       cookie: {
         httpOnly: true,
         sameSite: 'strict',
-        secure: true,
+        // secure prevents the cookie to be sent in non https requests, this needs to be disabled in dev
+        secure: process.env.NODE_ENV !== 'dev',
       },
-    }),
+    }) as express.RequestHandler,
   );
 
   await app.listen(process.env.PORT ?? 3000);

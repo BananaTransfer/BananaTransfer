@@ -4,6 +4,7 @@ import {
   Post,
   // Req,
   Res,
+  Render,
   Param,
   Body,
   UseGuards,
@@ -25,13 +26,16 @@ export class TransferController {
 
   // endpoint to get transfers list page
   @Get('')
+  @Render('transfer/list')
   renderTransfersList(/*@Req() req: Request, @Res() res: Response*/): void {
     // const transfers = this.transferService.getTransferList(req.user.id;
-    //res.render('list', { transfers });
+    // return { transfers };
+    return;
   }
 
   // endpoint to get new transfer page
   @Get('new')
+  @Render('transfer/new')
   renderNewTransfer(/*@Req() req: Request, @Res() res: Response*/): void {
     // const knownRecipients = this.userService.getKnownRecipients(req.user.id);
     //res.render('new', { knownRecipients });
