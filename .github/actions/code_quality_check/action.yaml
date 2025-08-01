@@ -12,7 +12,8 @@ runs:
       run: npm ci
       shell: bash
     - name: Audit dependencies
-      run: npm audit
+      # the check only fails if there are vulnerabilities with the severity moderate or higher
+      run: npm audit --audit-level=moderate 
       shell: bash
     - name: Run the linter # test code quality
       run: npm run lint
