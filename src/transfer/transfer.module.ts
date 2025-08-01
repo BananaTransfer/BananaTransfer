@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { JwtService } from '@nestjs/jwt';
 
+import { AuthModule } from '@auth/auth.module';
 import { UserModule } from '@user/user.module';
 
 import { TransferController } from '@transfer/controllers/transfer.controller';
@@ -13,9 +13,13 @@ import { TransferLog } from '@database/entities/transfer-log.entity';
 // This module handles all file sharing related operations that are done by the authenticated users
 
 @Module({
-  imports: [UserModule, TypeOrmModule.forFeature([FileTransfer, TransferLog])],
+  imports: [
+    AuthModule,
+    UserModule,
+    TypeOrmModule.forFeature([FileTransfer, TransferLog]),
+  ],
   controllers: [TransferController],
-  providers: [TransferService, JwtService],
+  providers: [TransferService],
   exports: [TransferService],
 })
 export class TransferModule {}
