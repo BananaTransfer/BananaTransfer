@@ -10,8 +10,8 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  app.useStaticAssets(join(__dirname, '..', 'public')); // serve static assets (bootstrap CSS)
-  app.setBaseViewsDir(join(__dirname, '..', 'views'));
+  app.useStaticAssets(join(process.cwd(), 'public')); // serve static assets (bootstrap CSS)
+  app.setBaseViewsDir(join(process.cwd(), 'views'));
   app.setViewEngine('pug');
   app.use(cookieParser());
 
