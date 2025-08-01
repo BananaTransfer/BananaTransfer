@@ -15,10 +15,10 @@ export class User {
   @PrimaryGeneratedColumn('increment')
   id: number;
 
-  @Column()
+  @Column({ type: 'text' })
   username: string;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamp' })
   created_at: Date;
 
   @OneToMany(() => FileTransfer, (ft) => ft.sender)
