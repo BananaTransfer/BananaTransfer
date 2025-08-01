@@ -1,11 +1,11 @@
 import 'dotenv/config';
 import { DataSource } from 'typeorm';
-import { User } from './src/database/entities/user.entity';
-import { LocalUser } from './src/database/entities/local-user.entity';
-import { RemoteUser } from './src/database/entities/remote-user.entity';
-import { TrustedRecipient } from './src/database/entities/trusted-recipient.entity';
-import { FileTransfer } from './src/database/entities/file-transfer.entity';
-import { TransferLog } from './src/database/entities/transfer-log.entity';
+import { User } from './entities/user.entity';
+import { LocalUser } from './entities/local-user.entity';
+import { RemoteUser } from './entities/remote-user.entity';
+import { TrustedRecipient } from './entities/trusted-recipient.entity';
+import { FileTransfer } from './entities/file-transfer.entity';
+import { TransferLog } from './entities/transfer-log.entity';
 
 export default new DataSource({
   type: 'postgres',
