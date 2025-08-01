@@ -10,6 +10,7 @@ block content
         if error
           .alert.alert-danger.text-center= error
         form(method="POST" action="/auth/login" class="bg-light p-4 rounded shadow-sm")
+          input(type="hidden" name="_csrf" value=csrfToken)
           .mb-3
             label.form-label(for="username") Username
             .input-group

@@ -14,4 +14,6 @@ async function testConnection() {
   }
 }
 
-testConnection();
+testConnection().catch((err) => {
+  console.error('Unhandled error in testConnection:', err);
+});

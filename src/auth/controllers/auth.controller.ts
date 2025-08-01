@@ -10,6 +10,10 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 
+interface CsrfRequest extends Request {
+  csrfToken: () => string;
+}
+
 import { AuthService } from '@auth/services/auth.service';
 import { UserService } from '@user/services/user.service';
 
@@ -24,16 +28,16 @@ export class AuthController {
 
   @Get('login')
   @Render('auth/login')
-  renderLogin() {
+  renderLogin(@Req() req: CsrfRequest) {
     const domain = this.userService.getDomain();
-    return { domain };
+    return { domain, csrfToken: req.csrfToken() };
   }
 
   @Get('register')
   @Render('auth/register')
-  renderRegister() {
+  renderRegister(@Req() req: CsrfRequest) {
     const domain = this.userService.getDomain();
-    return { domain };
+    return { domain, csrfToken: req.csrfToken() };
   }
 
   @Post('login')
