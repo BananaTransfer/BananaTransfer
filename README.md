@@ -118,6 +118,12 @@ Start the local infrastructure with:
 docker compose up 
 ```
 
+Once the DB is started, you need to execute the migration with
+
+```bash
+npm run migration:run
+```
+
 Then you can run the app in watch mode with
 
 ```bash
