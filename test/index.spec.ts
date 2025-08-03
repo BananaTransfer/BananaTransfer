@@ -1,5 +1,5 @@
 import { expect, Page } from '@playwright/test';
-import { test } from './config';
+import { test } from '@test/config';
 
 async function testLinkAvailable(
   page: Page,

@@ -13,7 +13,7 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.useStaticAssets(join(__dirname, 'public')); // serve static assets (bootstrap CSS)
-  app.setBaseViewsDir(join(__dirname, '../views')); // set the base directory for views templates
+  app.setBaseViewsDir(join(__dirname, '..', 'views')); // set the base directory for views templates
   app.setViewEngine('pug'); // set the view engine to Pug
   app.use(express.urlencoded({ extended: true })); // parse URL-encoded bodies (as sent by HTML forms)
   app.use(cookieParser()); // parse cookies from the request

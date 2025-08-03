@@ -108,7 +108,8 @@
       "^@transfer/(.*)$": "<rootDir>/transfer/$1",
       "^@user/(.*)$": "<rootDir>/user/$1",
       "^@public/(.*)$": "<rootDir>/public/$1",
-      "^@views/(.*)$": "<rootDir>/../views/$1"
+      "^@views/(.*)$": "<rootDir>/../views/$1",
+      "^@test/(.*)$": "<rootDir>/../test/$1"
     }
   }
 }

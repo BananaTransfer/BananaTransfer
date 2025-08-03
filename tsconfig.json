@@ -19,6 +19,7 @@
       "@user/*": ["src/user/*"],
       "@public/*": ["src/public/*"],
       "@views/*": ["views/*"],
+      "@test/*": ["test/*"]
     },
     "incremental": true,
     "skipLibCheck": true,
