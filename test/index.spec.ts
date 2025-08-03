@@ -17,12 +17,10 @@ async function testLinkAvailable(
   await expect(page).toHaveURL(expectedUrl);
 }
 
-test.describe('home page', () => {
-  test('has login link', async ({ page, loginPage }) => {
-    await testLinkAvailable(page, 'login-link', loginPage.URL);
-  });
+test('has login link', async ({ page, loginPage }) => {
+  await testLinkAvailable(page, 'login-link', loginPage.URL);
+});
 
-  test('has register link', async ({ page, registerPage }) => {
-    await testLinkAvailable(page, 'register-link', registerPage.URL);
-  });
-})
+test('has register link', async ({ page, registerPage }) => {
+  await testLinkAvailable(page, 'register-link', registerPage.URL);
+});

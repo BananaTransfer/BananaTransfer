@@ -1,7 +1,7 @@
 import { Page } from '@playwright/test';
 import CommonPage from '@test/fixtures/CommonPage';
 
-export interface RegisterDataModel {
+export interface RegisterParams {
   username: string;
   // will be set to username@domain if not set
   email?: string;
@@ -35,13 +35,13 @@ export default class RegisterPage extends CommonPage {
     await this.PAGE.getByTestId('register-submit-btn').click();
   }
 
-  public async register(data: RegisterDataModel) {
-    await this.setUsername(data.username);
-    if (data.email) {
-      await this.setEmail(data.email);
+  public async register(params: RegisterParams) {
+    await this.setUsername(params.username);
+    if (params.email) {
+      await this.setEmail(params.email);
     }
-    await this.setFirstPassword(data.password);
-    await this.setSecondPassword(data.confirmPassword || data.password);
+    await this.setFirstPassword(params.password);
+    await this.setSecondPassword(params.confirmPassword || params.password);
     await this.submit();
   }
 }
