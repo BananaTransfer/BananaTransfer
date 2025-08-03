@@ -63,6 +63,7 @@ jobs:
           DOCKER_REPO_TOKEN: ${{ secrets.DOCKER_REPO_TOKEN }}
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASS: ${{ secrets.DB_PASS }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
   deploy_ansermoz:
     needs: build_and_push_docker_image
     runs-on: ubuntu-latest
@@ -88,3 +89,4 @@ jobs:
           DOCKER_REPO_TOKEN: ${{ secrets.DOCKER_REPO_TOKEN }}
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASS: ${{ secrets.DB_PASS }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}

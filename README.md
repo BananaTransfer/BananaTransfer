@@ -110,6 +110,8 @@ S3_REGION=eu-west-1
 S3_CLIENT_ID=minio_user
 S3_CLIENT_SECRET=minio_password
 S3_BUCKET=bananatransfer
+
+JWT_SECRET=DO_NOT_USE_THIS_VALUE_IN_PRODUCTION_USE_256BIT_KEY
 ```
 
 Start the local infrastructure with: 

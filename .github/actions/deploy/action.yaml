@@ -33,6 +33,9 @@ inputs:
   DB_PASS:
     description: 'Password of the postgresql user'
     required: true
+  JWT_SECRET:
+    description: 'AES 256bit key used to sign JWT token'
+    required: true
 runs:
   using: "composite"
   steps:
@@ -86,6 +89,7 @@ runs:
           -e "db_user=${{ inputs.DB_USER }}" \
           -e "db_pass=${{ inputs.DB_PASS }}" \
           -e "s3_bucket=bananatransfer-${{ inputs.ENVIRONMENT_NAME }}-s3-bucket" \
+          -e "jwt_secret=${{ inputs.JWT_SECRET }}" \
           -u admin
       working-directory: infra/ansible
       shell: bash
