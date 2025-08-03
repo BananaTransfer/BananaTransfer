@@ -8,22 +8,22 @@ export class LocalUser extends User {
   @Column({ type: 'enum', enum: UserStatus })
   status: UserStatus;
 
-  @Column()
+  @Column({ type: 'text' })
   email: string;
 
   @Column({ type: 'timestamp', nullable: true })
   last_login: Date;
 
-  @Column()
+  @Column({ type: 'text' })
   password_hash_salt: string;
 
-  @Column()
+  @Column({ type: 'text' })
   private_key_encrypted: string;
 
-  @Column()
+  @Column({ type: 'text' })
   private_key_kdf_salt: string;
 
-  @Column()
+  @Column({ type: 'text' })
   public_key: string;
 
   @Column({ type: 'timestamp', nullable: true })

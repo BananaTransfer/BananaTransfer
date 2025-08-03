@@ -15,25 +15,25 @@ export class FileTransfer {
   @PrimaryGeneratedColumn('increment')
   id: number;
 
-  @Column()
+  @Column({ type: 'text' })
   symmetric_key_encrypted: string;
 
-  @Column()
+  @Column({ type: 'text' })
   signature_sender: string;
 
   @Column({ type: 'enum', enum: TransferStatus })
   status: TransferStatus;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ type: 'timestamp' })
   created_at: Date;
 
-  @Column()
+  @Column({ type: 'text' })
   filename: string;
 
-  @Column()
+  @Column({ type: 'text' })
   subject: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   s3_path: string;
 
   @ManyToOne(() => User, (user) => user.sentTransfers)

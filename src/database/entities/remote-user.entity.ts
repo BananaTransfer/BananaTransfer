@@ -3,6 +3,6 @@ import { User } from './user.entity';
 
 @ChildEntity()
 export class RemoteUser extends User {
-  @Column()
+  @Column({ type: 'text' })
   domain: string;
 }
