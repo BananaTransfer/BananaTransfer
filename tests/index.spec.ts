@@ -1,4 +1,5 @@
-import { test, expect, Page } from '@playwright/test';
+import { expect, Page } from '@playwright/test';
+import { test } from './config';
 
 async function testLinkAvailable(
   page: Page,
@@ -16,10 +17,12 @@ async function testLinkAvailable(
   await expect(page).toHaveURL(expectedUrl);
 }
 
-test('has login link', async ({ page }) => {
-  await testLinkAvailable(page, 'login-link', '/auth/login');
-});
+test.describe('home page', () => {
+  test('has login link', async ({ page, loginPage }) => {
+    await testLinkAvailable(page, 'login-link', loginPage.URL);
+  });
 
-test('has register link', async ({ page }) => {
-  await testLinkAvailable(page, 'register-link', '/auth/register');
-});
+  test('has register link', async ({ page, registerPage }) => {
+    await testLinkAvailable(page, 'register-link', registerPage.URL);
+  });
+})
