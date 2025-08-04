@@ -129,6 +129,7 @@ Then you can run the app in watch mode with
 ```bash
 npm run start:dev
 ```
+The app will be available on: http://localhost:3000
 
 ## Compile and run the project
 
