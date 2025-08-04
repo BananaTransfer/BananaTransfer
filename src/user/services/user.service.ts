@@ -23,9 +23,9 @@ export class UserService {
     @InjectRepository(TrustedRecipient)
     private trustedRecipientRepository: Repository<TrustedRecipient>,
   ) {
-    const envDomain = this.configService.get<string>('DOMAIN');
+    const envDomain = this.configService.get<string>('DOMAIN') || 'default.dom';
     if (!envDomain) {
-      throw new Error('Domain is not set in environment variables');
+      // throw new Error('Domain is not set in environment variables');
     }
     this.envDomain = envDomain;
   }
