@@ -39,6 +39,10 @@ inputs:
   JWT_SECRET:
     description: 'AES 256bit key used to sign JWT token'
     required: true
+  DOCKER_IMAGE_TAG:
+    description: 'TAG to select which bananatransfer docker image to use'
+    required: true
+    default: latest
 runs:
   using: "composite"
   steps:
@@ -95,6 +99,7 @@ runs:
           -e "external_hostname=${{ inputs.EXTERNAL_HOSTNAME }}" \
           -e "domain=${{ inputs.DOMAIN }}" \
           -e "jwt_secret=${{ inputs.JWT_SECRET }}" \
+          -e "docker_image_tag=${{ inputs.DOCKER_IMAGE_TAG }}" \
           -u admin
       working-directory: infra/ansible
       shell: bash

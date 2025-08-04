@@ -1,7 +1,7 @@
 name: Docker Build and Publish
 on:
   push:
-    branches: ["main"]
+    # TODO remove branches: ["main"]
     paths-ignore:
       - "documents/**"
 concurrency:
@@ -10,6 +10,7 @@ concurrency:
 jobs:
   build_and_push_docker_image:
     runs-on: ubuntu-latest
+    environment: e2e
     permissions:
       contents: read
       packages: write
@@ -24,7 +25,57 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Define Docker image tags
+      - name: Define Docker image for integration test
+        id: e2e_meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: type=raw,value=e2e
+      - name: Build and push integration test docker image
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+      - name: Deploy integration test environment A
+        uses: ./.github/actions/deploy
+        with:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          ENVIRONMENT_NAME: e2e_A
+          SSH_PUB_KEY: ${{ vars.SSH_PUB_KEY }}
+          SSH_PRIV_KEY: ${{ secrets.SSH_PRIV_KEY }}
+          INTERNAL_HOSTNAME: A.${{ vars.BASE_HOSTNAME }}
+          EXTERNAL_HOSTNAME: A.${{ vars.BASE_HOSTNAME }}
+          DOCKER_REPO_USER: ${{ secrets.DOCKER_REPO_USER }}
+          DOCKER_REPO_TOKEN: ${{ secrets.DOCKER_REPO_TOKEN }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASS: ${{ secrets.DB_PASS }}
+          DOMAIN: A.${{ vars.BASE_HOSTNAME }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          DOCKER_IMAGE_TAG: e2e
+      # NPM + dep installed in the code quality check action
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+      - name: Run Playwright tests
+        run: npm run e2e
+      # Upload playwright test artifacts for review on github servers
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+      # terraform env configured in the deploy action
+      - name: Destroy the integration test environment A
+        if: ${{ !cancelled() }} # run even in case of failure, but not if cancelled
+        run: | 
+          terraform destroy -auto-approve
+        working-directory: infra/terraform
+        shell: bash
+      - name: Define Docker image tags for latest
         id: meta
         uses: docker/metadata-action@v5
         with:
