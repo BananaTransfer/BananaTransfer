@@ -55,12 +55,12 @@ runs:
     - name: Install Terraform
       uses: hashicorp/setup-terraform@v3
     - name: Initialise terraform
-      run: terraform init -backend-config="key=${{ inputs.ENVIRONMENT_NAME }}"
+      run: terraform init -backend-config="key=${{ inputs.ENVIRONMENT_NAME }}" -input=false
       working-directory: infra/terraform
       shell: bash
     - name: Create the AWS infrastructure
       run: |
-        terraform apply -auto-approve \
+        terraform apply -auto-approve -input=false \
           -var="ssh_pub_key=${{ inputs.SSH_PUB_KEY }}" \
           -var="environment_name=${{ inputs.ENVIRONMENT_NAME }}" \
           -var="hostname=${{ inputs.INTERNAL_HOSTNAME }}"
