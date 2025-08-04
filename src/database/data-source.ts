@@ -22,5 +22,5 @@ export default new DataSource({
     FileTransfer,
     TransferLog,
   ],
-  migrations: ['src/database/migrations/*.ts'],
+  migrations: [process.env.DB_MIGRATION_PATH || 'src/database/migrations/*.ts'],
 });

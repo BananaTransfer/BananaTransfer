@@ -15,11 +15,14 @@ inputs:
   SSH_PRIV_KEY:
     description: 'SSH private key associated to the SSH_PUB_KEY'
     required: true
-  INTERNAL_DOMAIN:
+  INTERNAL_HOSTNAME:
     description: 'DNS record to be created on a domain managed by AWS route 53. Will be associated to the server IP'
     required: true
-  EXTERNAL_DOMAIN:
-    description: 'DNS record that will be used by user to access the server. Either a CNAME to the INTERNAL_DOMAIN or the INTERNAL_DOMAIN itself'
+  EXTERNAL_HOSTNAME:
+    description: 'DNS record that will be used by user to access the server. Either a CNAME to the INTERNAL_HOSTNAME or the INTERNAL_HOSTNAME itself'
+    required: true
+  DOMAIN:
+    description: 'Domain name used and managed by the bananatransfer server'
     required: true
   DOCKER_REPO_USER:
     description: 'User used by the server to retrieve the docker image from GitHub artifact repository'
@@ -32,6 +35,9 @@ inputs:
     required: true
   DB_PASS:
     description: 'Password of the postgresql user'
+    required: true
+  JWT_SECRET:
+    description: 'AES 256bit key used to sign JWT token'
     required: true
 runs:
   using: "composite"
@@ -53,7 +59,7 @@ runs:
         terraform apply -auto-approve \
           -var="ssh_pub_key=${{ inputs.SSH_PUB_KEY }}" \
           -var="environment_name=${{ inputs.ENVIRONMENT_NAME }}" \
-          -var="domain=${{ inputs.INTERNAL_DOMAIN }}"
+          -var="hostname=${{ inputs.INTERNAL_HOSTNAME }}"
       working-directory: infra/terraform
       shell: bash
     - name: Install python 3.10
@@ -82,10 +88,13 @@ runs:
         ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory_aws_ec2.yml playbook.yml \
           -e "github_username=${{ inputs.DOCKER_REPO_USER }}" \
           -e "github_token=${{ inputs.DOCKER_REPO_TOKEN }}" \
-          -e "domain=${{ inputs.EXTERNAL_DOMAIN }}" \
           -e "db_user=${{ inputs.DB_USER }}" \
           -e "db_pass=${{ inputs.DB_PASS }}" \
           -e "s3_bucket=bananatransfer-${{ inputs.ENVIRONMENT_NAME }}-s3-bucket" \
+          -e "internal_hostname=${{ inputs.INTERNAL_HOSTNAME }}" \
+          -e "external_hostname=${{ inputs.EXTERNAL_HOSTNAME }}" \
+          -e "domain=${{ inputs.DOMAIN }}" \
+          -e "jwt_secret=${{ inputs.JWT_SECRET }}" \
           -u admin
       working-directory: infra/ansible
       shell: bash

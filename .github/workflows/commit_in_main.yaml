@@ -57,12 +57,14 @@ jobs:
           ENVIRONMENT_NAME: ${{ vars.ENVIRONMENT_NAME }}
           SSH_PUB_KEY: ${{ vars.SSH_PUB_KEY }}
           SSH_PRIV_KEY: ${{ secrets.SSH_PRIV_KEY }}
-          INTERNAL_DOMAIN: ${{ vars.INTERNAL_DOMAIN }}
-          EXTERNAL_DOMAIN: ${{ vars.EXTERNAL_DOMAIN }}
+          INTERNAL_HOSTNAME: ${{ vars.INTERNAL_HOSTNAME }}
+          EXTERNAL_HOSTNAME: ${{ vars.EXTERNAL_HOSTNAME }}
           DOCKER_REPO_USER: ${{ secrets.DOCKER_REPO_USER }}
           DOCKER_REPO_TOKEN: ${{ secrets.DOCKER_REPO_TOKEN }}
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASS: ${{ secrets.DB_PASS }}
+          DOMAIN: ${{ vars.DOMAIN }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
   deploy_ansermoz:
     needs: build_and_push_docker_image
     runs-on: ubuntu-latest
@@ -82,9 +84,11 @@ jobs:
           ENVIRONMENT_NAME: ${{ vars.ENVIRONMENT_NAME }}
           SSH_PUB_KEY: ${{ vars.SSH_PUB_KEY }}
           SSH_PRIV_KEY: ${{ secrets.SSH_PRIV_KEY }}
-          INTERNAL_DOMAIN: ${{ vars.INTERNAL_DOMAIN }}
-          EXTERNAL_DOMAIN: ${{ vars.EXTERNAL_DOMAIN }}
+          INTERNAL_HOSTNAME: ${{ vars.INTERNAL_HOSTNAME }}
+          EXTERNAL_HOSTNAME: ${{ vars.EXTERNAL_HOSTNAME }}
           DOCKER_REPO_USER: ${{ secrets.DOCKER_REPO_USER }}
           DOCKER_REPO_TOKEN: ${{ secrets.DOCKER_REPO_TOKEN }}
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASS: ${{ secrets.DB_PASS }}
+          DOMAIN: ${{ vars.DOMAIN }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
