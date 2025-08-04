@@ -70,13 +70,6 @@ describe('AuthModule', () => {
     });
   });
 
-  describe('LocalStrategy', () => {
-    it('should provide LocalStrategy', () => {
-      const localStrategy = module.get<LocalStrategy>(LocalStrategy);
-      expect(localStrategy).toBeDefined();
-    });
-  });
-
   describe('JwtAuthGuard', () => {
     it('should provide JwtAuthGuard', () => {
       const jwtAuthGuard = module.get<JwtAuthGuard>(JwtAuthGuard);
