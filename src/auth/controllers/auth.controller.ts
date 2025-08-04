@@ -105,6 +105,8 @@ export class AuthController {
     @Res() res: Response,
   ) {
     try {
+      // TODO: check if password match.
+
       const user = await this.authService.registerUser(
         registerDto.username,
         registerDto.email,
