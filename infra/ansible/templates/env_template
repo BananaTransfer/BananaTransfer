@@ -3,4 +3,5 @@ DB_PASS={{ db_pass }}
 
 S3_BUCKET={{ s3_bucket }}
 
+DOMAIN={{ domain }}
 JWT_SECRET={{ jwt_secret }}

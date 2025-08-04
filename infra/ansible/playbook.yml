@@ -5,13 +5,15 @@
   vars:
     ghcr_username: "{{ github_username }}"
     ghcr_token: "{{ github_token }}"
-    domain: "{{ domain }}"
+    external_hostname: "{{ external_hostname }}"
+    internal_hostname: "{{ internal_hostname }}"
 
     db_user: "{{ db_user }}"
     db_pass: "{{ db_pass }}"
 
     s3_bucket: "{{ s3_bucket }}"
 
+    domain: "{{ domain }}"
     jwt_secret: "{{ jwt_secret }}"
   pre_tasks:
     - name: Install prerequisites for Docker
