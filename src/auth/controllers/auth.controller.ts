@@ -7,15 +7,19 @@ import {
   Render,
   Body,
   Logger,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+
+import { AuthService } from '@auth/services/auth.service';
+import { UserService } from '@user/services/user.service';
+import { LoginDto } from '@auth/dto/login.dto';
+import { RegisterDto } from '@auth/dto/register.dto';
 
 interface CsrfRequest extends Request {
   csrfToken: () => string;
 }
-
-import { AuthService } from '@auth/services/auth.service';
-import { UserService } from '@user/services/user.service';
 
 @Controller('auth')
 export class AuthController {
@@ -30,29 +34,28 @@ export class AuthController {
   @Render('auth/login')
   renderLogin(@Req() req: CsrfRequest) {
     const domain = this.userService.getDomain();
-    const csrfToken = req.csrfToken();
-    this.logger.log(`CSRF Token: ${csrfToken}`);
-    this.logger.log(`Domain: ${domain}`);
-    return { domain, csrfToken: csrfToken };
+    return { domain, csrfToken: req.csrfToken() };
   }
 
   @Get('register')
   @Render('auth/register')
   renderRegister(@Req() req: CsrfRequest) {
     const domain = this.userService.getDomain();
-    this.logger.log(`Rendering register page for domain: ${domain}`);
-    this.logger.log(`CSRF Token: ${req.csrfToken()}`);
     return { domain, csrfToken: req.csrfToken() };
   }
 
   @Post('login')
+  @UsePipes(new ValidationPipe({ whitelist: true }))
   async login(
-    @Body('username') username: string,
-    @Body('password') password: string,
+    @Body() loginDto: LoginDto,
+    @Req() req: CsrfRequest,
     @Res() res: Response,
   ) {
     try {
-      const user = await this.authService.validateUser(username, password);
+      const user = await this.authService.validateUser(
+        loginDto.username,
+        loginDto.password,
+      );
       const jwt = await this.authService.login(user);
       res.cookie('jwt', jwt.access_token, {
         httpOnly: true,
@@ -66,24 +69,25 @@ export class AuthController {
       const domain = this.userService.getDomain();
       return res.status(401).render('auth/login', {
         domain,
-        username,
+        username: loginDto.username,
+        csrfToken: req.csrfToken(),
         error: (err as { message: string }).message || 'Login failed',
       });
     }
   }
 
   @Post('register')
+  @UsePipes(new ValidationPipe({ whitelist: true }))
   async register(
-    @Body('username') username: string,
-    @Body('email') email: string,
-    @Body('password') password: string,
+    @Body() registerDto: RegisterDto,
+    @Req() req: CsrfRequest,
     @Res() res: Response,
   ) {
     try {
       const user = await this.authService.registerUser(
-        username,
-        email,
-        password,
+        registerDto.username,
+        registerDto.email,
+        registerDto.password,
       );
       const jwt = await this.authService.login(user);
       res.cookie('jwt', jwt.access_token, {
@@ -99,8 +103,9 @@ export class AuthController {
       const domain = this.userService.getDomain();
       return res.status(400).render('auth/register', {
         domain,
-        username,
-        email,
+        username: registerDto.username,
+        email: registerDto.email,
+        csrfToken: req.csrfToken(),
         error: (err as { message: string }).message || 'Registration failed',
       });
     }

@@ -39,6 +39,14 @@ export class UserService {
     return await this.getLocalUser(username);
   }
 
+  async findByUsername(username: string): Promise<LocalUser | null> {
+    return await this.localUserRepository.findOneBy({ username });
+  }
+
+  async findByEmail(email: string): Promise<LocalUser | null> {
+    return await this.localUserRepository.findOneBy({ email });
+  }
+
   async createUser(userData: {
     username: string;
     email: string;
