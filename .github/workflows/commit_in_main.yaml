@@ -43,7 +43,7 @@ jobs:
         with:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          ENVIRONMENT_NAME: e2e-A
+          ENVIRONMENT_NAME: e2e-a
           SSH_PUB_KEY: ${{ vars.SSH_PUB_KEY }}
           SSH_PRIV_KEY: ${{ secrets.SSH_PRIV_KEY }}
           INTERNAL_HOSTNAME: A.${{ vars.BASE_HOSTNAME }}
@@ -59,7 +59,7 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
       - name: Run Playwright tests
-        run: npm run e2e
+        run: BASE_URL=A.${{ vars.BASE_HOSTNAME }} npm run e2e
       # Upload playwright test artifacts for review on github servers
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
@@ -73,7 +73,7 @@ jobs:
         run: | 
           terraform destroy -auto-approve -auto-approve -input=false \
             -var="ssh_pub_key=${{ vars.SSH_PUB_KEY }}" \
-            -var="environment_name=e2e-A" \
+            -var="environment_name=e2e-a" \
             -var="hostname=A.${{ vars.BASE_HOSTNAME }}"
         working-directory: infra/terraform
         shell: bash
