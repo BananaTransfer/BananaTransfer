@@ -11,6 +11,8 @@
     db_pass: "{{ db_pass }}"
 
     s3_bucket: "{{ s3_bucket }}"
+
+    jwt_secret: "{{ jwt_secret }}"
   pre_tasks:
     - name: Install prerequisites for Docker
       apt:
