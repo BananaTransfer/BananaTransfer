@@ -1,4 +1,4 @@
-import { SecurityUtils } from './security-utils';
+import { SecurityUtils } from './security-utils.js';
 
 export interface EncryptedPrivateKey {
   encryptedData: ArrayBuffer;

@@ -1,0 +1,25 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "ES2022",
+    "target": "ES2022",
+    "outDir": "./public/js/compiled",
+    "rootDir": "./public/js",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": false,
+    "declaration": false,
+    "sourceMap": true,
+    "strict": true,
+    "lib": ["DOM", "ES2022"],
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "include": [
+    "public/js/**/*.ts"
+  ],
+  "exclude": [
+    "public/js/**/*.spec.ts",
+    "public/js/**/*.test.ts",
+    "node_modules"
+  ]
+}

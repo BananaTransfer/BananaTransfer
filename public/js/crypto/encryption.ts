@@ -1,4 +1,5 @@
-import { SecurityUtils } from './security-utils';
+import { SecurityUtils } from './security-utils.js';
+import { KeyManager } from './key-manager.js';
 
 export interface StreamChunk {
   encryptedData: ArrayBuffer;
@@ -29,6 +30,49 @@ export class FileEncryption {
       ['encrypt', 'decrypt'],
     );
   }
+
+  /**
+   * Main encryption method used to returned the encrypted file with its associated wrapped key
+   * @param publicKey
+   * @param file
+   */
+  static async encryptFile(
+    publicKey: CryptoKey,
+    file: File,
+  ): Promise<{ wrappedAesKey: ArrayBuffer; encryptedChunks: StreamChunk[] }> {
+    const aesKey: CryptoKey = await this.generateAESKey();
+    const encryptor = FileEncryption.createStreamingEncryptor(aesKey);
+
+    const wrappedAesKey: ArrayBuffer = await KeyManager.wrapAESKey(
+      aesKey,
+      publicKey,
+    );
+
+    const encryptedChunks: StreamChunk[] = [];
+
+    const reader = file.stream().getReader();
+
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+
+        const result = await encryptor.processChunk(
+          value || new Uint8Array(0),
+          done,
+        );
+        if (result) {
+          encryptedChunks.push(result);
+        }
+
+        if (done) break;
+      }
+    } finally {
+      reader.releaseLock();
+    }
+    return { wrappedAesKey, encryptedChunks };
+  }
+
+  // TODO - Interface for decrypting with parameters: encryptedPrivateKey, password (When are we asking it), wrappedAesKey, encryptedChunks
 
   /**
    * Create streaming encryptor for parallel upload + encryption
@@ -190,6 +234,7 @@ class ParallelStreamingEncryptor implements StreamingEncryptor {
     return null; // Not enough data to process yet
   }
 
+  // TODO - Test if finalize() is really necessary after all or just redundant
   /**
    * Finalize encryption and return metadata
    */
