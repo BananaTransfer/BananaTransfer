@@ -1,7 +1,7 @@
 name: Docker Build and Publish
 on:
   push:
-    # TODO remove branches: ["main"]
+    branches: ["**"]
     paths-ignore:
       - "documents/**"
 concurrency:
