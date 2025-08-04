@@ -32,7 +32,6 @@ jobs:
           images: ghcr.io/${{ github.repository }}
           tags: type=raw,value=e2e
       - name: Build and push integration test docker image
-        id: push
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -82,7 +81,6 @@ jobs:
           images: ghcr.io/${{ github.repository }}
           tags: type=raw,value=latest
       - name: Build and push latest docker image
-        id: push
         uses: docker/build-push-action@v6
         with:
           context: .
