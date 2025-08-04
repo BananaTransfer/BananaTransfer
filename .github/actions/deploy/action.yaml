@@ -22,7 +22,7 @@ inputs:
     description: 'DNS record that will be used by user to access the server. Either a CNAME to the INTERNAL_HOSTNAME or the INTERNAL_HOSTNAME itself'
     required: true
   DOMAIN:
-    description: 'Domain name used and managed by the bananatransfer server
+    description: 'Domain name used and managed by the bananatransfer server'
     required: true
   DOCKER_REPO_USER:
     description: 'User used by the server to retrieve the docker image from GitHub artifact repository'
