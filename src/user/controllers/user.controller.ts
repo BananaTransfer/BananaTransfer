@@ -10,10 +10,10 @@ import {
 import { Response } from 'express';
 
 import { UserService } from '@user/services/user.service';
-import { LocalAuthGuard } from '@auth/guards/local-auth.guard';
+import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
 
-// all routes in this controller are protected by the LocalAuthGuard and require authentication
-@UseGuards(LocalAuthGuard)
+// all routes in this controller are protected by the JwtAuthGuard and require authentication
+@UseGuards(JwtAuthGuard)
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -21,15 +21,15 @@ export class UserController {
   // endpoint to get settings page
   @Get('settings')
   renderSettings(@Res() res: Response): void {
-    const user = this.userService.getUserInfo();
-    res.render('settings', { user });
+    //const user = this.userService.getUserInfo(req.user);
+    res.render('settings' /*, { user }*/);
   }
 
   // endpoint to get page to create/update private key
   @Get('create-keys')
   renderUserKeysPage(@Res() res: Response): void {
-    const user = this.userService.getUserInfo();
-    res.render('create-keys', { user });
+    // const user = this.userService.getUserInfo(req.user.username);
+    res.render('create-keys' /*, { user }*/);
   }
 
   // endpoint to get encrypted private key from user in the frontend
