@@ -6,7 +6,6 @@ import { UserModule } from '@user/user.module';
 
 import { AuthController } from '@auth/controllers/auth.controller';
 import { AuthService } from '@auth/services/auth.service';
-import { LocalStrategy } from '@auth/strategies/local.strategy';
 import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
 
 // This module handles authentication using Passport.js with a local strategy.
@@ -26,7 +25,7 @@ import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, JwtAuthGuard],
+  providers: [AuthService, JwtAuthGuard],
   exports: [AuthService, JwtModule],
 })
 export class AuthModule {}

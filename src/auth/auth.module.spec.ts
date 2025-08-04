@@ -6,7 +6,6 @@ import { JwtService } from '@nestjs/jwt';
 // import { AuthModule } from '@auth/auth.module';
 import { AuthController } from '@auth/controllers/auth.controller';
 import { AuthService } from '@auth/services/auth.service';
-import { LocalStrategy } from '@auth/strategies/local.strategy';
 import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
 import { UserService } from '@user/services/user.service';
 
@@ -24,7 +23,6 @@ describe('AuthModule', () => {
       controllers: [AuthController],
       providers: [
         AuthService,
-        LocalStrategy,
         JwtAuthGuard,
         UserService,
         JwtService,
