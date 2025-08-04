@@ -19,6 +19,7 @@ import { RegisterDto } from '@auth/dto/register.dto';
 
 interface CsrfRequest extends Request {
   csrfToken: () => string;
+  cookies: { [key: string]: string };
 }
 
 @Controller('auth')
@@ -32,15 +33,35 @@ export class AuthController {
 
   @Get('login')
   @Render('auth/login')
-  renderLogin(@Req() req: CsrfRequest) {
+  async renderLogin(@Req() req: CsrfRequest, @Res() res: Response) {
     const domain = this.userService.getDomain();
+    const token = req.cookies?.jwt;
+    if (token) {
+      try {
+        // Verify the JWT token and redirect to transfer if user already authenticated
+        await this.authService.verifyJwt(token);
+        return res.redirect('/transfer');
+      } catch {
+        // Token invalid, fall through to render login
+      }
+    }
     return { domain, csrfToken: req.csrfToken() };
   }
 
   @Get('register')
   @Render('auth/register')
-  renderRegister(@Req() req: CsrfRequest) {
+  async renderRegister(@Req() req: CsrfRequest, @Res() res: Response) {
     const domain = this.userService.getDomain();
+    const token = req.cookies?.jwt;
+    if (token) {
+      try {
+        // Verify the JWT token and redirect to transfer if user already authenticated
+        await this.authService.verifyJwt(token);
+        return res.redirect('/transfer');
+      } catch {
+        // Token invalid, fall through to render register
+      }
+    }
     return { domain, csrfToken: req.csrfToken() };
   }
 

@@ -7,6 +7,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 
+import { JwtPayload } from '@auth/interfaces/jwt-payload.interface';
 import { UserService } from '@user/services/user.service';
 import { UserStatus } from '@database/entities/enums';
 import { LocalUser } from '@database/entities/local-user.entity';
@@ -19,6 +20,10 @@ export class AuthService {
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
   ) {}
+
+  async verifyJwt(token: string): Promise<JwtPayload> {
+    return this.jwtService.verifyAsync<JwtPayload>(token);
+  }
 
   async validateUser(username: string, password: string): Promise<LocalUser> {
     const user: LocalUser = await this.userService.getUserInfo(username);
