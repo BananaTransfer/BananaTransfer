@@ -77,13 +77,7 @@ export class AuthController {
         loginDto.username,
         loginDto.password,
       );
-      const jwt = await this.authService.login(user);
-      res.cookie('jwt', jwt.access_token, {
-        httpOnly: true,
-        sameSite: 'strict',
-        // secure prevents the cookie to be sent in non https requests, this needs to be disabled in dev
-        secure: process.env.NODE_ENV !== 'dev',
-      });
+      await this.authService.authenticateUser(user, res);
       return res.redirect('/transfer');
     } catch (err) {
       this.logger.error(err);
@@ -112,13 +106,7 @@ export class AuthController {
         registerDto.email,
         registerDto.password,
       );
-      const jwt = await this.authService.login(user);
-      res.cookie('jwt', jwt.access_token, {
-        httpOnly: true,
-        sameSite: 'strict',
-        // secure prevents the cookie to be sent in non https requests, this needs to be disabled in dev
-        secure: process.env.NODE_ENV !== 'dev',
-      });
+      await this.authService.authenticateUser(user, res);
       return res.redirect('/transfer');
     } catch (err) {
       this.logger.error(err);

@@ -4,6 +4,7 @@ import {
   UnauthorizedException,
   ConflictException,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 
@@ -36,11 +37,6 @@ export class AuthService {
     return user;
   }
 
-  async login(user: LocalUser): Promise<{ access_token: string }> {
-    const payload = { username: user.username, sub: user.id };
-    return { access_token: await this.jwtService.signAsync(payload) };
-  }
-
   async registerUser(
     username: string,
     email: string,
@@ -60,5 +56,17 @@ export class AuthService {
       status: UserStatus.ACTIVE,
     });
     return user;
+  }
+
+  async authenticateUser(user: LocalUser, res: Response) {
+    const payload = { username: user.username, sub: user.id };
+    const jwt = await this.jwtService.signAsync(payload);
+    res.cookie('jwt', jwt, {
+      httpOnly: true,
+      sameSite: 'strict',
+      // secure prevents the cookie to be sent in non https requests, this needs to be disabled in dev
+      secure: process.env.NODE_ENV !== 'dev',
+    });
+    return { access_token: await this.jwtService.signAsync(payload) };
   }
 }
