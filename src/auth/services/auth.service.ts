@@ -8,7 +8,7 @@ import { Response } from 'express';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 
-import { JwtPayload } from '@auth/interfaces/jwt-payload.interface';
+import { UserPayload } from '@auth/types/user-payload.interface';
 import { UserService } from '@user/services/user.service';
 import { UserStatus } from '@database/entities/enums';
 import { LocalUser } from '@database/entities/local-user.entity';
@@ -22,12 +22,12 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async verifyJwt(token: string): Promise<JwtPayload> {
-    return this.jwtService.verifyAsync<JwtPayload>(token);
+  async verifyJwt(token: string): Promise<UserPayload> {
+    return this.jwtService.verifyAsync<UserPayload>(token);
   }
 
   async validateUser(username: string, password: string): Promise<LocalUser> {
-    const user: LocalUser = await this.userService.getUserInfo(username);
+    const user = await this.userService.findByUsername(username);
     if (!user || !(await bcrypt.compare(password, user.password_hash))) {
       throw new UnauthorizedException('Invalid username or password');
     }
@@ -59,7 +59,7 @@ export class AuthService {
   }
 
   async authenticateUser(user: LocalUser, res: Response) {
-    const payload = { username: user.username, sub: user.id };
+    const payload = { id: user.id, username: user.username, email: user.email };
     const jwt = await this.jwtService.signAsync(payload);
     res.cookie('jwt', jwt, {
       httpOnly: true,

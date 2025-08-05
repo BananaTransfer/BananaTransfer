@@ -34,9 +34,18 @@ export class UserService {
     return this.envDomain;
   }
 
-  async getUserInfo(username: string): Promise<LocalUser> {
-    // TODO: get current user info from db
-    return await this.getLocalUser(username);
+  async createUser(userData: {
+    username: string;
+    email: string;
+    password_hash: string;
+    status: UserStatus;
+  }): Promise<LocalUser> {
+    const user = this.localUserRepository.create(userData);
+    return await this.localUserRepository.save(user);
+  }
+
+  async findByUserId(userId: number): Promise<LocalUser | null> {
+    return await this.localUserRepository.findOneBy({ id: userId });
   }
 
   async findByUsername(username: string): Promise<LocalUser | null> {
@@ -47,14 +56,9 @@ export class UserService {
     return await this.localUserRepository.findOneBy({ email });
   }
 
-  async createUser(userData: {
-    username: string;
-    email: string;
-    password_hash: string;
-    status: UserStatus;
-  }): Promise<LocalUser> {
-    const user = this.localUserRepository.create(userData);
-    return await this.localUserRepository.save(user);
+  async getUserPrivateKey(userId: number): Promise<string> {
+    const user = await this.findByUserId(userId);
+    return user?.private_key_encrypted || '';
   }
 
   async getUser(username: string): Promise<User> {
@@ -86,11 +90,6 @@ export class UserService {
       throw new NotFoundException('Remote user not found');
     }
     return user;
-  }
-
-  getPrivateKey(): string {
-    // TODO: get encrypted private key from current user form the db
-    return 'Encrypted Private Key';
   }
 
   setUserKeys(/*privateKey: string, publicKey: string*/): void {
