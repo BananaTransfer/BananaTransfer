@@ -4,7 +4,7 @@
     "module": "ES2022",
     "target": "ES2022",
     "outDir": "./public/js",
-    "rootDir": "src/public",
+    "rootDir": "frontend/",
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": false,
     "declaration": false,
@@ -15,11 +15,11 @@
     "allowSyntheticDefaultImports": true
   },
   "include": [
-    "src/public/**/*.ts"
+    "frontend/**/*.ts"
   ],
   "exclude": [
-    "src/public//**/*.spec.ts",
-    "src/public/js/**/*.test.ts",
+    "frontend/**/*.spec.ts",
+    "frontend/js/**/*.test.ts",
     "node_modules"
   ]
 }

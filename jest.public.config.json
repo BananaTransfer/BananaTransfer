@@ -2,7 +2,7 @@
   "preset": "ts-jest/presets/default-esm",
   "extensionsToTreatAsEsm": [".ts"],
   "moduleFileExtensions": ["js", "json", "ts"],
-  "testMatch": ["**/src/public/**/*.spec.ts"],
+  "testMatch": ["**/frontend/**/*.spec.ts"],
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
   },
