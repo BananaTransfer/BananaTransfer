@@ -3,6 +3,47 @@ extends ../layout
 block content
   .container
     .row.justify-content-center
-      .col-md-6.col-lg-5
+      .col-md-6.col-lg-6
         .text-center.mt-5
           img(src="/images/logo.png" alt="BananaTransfer" style="width:80px;")
+    .row.justify-content-center.mb-4
+      .col-1.d-flex.align-items-center
+        a.btn.btn-outline-secondary.mt-3(href="/transfer" style="border-radius:12px;") &larr;
+      .col-6.text-center
+        h2.mt-3.mb-0 Settings
+      .col-1
+    
+    .row.justify-content-center
+      .col-md-8
+        if error
+          .alert.alert-danger.text-center= error
+
+    .row.justify-content-center
+      .col-md-8.mb-3
+        h4.font-weight-bold User profile information
+        hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
+        p.mt-3 username: #{user.username}
+        p.mt-2 email address for notifications: #{user.email}
+
+      .col-md-8.mb-3
+        h4.font-weight-bold Server information
+        hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
+        p.mt-3 [message configured by the server admin]
+
+      .col-md-8.mb-3
+        h4.font-weight-bold Password management
+        hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
+        a.btn.btn-dark.mb-3(href="/user/change-password" style="border-radius:15px; padding:10px 40px;") Change password
+
+      .col-md-8.mb-3
+        h4.font-weight-bold Key management
+        hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
+        label.mt-1.form-label(for="publicKeyField") Public Key
+        .input-group.mb-2.mx-auto(style="max-width:100%")
+          input.form-control(type="text", id="publicKeyField", value=publicKey, readonly)
+          button.btn.btn-outline-secondary(type="button", id="copyPublicKeyBtn", onclick="copyToClipboard('publicKeyField', 'copyPublicKeyBtn')")
+            i.bi.bi-clipboard
+        div.small.text-muted.mb-3
+          | This is your public key. It will be automatically shared with others so they can send you files.
+        a.btn.btn-dark.mt-2(href="/user/set-keys" style="border-radius:15px; padding:10px 30px;") Change Key-Pair and Master-Password
+        p.mt-2.text-warning(style="font-size:0.95em;") Warning: previously received files will become irretrievable upon changing your Key-Pair
