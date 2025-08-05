@@ -1,1 +1,30 @@
-# TODO: create login page
+extends ../layout
+
+block content
+  .container
+    .row.justify-content-center
+      .col-md-6.col-lg-5
+        .text-center.mt-5
+          img(src="/images/logo.png" alt="BananaTransfer" style="width:80px;")
+          h2.mt-3.mb-4 Login
+        if error
+          .alert.alert-danger.text-center= error
+        form(method="POST" action="/auth/login" class="bg-light p-4 rounded shadow-sm")
+          input(type="hidden" name="_csrf" value=csrfToken)
+          .mb-3
+            label.form-label(for="username") Username
+            .input-group
+              input.form-control(type="text" name="username" id="username" placeholder="username" value=username required)
+              span.input-group-text @#{domain}
+          .mb-3
+            label.form-label(for="password") Password
+            input.form-control(type="password" name="password" id="password" placeholder="password" required)
+          .d-flex.justify-content-between.align-items-center.mb-3
+            span No account yet? 
+              a.ms-1(href="/auth/register") Register
+            button.btn.btn-dark(type="submit") Continue
+        .text-center.text-muted.mt-4
+          small
+            | Forgot your credentials?
+            br
+            | Please contact your domain administrator

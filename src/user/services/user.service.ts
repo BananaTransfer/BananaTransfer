@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-//import { UserStatus } from '@database/entities/enums';
+import { UserStatus } from '@database/entities/enums';
 import { User } from '@database/entities/user.entity';
 import { LocalUser } from '@database/entities/local-user.entity';
 import { RemoteUser } from '@database/entities/remote-user.entity';
@@ -24,19 +24,40 @@ export class UserService {
     private trustedRecipientRepository: Repository<TrustedRecipient>,
   ) {
     const envDomain = this.configService.get<string>('DOMAIN');
-    /*if (!envDomain) {
-      throw new Error('Default domain is not set in environment variables');
-    }*/
-    console.error('Default domain is not set in environment variables');
-    this.envDomain = envDomain || 'default.local'; // Fallback to a default domain if not set
+    if (!envDomain) {
+      throw new Error('Domain is not set in environment variables');
+    }
+    this.envDomain = envDomain;
   }
 
-  getUserInfo(): { username: string } {
+  getDomain(): string {
+    return this.envDomain;
+  }
+
+  async getUserInfo(username: string): Promise<LocalUser> {
     // TODO: get current user info from db
-    return { username: 'test' };
+    return await this.getLocalUser(username);
   }
 
-  async getUser(username: string): Promise<{ username: string }> {
+  async findByUsername(username: string): Promise<LocalUser | null> {
+    return await this.localUserRepository.findOneBy({ username });
+  }
+
+  async findByEmail(email: string): Promise<LocalUser | null> {
+    return await this.localUserRepository.findOneBy({ email });
+  }
+
+  async createUser(userData: {
+    username: string;
+    email: string;
+    password_hash: string;
+    status: UserStatus;
+  }): Promise<LocalUser> {
+    const user = this.localUserRepository.create(userData);
+    return await this.localUserRepository.save(user);
+  }
+
+  async getUser(username: string): Promise<User> {
     // TODO: get local or remote user from db
     const parsedUser: { user: string; domain: string; isLocal: boolean } =
       this.parseUsername(username);
@@ -47,17 +68,17 @@ export class UserService {
     }
   }
 
-  private async getLocalUser(username: string): Promise<{ username: string }> {
-    // TODO: get local user from db
+  private async getLocalUser(username: string): Promise<LocalUser> {
+    // get local user from db
     const user = await this.localUserRepository.findOneBy({ username });
     if (!user) {
-      // this will automatically return a 404 in the controller
+      // this will automatically return a 404 in the controller if user is not found
       throw new NotFoundException('Local user not found');
     }
     return user;
   }
 
-  private async getRemoteUser(username: string): Promise<{ username: string }> {
+  private async getRemoteUser(username: string): Promise<RemoteUser> {
     // TODO: get remote user from db
     const user = await this.remoteUserRepository.findOneBy({ username });
     if (!user) {

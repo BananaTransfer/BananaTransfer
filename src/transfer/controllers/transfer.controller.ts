@@ -4,6 +4,7 @@ import {
   Post,
   // Req,
   Res,
+  Render,
   Param,
   Body,
   UseGuards,
@@ -12,10 +13,10 @@ import { Request, Response } from 'express';
 
 import { TransferService } from '@transfer/services/transfer.service';
 import { UserService } from '@user/services/user.service';
-import { LocalAuthGuard } from '@auth/guards/local-auth.guard';
+import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
 
-// all routes in this controller are protected by the LocalAuthGuard and require authentication
-@UseGuards(LocalAuthGuard)
+// all routes in this controller are protected by the JwtAuthGuard and require authentication
+@UseGuards(JwtAuthGuard)
 @Controller('transfer')
 export class TransferController {
   constructor(
@@ -25,13 +26,16 @@ export class TransferController {
 
   // endpoint to get transfers list page
   @Get('')
+  @Render('transfer/list')
   renderTransfersList(/*@Req() req: Request, @Res() res: Response*/): void {
     // const transfers = this.transferService.getTransferList(req.user.id;
-    //res.render('list', { transfers });
+    // return { transfers };
+    return;
   }
 
   // endpoint to get new transfer page
   @Get('new')
+  @Render('transfer/new')
   renderNewTransfer(/*@Req() req: Request, @Res() res: Response*/): void {
     // const knownRecipients = this.userService.getKnownRecipients(req.user.id);
     //res.render('new', { knownRecipients });

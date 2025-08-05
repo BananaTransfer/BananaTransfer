@@ -16,12 +16,14 @@ Despite the rise of cloud-based file sharing platforms like SwissTransfer, and W
 - Intuitive & Fast: Secure file sharing is as easy as email. Onboard your team in minutes.
 
 ## How It Works
+
 1. Create Your Account: Sign up with your organization’s BananaTransfer server. Registration takes less than 5 minutes!
 2. Generate Your Keys: Automatic RSA-4096 key generation in your browser. Your keys and master password never leave your device.
 3. Share Files: Drag, drop, and share files instantly. Files are encrypted before upload, recipients are notified immediately.
 4. Receive & Download: Access shared files from any device, anywhere, anytime. Files decrypt automatically upon download.
 
 ## Secure by Design:
+
 - Military-Grade Encryption: AES-256 and RSA-4096 for file transfer and storage.
 - Self-Managed Keys: Total ownership of your encryption keys and master password.
 - Open Source Trust: Audit, fork, or self-host BananaTransfer.
@@ -30,10 +32,12 @@ Despite the rise of cloud-based file sharing platforms like SwissTransfer, and W
 - User-Friendly: 5-minute setup, guided onboarding for end users.
 
 ## Landing page and mockups
+
 While development of the application is still in progress, we have designed a landing page, which has been deployed online. You can access it at [https://bananatransfer.saul.ch/](https://bananatransfer.saul.ch/) or [https://bananatransfer.ansermoz.dev/](https://bananatransfer.ansermoz.dev/).
 We have also created mockups of the app's interface, which you can find in this repository in the [mockups](https://github.com/BananaTransfer/BananaTransfer/tree/main/documents/mockups/digital) folder.
 
 ## Project guide/contribute
+
 If you're interested in contributing to BananaTransfer, you are very welcome ! To get familiar with the project structure and understand how you can get involved, take a look at our [work process](https://github.com/BananaTransfer/BananaTransfer/blob/main/documents/work_process.md). It also outlines how our core team collaborates on a day-to-day basis.
 
 ## License
@@ -49,6 +53,7 @@ We are a core team of four bachelor’s students from [HEIG-VD](https://heig-vd.
 | Data Engineering | IT Security | IT Security | Data Engineering |
 
 ## Support
+
 Any questions? [Open an issue](https://github.com/BananaTransfer/BananaTransfer/issues)
 
 ## Install Node.js
@@ -71,16 +76,19 @@ sudo apt-get install -y nodejs
 ## Project setup for local development
 
 Setup the project git hooks:
+
 ```bash
 make setup
 ```
 
 Install the required dependencies:
+
 ```bash
 npm install
 ```
 
 Create file `.env` with the configuration variables
+
 ```
 # .env
 # Environment configuration
@@ -102,17 +110,28 @@ S3_REGION=eu-west-1
 S3_CLIENT_ID=minio_user
 S3_CLIENT_SECRET=minio_password
 S3_BUCKET=bananatransfer
+
+JWT_SECRET=DO_NOT_USE_THIS_VALUE_IN_PRODUCTION_USE_256BIT_KEY
 ```
 
 Start the local infrastructure with: 
+
 ```bash
 docker compose up 
 ```
 
+Once the DB is started, you need to execute the migration with
+
+```bash
+npm run migration:run
+```
+
 Then you can run the app in watch mode with
+
 ```bash
 npm run start:dev
 ```
+The app will be available on: http://localhost:3000
 
 ## Compile and run the project
 
@@ -138,6 +157,20 @@ npm run test:e2e
 
 # test coverage
 npm run test:cov
+```
+
+## Other commands
+
+```bash
+# test db connection manually
+npx tsx src/database/connection-checker.ts
+
+# generate a new migration
+npm run migration:generate src/database/migrations/<name>
+
+# run migrations scripts
+# (this will run all the ones that haven't been run yet)
+npm run migration:run
 ```
 
 ## Resources

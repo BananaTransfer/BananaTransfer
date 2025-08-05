@@ -37,9 +37,9 @@ class LocalUser {
     status: UserStatus
     email: text
     last_login: timestamp
-    password_hash_salt: text
+    password_hash: text
     private_key_encrypted: text
-    private_key_kdf_salt: text 32bits
+    private_key_kdf: text 32bits
     public_key: text
     key_created_at: timestamp
 }
