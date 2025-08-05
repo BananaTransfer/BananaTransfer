@@ -4,7 +4,6 @@ import {
   Post,
   Req,
   Res,
-  Render,
   Body,
   Logger,
   UsePipes,
