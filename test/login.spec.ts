@@ -26,7 +26,7 @@ test('user should be redirected to transfer list if logged in', async ({
   registerPage,
   loginPage,
   page,
-  transferListPage
+  transferListPage,
 }) => {
   const credentials = {
     username: faker.internet.username(),
