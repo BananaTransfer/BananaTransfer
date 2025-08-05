@@ -1,14 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Req,
-  Res,
-  Body,
-  Logger,
-  UsePipes,
-  ValidationPipe,
-} from '@nestjs/common';
+import { Controller, Get, Post, Req, Res, Body, Logger } from '@nestjs/common';
 import { Request, Response } from 'express';
 
 import { AuthService } from '@auth/services/auth.service';
@@ -63,7 +53,6 @@ export class AuthController {
   }
 
   @Post('login')
-  @UsePipes(new ValidationPipe({ whitelist: true }))
   async login(
     @Body() loginDto: LoginDto,
     @Req() req: CsrfRequest,
@@ -89,15 +78,12 @@ export class AuthController {
   }
 
   @Post('register')
-  @UsePipes(new ValidationPipe({ whitelist: true }))
   async register(
     @Body() registerDto: RegisterDto,
     @Req() req: CsrfRequest,
     @Res() res: Response,
   ) {
     try {
-      // TODO: check if password match.
-
       const user = await this.authService.registerUser(
         registerDto.username,
         registerDto.email,

@@ -88,5 +88,13 @@ describe('AuthService', () => {
     });
   });
 
-  // TODO: Add tests for all methods in AuthService
+  describe('registerUser', () => {
+    // throw user exist
+    // throw email exist
+    // else create
+  });
+
+  describe('authenticateUser', () => {
+    // happy path
+  });
 });
