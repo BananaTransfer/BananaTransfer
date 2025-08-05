@@ -1,8 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  forwardRef,
+  ConflictException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import { AuthService } from '@auth/services/auth.service';
 import { UserStatus } from '@database/entities/enums';
 import { User } from '@database/entities/user.entity';
 import { LocalUser } from '@database/entities/local-user.entity';
@@ -14,7 +22,9 @@ export class UserService {
   private readonly envDomain: string;
 
   constructor(
-    private configService: ConfigService,
+    private readonly configService: ConfigService,
+    @Inject(forwardRef(() => AuthService))
+    private readonly authService: AuthService,
     @InjectRepository(User) private userRepository: Repository<User>,
     @InjectRepository(LocalUser)
     private localUserRepository: Repository<LocalUser>,
@@ -34,16 +44,6 @@ export class UserService {
     return this.envDomain;
   }
 
-  async createUser(userData: {
-    username: string;
-    email: string;
-    password_hash: string;
-    status: UserStatus;
-  }): Promise<LocalUser> {
-    const user = this.localUserRepository.create(userData);
-    return await this.localUserRepository.save(user);
-  }
-
   async findByUserId(userId: number): Promise<LocalUser | null> {
     return await this.localUserRepository.findOneBy({ id: userId });
   }
@@ -56,9 +56,79 @@ export class UserService {
     return await this.localUserRepository.findOneBy({ email });
   }
 
-  async getUserPrivateKey(userId: number): Promise<string> {
+  async getCurrentUser(userId: number): Promise<LocalUser> {
     const user = await this.findByUserId(userId);
-    return user?.private_key_encrypted || '';
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
+  }
+
+  async createUser(
+    username: string,
+    email: string,
+    password_hash: string,
+  ): Promise<LocalUser> {
+    if (await this.findByUsername(username)) {
+      throw new ConflictException('Username already exists');
+    }
+    if (await this.findByEmail(email)) {
+      throw new ConflictException('Email already exists');
+    }
+    const user = this.localUserRepository.create({
+      username,
+      email,
+      password_hash,
+      status: UserStatus.ACTIVE,
+    });
+    return await this.localUserRepository.save(user);
+  }
+
+  async getUserPrivateKey(userId: number): Promise<string> {
+    const user = await this.getCurrentUser(userId);
+    return user.private_key_encrypted || '';
+  }
+
+  getPublicKey(username: string): string {
+    // TODO: get public key of user from the db
+    // console.log(username);
+    const user = undefined; // TODO: fetch user from db
+    if (!user) {
+      // this will automatically return a 404 in the controller
+      throw new NotFoundException('User not found');
+    }
+    return username;
+    // return user.publicKey;
+  }
+
+  async changeUserPassword(
+    userId: number,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<LocalUser | null> {
+    const user = await this.getCurrentUser(userId);
+    if (!(await this.authService.validateUserPassword(user, currentPassword))) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+    user.password_hash = await this.authService.hashPassword(newPassword);
+    return await this.localUserRepository.save(user);
+  }
+
+  async setUserKeys(
+    userId: number,
+    password: string,
+    privateKeyEncrypted: string,
+    privateKeyKdf: string,
+    publicKey: string,
+  ): Promise<LocalUser> {
+    const user = await this.getCurrentUser(userId);
+    if (!(await this.authService.validateUserPassword(user, password))) {
+      throw new UnauthorizedException('Invalid password');
+    }
+    user.private_key_encrypted = privateKeyEncrypted;
+    user.private_key_kdf = privateKeyKdf;
+    user.public_key = publicKey;
+    return await this.localUserRepository.save(user);
   }
 
   async getUser(username: string): Promise<User> {
@@ -90,24 +160,6 @@ export class UserService {
       throw new NotFoundException('Remote user not found');
     }
     return user;
-  }
-
-  setUserKeys(/*privateKey: string, publicKey: string*/): void {
-    // TODO: update the private and public key of the current user in the db
-    // console.debug('Private Key:', privateKey);
-    // console.debug('Public Key:', publicKey);
-  }
-
-  getPublicKey(username: string): string {
-    // TODO: get public key of user from the db
-    // console.log(username);
-    const user = undefined; // TODO: fetch user from db
-    if (!user) {
-      // this will automatically return a 404 in the controller
-      throw new NotFoundException('User not found');
-    }
-    return username;
-    // return user.publicKey;
   }
 
   trustPublicKey(/*username: string, recipient: string, publicKey: string*/): void {

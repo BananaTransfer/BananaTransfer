@@ -6,6 +6,7 @@ import { JwtService } from '@nestjs/jwt';
 
 import { UserController } from '@user/controllers/user.controller';
 import { UserService } from '@user/services/user.service';
+import { AuthService } from '@auth/services/auth.service';
 
 import { User } from '@database/entities/user.entity';
 import { LocalUser } from '@database/entities/local-user.entity';
@@ -28,6 +29,7 @@ describe('UserController', () => {
       controllers: [UserController],
       providers: [
         UserService,
+        AuthService,
         JwtService,
         // Mock ConfigService
         {

@@ -6,6 +6,7 @@ import { JwtService } from '@nestjs/jwt';
 // import { TransferModule } from './transfer.module';
 import { TransferController } from '@transfer/controllers/transfer.controller';
 import { TransferService } from '@transfer/services/transfer.service';
+import { AuthService } from '@auth/services/auth.service';
 import { UserService } from '@user/services/user.service';
 
 import { User } from '@database/entities/user.entity';
@@ -32,6 +33,7 @@ describe('TransferModule', () => {
       controllers: [TransferController],
       providers: [
         TransferService,
+        AuthService,
         UserService,
         JwtService,
         // Mock ConfigService

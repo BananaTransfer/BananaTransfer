@@ -1,8 +1,9 @@
 import {
   Injectable,
+  Inject,
+  forwardRef,
   Logger,
   UnauthorizedException,
-  ConflictException,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { JwtService } from '@nestjs/jwt';
@@ -18,6 +19,7 @@ export class AuthService {
   private readonly logger = new Logger(AuthService.name);
 
   constructor(
+    @Inject(forwardRef(() => UserService))
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
   ) {}
@@ -28,7 +30,7 @@ export class AuthService {
 
   async validateUser(username: string, password: string): Promise<LocalUser> {
     const user = await this.userService.findByUsername(username);
-    if (!user || !(await bcrypt.compare(password, user.password_hash))) {
+    if (!user || !(await this.validateUserPassword(user, password))) {
       throw new UnauthorizedException('Invalid username or password');
     }
     if (user.status !== UserStatus.ACTIVE) {
@@ -37,24 +39,28 @@ export class AuthService {
     return user;
   }
 
+  async validateUserPassword(
+    user: LocalUser,
+    password: string,
+  ): Promise<boolean> {
+    return bcrypt.compare(password, user.password_hash);
+  }
+
+  async hashPassword(password: string): Promise<string> {
+    return bcrypt.hash(password, 10);
+  }
+
   async registerUser(
     username: string,
     email: string,
     password: string,
   ): Promise<LocalUser> {
-    if (await this.userService.findByUsername(username)) {
-      throw new ConflictException('Username already exists');
-    }
-    if (await this.userService.findByEmail(email)) {
-      throw new ConflictException('Email already exists');
-    }
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await this.userService.createUser({
+    const password_hash = await this.hashPassword(password);
+    const user = await this.userService.createUser(
       username,
       email,
-      password_hash: hashedPassword,
-      status: UserStatus.ACTIVE,
-    });
+      password_hash,
+    );
     return user;
   }
 

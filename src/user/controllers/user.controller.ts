@@ -4,47 +4,84 @@ import {
   Post,
   Req,
   Res,
+  Param,
   Body,
   UseGuards,
-  Param,
+  Logger,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { Response } from 'express';
 
 import { UserService } from '@user/services/user.service';
 import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
 import { AuthenticatedRequest } from '@auth/types/authenticated-request.interface';
+import { ChangePasswordDto } from '@user/dto/changePassword.dto';
+import { SetKeysDto } from '@user/dto/setKeys.dto';
 
 // all routes in this controller are protected by the JwtAuthGuard and require authentication
 @UseGuards(JwtAuthGuard)
 @Controller('user')
 export class UserController {
+  private readonly logger = new Logger(UserController.name);
+
   constructor(private readonly userService: UserService) {}
+
+  private renderUserSettingsPage(
+    req: AuthenticatedRequest,
+    res: Response,
+    options: { username?: string; error?: string } = {},
+  ): void {
+    const user = this.userService.findByUserId(req.user.id);
+    res.render('user/settings', { user, ...options });
+  }
+
+  private renderChangePasswordPage(
+    req: AuthenticatedRequest,
+    res: Response,
+    options: { error?: string } = {},
+  ): void {
+    res.render('user/change-password', {
+      user: req.user,
+      csrfToken: req.csrfToken(),
+      ...options,
+    });
+  }
+
+  private renderSetKeysPage(
+    req: AuthenticatedRequest,
+    res: Response,
+    options: { error?: string } = {},
+  ): void {
+    res.render('user/set-keys', {
+      user: req.user,
+      csrfToken: req.csrfToken(),
+      ...options,
+    });
+  }
 
   // endpoint to get user settings page
   @Get('')
-  renderUserSettings(
+  getUserSettingsPage(
     @Req() req: AuthenticatedRequest,
     @Res() res: Response,
   ): void {
-    const user = this.userService.findByUserId(req.user.id);
-    res.render('user/settings', { user });
+    this.renderUserSettingsPage(req, res);
+  }
+
+  // endpoint to get page to change password
+  @Get('change-password')
+  getChangePasswordPage(
+    @Req() req: AuthenticatedRequest,
+    @Res() res: Response,
+  ): void {
+    this.renderChangePasswordPage(req, res);
   }
 
   // endpoint to get page to create/update private key
   @Get('set-keys')
-  renderSetKeysPage(
-    @Req() req: AuthenticatedRequest,
-    @Res() res: Response,
-  ): void {
-    res.render('user/set-keys', { user: req.user });
-  }
-
-  @Get('change-password')
-  renderChangePasswordPage(
-    @Req() req: AuthenticatedRequest,
-    @Res() res: Response,
-  ): void {
-    res.render('user/change-password', { user: req.user });
+  getSetKeysPage(@Req() req: AuthenticatedRequest, @Res() res: Response): void {
+    this.renderSetKeysPage(req, res);
   }
 
   // endpoint to get encrypted private key from user in the frontend
@@ -60,46 +97,70 @@ export class UserController {
     return this.userService.getPublicKey(username);
   }
 
+  // endpoint to change password of user
   @Post('change-password')
+  @UsePipes(new ValidationPipe({ whitelist: true }))
   async changePassword(
     @Req() req: AuthenticatedRequest,
-    @Body('currentPassword') currentPassword: string,
-    @Body('newPassword') newPassword: string,
     @Res() res: Response,
+    @Body() changePasswordDto: ChangePasswordDto,
   ): Promise<void> {
     try {
-      const user = await this.userService.changePassword(
+      const user = await this.userService.changeUserPassword(
         req.user.id,
-        currentPassword,
-        newPassword,
+        changePasswordDto.currentPassword,
+        changePasswordDto.newPassword,
       );
-      if (user) {
-        res.redirect('/user/settings');
+      if (!user) {
+        throw new Error('Failed to change password');
       }
+      this.logger.log(`Password changed for user ${user.username}`);
+      res.redirect('/user/settings');
     } catch (error) {
-      console.error('Error changing password:', error);
-      res.status(500).send('Error changing password');
+      this.logger.error('Error changing password', error);
+      this.renderChangePasswordPage(req, res, {
+        error:
+          (error as { message: string }).message || 'Failed to change password',
+      });
     }
   }
 
   // endpoint to update private and public key of user
-  @Post('set/user-keys')
-  setUserKeys(
-    @Body('privateKey') privateKey: string,
-    @Body('publicKey') publicKey: string,
+  @Post('set-keys')
+  @UsePipes(new ValidationPipe({ whitelist: true }))
+  async setUserKeys(
+    @Req() req: AuthenticatedRequest,
     @Res() res: Response,
-  ): void {
-    this.userService.setUserKeys(privateKey, publicKey);
-    res.redirect('/user/settings');
+    @Body() setKeysDto: SetKeysDto,
+  ): Promise<void> {
+    try {
+      const user = await this.userService.setUserKeys(
+        req.user.id,
+        setKeysDto.password,
+        setKeysDto.private_key_encrypted,
+        setKeysDto.private_key_kdf,
+        setKeysDto.public_key,
+      );
+      if (!user) {
+        throw new Error('Failed to set user keys');
+      }
+      this.logger.log(`Keys set for user ${user.username}`);
+      res.redirect('/user/settings');
+    } catch (error) {
+      this.logger.error('Error setting user keys', error);
+      this.renderSetKeysPage(req, res, {
+        error: (error as { message: string }).message || 'Failed to set keys',
+      });
+    }
   }
 
   // endpoint to trust and save the public key of another user as known for this user
-  @Post('trust/publickey')
+  /*@Post('trust/publickey')
   trustPublicKey(
     @Body('username') username: string,
     @Body('recipient') recipient: string,
     @Body('publickey') publicKey: string,
   ): void {
     this.userService.trustPublicKey(username, recipient, publicKey);
-  }
+  }*/
 }

@@ -13,13 +13,9 @@ import { Request, Response } from 'express';
 
 import { AuthService } from '@auth/services/auth.service';
 import { UserService } from '@user/services/user.service';
+import { CsrfRequest } from '@auth/types/csrf-request.interface';
 import { LoginDto } from '@auth/dto/login.dto';
 import { RegisterDto } from '@auth/dto/register.dto';
-
-interface CsrfRequest extends Request {
-  csrfToken: () => string;
-  cookies: { [key: string]: string };
-}
 
 @Controller('auth')
 export class AuthController {
@@ -92,9 +88,9 @@ export class AuthController {
   @Post('login')
   @UsePipes(new ValidationPipe({ whitelist: true }))
   async login(
-    @Body() loginDto: LoginDto,
     @Req() req: CsrfRequest,
     @Res() res: Response,
+    @Body() loginDto: LoginDto,
   ) {
     try {
       const user = await this.authService.validateUser(
@@ -103,11 +99,11 @@ export class AuthController {
       );
       await this.authService.authenticateUser(user, res);
       return res.redirect('/transfer');
-    } catch (err) {
-      this.logger.error(err);
+    } catch (error) {
+      this.logger.error('Error logging in user', error);
       return this.renderLoginPage(req, res, {
         username: loginDto.username,
-        error: (err as { message: string }).message || 'Login failed',
+        error: (error as { message: string }).message || 'Login failed',
       });
     }
   }
@@ -115,9 +111,9 @@ export class AuthController {
   @Post('register')
   @UsePipes(new ValidationPipe({ whitelist: true }))
   async register(
-    @Body() registerDto: RegisterDto,
     @Req() req: CsrfRequest,
     @Res() res: Response,
+    @Body() registerDto: RegisterDto,
   ) {
     try {
       // TODO: check if password match.
@@ -129,12 +125,12 @@ export class AuthController {
       );
       await this.authService.authenticateUser(user, res);
       return res.redirect('/transfer');
-    } catch (err) {
-      this.logger.error(err);
+    } catch (error) {
+      this.logger.error('Error registering user', error);
       return this.renderRegisterPage(req, res, {
         username: registerDto.username,
         email: registerDto.email,
-        error: (err as { message: string }).message || 'Registration failed',
+        error: (error as { message: string }).message || 'Registration failed',
       });
     }
   }
