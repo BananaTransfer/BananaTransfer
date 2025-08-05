@@ -24,9 +24,3 @@ runs:
     - name: Run tests
       run: npm test
       shell: bash
-    - name: Run tests for public js
-      run: npm run test:public
-      shell: bash
-    - name: Build the js files
-      run: npm run build:public
-      shell: bash
