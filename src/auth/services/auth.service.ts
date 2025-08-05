@@ -28,7 +28,7 @@ export class AuthService {
 
   async validateUser(username: string, password: string): Promise<LocalUser> {
     const user: LocalUser = await this.userService.getUserInfo(username);
-    if (!user || !(await bcrypt.compare(password, user.password_hash))) {
+    if (!(await bcrypt.compare(password, user.password_hash))) {
       throw new UnauthorizedException('Invalid username or password');
     }
     if (user.status !== UserStatus.ACTIVE) {
