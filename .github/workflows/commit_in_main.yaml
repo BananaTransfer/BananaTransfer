@@ -1,9 +1,13 @@
 name: Docker Build and Publish
 on:
   push:
-    branches: ["**"]
+    branches: ["main"]
     paths-ignore:
       - "documents/**"
+      - ".github/**"
+      - "LICENSE"
+      - "README.md"
+      - "docker-compose.yaml"
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -25,19 +29,10 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Define Docker image for integration test
-        id: e2e_meta
-        uses: docker/metadata-action@v5
+      - name: Deploy integration test docker image
+        uses: ./.github/actions/code_quality_check
         with:
-          images: ghcr.io/${{ github.repository }}
-          tags: type=raw,value=e2e
-      - name: Build and push integration test docker image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: true
-          tags: ${{ steps.e2e_meta.outputs.tags }}
-          labels: ${{ steps.e2e_meta.outputs.labels }}
+          tag: e2e
       - name: Deploy integration test environment A
         uses: ./.github/actions/deploy
         with:
@@ -55,19 +50,16 @@ jobs:
           DOMAIN: A.${{ vars.BASE_HOSTNAME }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           DOCKER_IMAGE_TAG: e2e
-      # NPM + dep installed in the code quality check action
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
       - name: Run Playwright tests
         run: BASE_URL=https://A.${{ vars.BASE_HOSTNAME }} npm run test:e2e
-      # Upload playwright test artifacts for review on github servers
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
-      # terraform env configured in the deploy action
       - name: Destroy the integration test environment A
         if: ${{ !cancelled() }} # run even in case of failure, but not if cancelled
         run: | 
@@ -77,19 +69,10 @@ jobs:
             -var="hostname=A.${{ vars.BASE_HOSTNAME }}"
         working-directory: infra/terraform
         shell: bash
-      - name: Define Docker image tags for latest
-        id: meta
-        uses: docker/metadata-action@v5
+      - name: Deploy latest docker image
+        uses: ./.github/actions/code_quality_check
         with:
-          images: ghcr.io/${{ github.repository }}
-          tags: type=raw,value=latest
-      - name: Build and push latest docker image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tag: latest
   deploy_saul:
     needs: build_and_push_docker_image
     runs-on: ubuntu-latest
