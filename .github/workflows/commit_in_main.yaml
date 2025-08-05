@@ -32,7 +32,7 @@ jobs:
       - name: Deploy integration test docker image
         uses: ./.github/actions/build_push_docker
         with:
-          tag: e2e
+          TAG: e2e
       - name: Deploy integration test environment A
         uses: ./.github/actions/deploy
         with:
@@ -72,7 +72,7 @@ jobs:
       - name: Deploy latest docker image
         uses: ./.github/actions/build_push_docker
         with:
-          tag: latest
+          TAG: latest
   deploy_saul:
     needs: build_and_push_docker_image
     runs-on: ubuntu-latest

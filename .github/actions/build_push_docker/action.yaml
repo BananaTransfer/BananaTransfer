@@ -1,6 +1,6 @@
 name: Build and push docker image
 inputs:
-  tag:
+  TAG:
     required: true
 runs:
   using: "composite"
@@ -10,7 +10,7 @@ runs:
       uses: docker/metadata-action@v5
       with:
         images: ghcr.io/${{ github.repository }}
-        tags: type=raw,value=${{ inputs.image_tag }}
+        tags: type=raw,value=${{ inputs.TAG }}
     - name: Build and push docker image
       uses: docker/build-push-action@v6
       with:
