@@ -3,8 +3,8 @@
   "compilerOptions": {
     "module": "ES2022",
     "target": "ES2022",
-    "outDir": "./public/js/compiled",
-    "rootDir": "./public/js",
+    "outDir": "./public/js",
+    "rootDir": "src/public",
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": false,
     "declaration": false,
@@ -15,11 +15,11 @@
     "allowSyntheticDefaultImports": true
   },
   "include": [
-    "public/js/**/*.ts"
+    "src/public/**/*.ts"
   ],
   "exclude": [
-    "public/js/**/*.spec.ts",
-    "public/js/**/*.test.ts",
+    "src/public//**/*.spec.ts",
+    "src/public/js/**/*.test.ts",
     "node_modules"
   ]
 }
