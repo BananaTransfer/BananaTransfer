@@ -30,7 +30,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Deploy integration test docker image
-        uses: ./.github/actions/code_quality_check
+        uses: ./.github/actions/build_push_docker
         with:
           tag: e2e
       - name: Deploy integration test environment A
@@ -70,7 +70,7 @@ jobs:
         working-directory: infra/terraform
         shell: bash
       - name: Deploy latest docker image
-        uses: ./.github/actions/code_quality_check
+        uses: ./.github/actions/build_push_docker
         with:
           tag: latest
   deploy_saul:
