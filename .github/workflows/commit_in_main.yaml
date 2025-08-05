@@ -4,7 +4,7 @@ on:
     branches: ["**"]
     paths-ignore:
       - "documents/**"
-      - ".github/**"
+      - ".githooks/**"
       - "LICENSE"
       - "README.md"
       - "docker-compose.yaml"
