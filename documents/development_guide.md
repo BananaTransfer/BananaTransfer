@@ -26,6 +26,7 @@ We don't enforce any commit message format but use git flow like branch naming c
 Documentation and changes to the infrastructure are considered as features.
 
 ### Code Structure
+
 ```md
 project-root/
   ├── src/                           # Backend/server code (NestJS, etc.)
@@ -69,6 +70,31 @@ project-root/
   ├── tsconfig.public.json           # Frontend TypeScript config
   ├── jest.public.config.json        # Frontend test configuration
   └── docker-compose.yaml            # Local development environment
+```
+
+### Testing practices
+
+Use Type Mocked and Testbed imports from @suites for mocking your datas.
+For example:
+```ts
+import type { Mocked } from '@suites/doubles.jest';
+import { TestBed } from '@suites/unit';
+
+describe('AuthService', () => {
+  let authService: AuthService;
+  let mockUserService: Mocked<UserService>;
+  let mockJwtService: Mocked<JwtService>;
+
+  beforeEach(async () => {
+    const { unit, unitRef } = await TestBed.solitary(AuthService).compile();
+    authService = unit;
+    userService = unitRef.get(UserService);
+    jwtService = unitRef.get(JwtService);
+  });
+  
+  // suite des tests
+
+})
 ```
 
 ## Infrastructure    
