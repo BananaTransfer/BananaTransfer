@@ -25,6 +25,52 @@ We don't enforce any commit message format but use git flow like branch naming c
 
 Documentation and changes to the infrastructure are considered as features.
 
+## Code Structure
+```md
+project-root/
+  ├── src/                           # Backend/server code (NestJS, etc.)
+  │   ├── auth/                      # Authentication module
+  │   │   ├── controllers/           # Auth endpoints (login, register)
+  │   │   ├── services/              # Auth business logic
+  │   │   ├── guards/                # Route protection (JWT auth)
+  │   │   └── dto/                   # Data transfer objects (validation)
+  │   ├── database/                  # Database configuration and entities
+  │   │   ├── entities/              # TypeORM entities (User, FileTransfer, etc.)
+  │   │   └── migrations/            # Database schema changes
+  │   ├── transfer/                  # File transfer business logic
+  │   ├── user/                      # User management
+  │   └── main.ts                    # Application entry point
+  ├── dist/                          # Compiled backend JavaScript code
+  ├── public/                        # Static assets served to browser
+  │   ├── css/                       # Stylesheets (Bootstrap, custom)
+  │   ├── js/                        # Compiled frontend JavaScript
+  │   │   ├── crypto/                # Client-side encryption modules
+  │   │   └── htmx.min.js            # HTMX for dynamic interactions
+  │   ├── images/                    # Static images, logos, icons
+  │   └── favicon/                  
+  ├── frontend/                      # Frontend TypeScript source code
+  │   ├── crypto/                    # Encryption/decryption modules
+  │   │   ├── encryption.ts          # Streaming file encryption
+  │   │   ├── key-manager.ts         # RSA/AES key operations
+  │   │   ├── security-utils.ts      # Crypto utilities
+  │   │   └── *.spec.ts              # Frontend unit tests
+  │   └── components/                # Reusable frontend components
+  ├── views/                         # Server-side templates (Pug)
+  │   ├── auth/                      # Login/register pages
+  │   ├── transfer/                  # File upload/download UI
+  │   └── layout.pug                 # Base template
+  ├── test/                          # End-to-end tests
+  ├── infra/                         # Infrastructure as code
+  │   ├── ansible/                   # Deployment automation
+  │   └── terraform/                 # Cloud resource provisioning
+  ├── documents/                     # Project documentation
+  ├── package.json                   # Dependencies and scripts
+  ├── tsconfig.json                  # Backend TypeScript config
+  ├── tsconfig.public.json           # Frontend TypeScript config
+  ├── jest.public.config.json        # Frontend test configuration
+  └── docker-compose.yaml            # Local development environment
+```
+
 ## Infrastructure    
 
 ### CI/CD
