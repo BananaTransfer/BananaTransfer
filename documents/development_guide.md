@@ -25,7 +25,7 @@ We don't enforce any commit message format but use git flow like branch naming c
 
 Documentation and changes to the infrastructure are considered as features.
 
-## Code Structure
+### Code Structure
 ```md
 project-root/
   ├── src/                           # Backend/server code (NestJS, etc.)
