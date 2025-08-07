@@ -14,7 +14,7 @@ services:
     depends_on:
       - server
   server:
-    image: ghcr.io/bananatransfer/bananatransfer:latest
+    image: ghcr.io/bananatransfer/bananatransfer:${DOCKER_IMAGE_TAG}
     restart: always
     environment:
       PORT: 3000

@@ -5,3 +5,5 @@ S3_BUCKET={{ s3_bucket }}
 
 DOMAIN={{ domain }}
 JWT_SECRET={{ jwt_secret }}
+
+DOCKER_IMAGE_TAG={{ docker_image_tag }}
