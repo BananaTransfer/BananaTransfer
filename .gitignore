@@ -3,6 +3,14 @@
 /node_modules
 /build
 
+# TypeScript cache
+*.tsbuildinfo
+
+
+# Public Javascript files
+/public/js/**/*.js
+/public/js/**/*.js.map
+
 # Logs
 logs
 *.log

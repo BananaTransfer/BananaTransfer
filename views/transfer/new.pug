@@ -1,1 +1,60 @@
-# TODO: create page to create and upload a new file and create a transfer 
+extends ../layout
+
+block content
+  .container
+    .row.justify-content-center
+      .col-md-6.col-lg-6
+        .text-center.mt-5
+          img(src="/images/logo.png" alt="BananaTransfer" style="width:80px;")
+    .row.justify-content-center.mb-4
+      .col-1.d-flex.align-items-center
+        a.btn.btn-outline-secondary.mt-3(href="/transfer" style="border-radius:12px;") &larr;
+      .col-6.text-center
+        h2.mt-3.mb-0 Send files
+      .col-1
+    
+    .row.justify-content-center
+      .col-md-8
+        if error
+          .alert.alert-danger.text-center= error
+
+      // Recipient section
+      .row.justify-content-center
+        .col-md-8.mb-3
+          h4.font-weight-bold Recipient
+          hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
+          .input-group.mb-2
+            input.form-control(type="text" name="recipient" id="recipient" placeholder="Recipient's name" required)
+            span.input-group-text @#{domain}
+          
+          // Verification section
+          input.form-control.small(type="text" id="expectedHash"  style="font-size: 0.9em;")
+          button.btn.btn-outline-secondary(type="button" onclick="/")
+            i.me-1
+            | Verify Public Key Hash
+
+      // File upload section
+      .row.justify-content-center
+        .col-md-8.mb-3
+          h4.font-weight-bold Files
+          hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
+          .file-upload-area.p-5.text-center.rounded(style="background-color: #f9d71c; border: 2px dashed #333; cursor: pointer;" onclick="/")
+            i.bi.bi-cloud-upload.display-4.mb-3
+            h5 Add file (click to browse or drag and drop)
+            input(type="file" id="fileInput" name="files" multiple style="display: none;")
+          
+      // Subject section
+      .row.justify-content-center
+        .col-md-8.mb-3
+          h4.font-weight-bold Subject
+          hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
+          input.form-control(type="text" name="subject" id="subject" placeholder="Transfer Subject (Filename by default)")
+
+      // Send button
+      .row.justify-content-center
+        .col-md-8.mb-3
+          h4.font-weight-bold Send Transfer
+          hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
+          button.btn.btn-dark.mb-3(type="submit" style="border-radius:15px; padding:10px 40px;") Send file(s)
+          div.small.text-muted
+            | Files will be encrypted and securely transferred to the recipient.
