@@ -9,6 +9,8 @@ import { TransferService } from '@transfer/services/transfer.service';
 
 import { FileTransfer } from '@database/entities/file-transfer.entity';
 import { TransferLog } from '@database/entities/transfer-log.entity';
+import { DnsService } from '@transfer/services/dns.service';
+import { Resolver } from 'dns/promises';
 
 // This module handles all file sharing related operations that are done by the authenticated users
 
@@ -19,7 +21,14 @@ import { TransferLog } from '@database/entities/transfer-log.entity';
     TypeOrmModule.forFeature([FileTransfer, TransferLog]),
   ],
   controllers: [TransferController],
-  providers: [TransferService],
+  providers: [
+    {
+      provide: Resolver,
+      useFactory: () => new Resolver(),
+    },
+    TransferService,
+    DnsService,
+  ],
   exports: [TransferService],
 })
 export class TransferModule {}
