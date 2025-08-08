@@ -7,6 +7,8 @@ import { UserModule } from '@user/user.module';
 import { TransferController } from '@transfer/controllers/transfer.controller';
 import { TransferService } from '@transfer/services/transfer.service';
 
+import { BucketService } from '@transfer/bucket/bucket.service';
+
 import { FileTransfer } from '@database/entities/file-transfer.entity';
 import { TransferLog } from '@database/entities/transfer-log.entity';
 
@@ -19,7 +21,7 @@ import { TransferLog } from '@database/entities/transfer-log.entity';
     TypeOrmModule.forFeature([FileTransfer, TransferLog]),
   ],
   controllers: [TransferController],
-  providers: [TransferService],
-  exports: [TransferService],
+  providers: [TransferService, BucketService],
+  exports: [TransferService, BucketService],
 })
 export class TransferModule {}

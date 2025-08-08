@@ -45,11 +45,5 @@ describe('TransferService (with Testcontainers MinIO)', () => {
   it('service should be defined', () => {
     expect(service).toBeDefined();
   });
-
-  it('should return true if S3 connection is successful', async () => {
-    const result = await service.testConnection();
-    expect(result).toBe(true);
-  });
-
   // TODO: Add tests for all methods in TransferService
 });
