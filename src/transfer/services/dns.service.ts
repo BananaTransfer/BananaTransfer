@@ -17,32 +17,19 @@ export class DnsService {
     this.logger = new Logger(DnsService.name);
   }
 
-  /**
-   * Given a user domain, return the domain of the server hosting the BananaTransfer instance
-   */
-  public async getServerAddress(domain: string): Promise<string> {
+  private isFQDN(domain: string): boolean {
+    return validator.isFQDN(domain, {
+      allow_wildcard: false,
+      allow_trailing_dot: false,
+      allow_numeric_tld: false,
+      require_tld: true,
+    });
+  }
+
+  private async resolveTxt(domain: string): Promise<string[][]> {
+    this.logger.debug(`Resolving server address for ${domain}`);
     try {
-      this.logger.debug(`Resolving server address for ${domain}`);
-      const result = await this.resolver.resolveTxt(
-        '_bananatransfer.' + domain,
-      );
-
-      if (
-        result.length != 1 ||
-        result[0].length != 1 ||
-        !validator.isFQDN(result[0][0], {
-          allow_wildcard: false,
-          allow_trailing_dot: false,
-          allow_numeric_tld: false,
-          require_tld: true,
-        })
-      ) {
-        throw new InvalidDomainException(
-          `the provided domain is missconfigured`,
-        );
-      }
-
-      return result[0][0];
+      return await this.resolver.resolveTxt(domain);
     } catch (err: any) {
       const code = (err as { code: string }).code;
 
@@ -58,6 +45,31 @@ export class DnsService {
       );
       throw new InternalServerErrorException(err);
     }
+  }
+
+  /**
+   * Given a user domain, return the domain of the server hosting the BananaTransfer instance
+   */
+  public async getServerAddress(domain: string): Promise<string> {
+    if (!this.isFQDN(domain)) {
+      this.logger.error(`${domain} is not a valid fQDN`);
+      throw new InvalidDomainException('The provided domain is invalid.');
+    }
+
+    this.logger.debug(`Resolving server address for ${domain}`);
+    const result = await this.resolveTxt('_bananatransfer.' + domain);
+
+    if (
+      result.length != 1 ||
+      result[0].length != 1 ||
+      !this.isFQDN(result[0][0])
+    ) {
+      throw new InvalidDomainException(
+        `the provided domain is miss configured`,
+      );
+    }
+
+    return result[0][0];
   }
 }
 
