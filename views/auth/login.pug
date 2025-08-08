@@ -3,7 +3,7 @@ extends ../layout
 block content
   .container
     .row.justify-content-center
-      .col-md-6.col-lg-5
+      .col-md-6.col-lg-6
         .text-center.mt-5
           img(src="/images/logo.png" alt="BananaTransfer" style="width:80px;")
           h2.mt-3.mb-4 Login
@@ -22,7 +22,7 @@ block content
           .d-flex.justify-content-between.align-items-center.mb-3
             span No account yet? 
               a.ms-1(href="/auth/register") Register
-            button.btn.btn-dark(type="submit") Continue
+            button.btn.btn-dark(type="submit" data-testid="login-submit-btn") Continue
         .text-center.text-muted.mt-4
           small
             | Forgot your credentials?

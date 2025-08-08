@@ -3,7 +3,7 @@ extends ../layout
 block content
   .container
     .row.justify-content-center
-      .col-md-6.col-lg-5
+      .col-md-6.col-lg-6
         .text-center.mt-5
           img(src="/images/logo.png" alt="BananaTransfer" style="width:80px;")
           h2.mt-3.mb-4 Create an account
@@ -28,7 +28,7 @@ block content
           .d-flex.justify-content-between.align-items-center.mb-3
             span Already have an account? 
               a.ms-1(href="/auth/login") Login
-            button.btn.btn-dark(type="submit") Continue
+            button.btn.btn-dark(type="submit" data-testid="register-submit-btn") Continue
 
   script.
     document.addEventListener('DOMContentLoaded', function() {

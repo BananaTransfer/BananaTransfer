@@ -4,7 +4,6 @@ import {
   Post,
   Req,
   Res,
-  Render,
   Body,
   Logger,
   UsePipes,
@@ -32,7 +31,6 @@ export class AuthController {
   ) {}
 
   @Get('login')
-  @Render('auth/login')
   async renderLogin(@Req() req: CsrfRequest, @Res() res: Response) {
     const domain = this.userService.getDomain();
     const token = req.cookies?.jwt;
@@ -45,11 +43,10 @@ export class AuthController {
         // Token invalid, fall through to render login
       }
     }
-    return { domain, csrfToken: req.csrfToken() };
+    return res.render('auth/login', { domain, csrfToken: req.csrfToken() });
   }
 
   @Get('register')
-  @Render('auth/register')
   async renderRegister(@Req() req: CsrfRequest, @Res() res: Response) {
     const domain = this.userService.getDomain();
     const token = req.cookies?.jwt;
@@ -62,7 +59,7 @@ export class AuthController {
         // Token invalid, fall through to render register
       }
     }
-    return { domain, csrfToken: req.csrfToken() };
+    res.render('auth/register', { domain, csrfToken: req.csrfToken() });
   }
 
   @Post('login')

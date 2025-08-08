@@ -15,6 +15,7 @@
 
     domain: "{{ domain }}"
     jwt_secret: "{{ jwt_secret }}"
+    docker_image_tag: "{{ docker_image_tag }}"
   pre_tasks:
     - name: Install prerequisites for Docker
       apt:
