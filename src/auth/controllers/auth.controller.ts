@@ -1,18 +1,7 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Req,
-  Res,
-  Body,
-  Logger,
-  UsePipes,
-  ValidationPipe,
-} from '@nestjs/common';
+import { Controller, Get, Post, Req, Res, Body, Logger } from '@nestjs/common';
 import { Request, Response } from 'express';
 
 import { AuthService } from '@auth/services/auth.service';
-import { PasswordService } from '@user/services/password.service';
 import { UserService } from '@user/services/user.service';
 import { CsrfRequest } from '@auth/types/csrf-request.interface';
 import { LoginDto } from '@auth/dto/login.dto';
@@ -24,7 +13,6 @@ export class AuthController {
 
   constructor(
     private readonly authService: AuthService,
-    private readonly passwordService: PasswordService,
     private readonly userService: UserService,
   ) {}
 
@@ -88,7 +76,6 @@ export class AuthController {
   }
 
   @Post('login')
-  @UsePipes(new ValidationPipe({ whitelist: true }))
   async login(
     @Req() req: CsrfRequest,
     @Res() res: Response,
@@ -111,7 +98,6 @@ export class AuthController {
   }
 
   @Post('register')
-  @UsePipes(new ValidationPipe({ whitelist: true }))
   async register(
     @Req() req: CsrfRequest,
     @Res() res: Response,

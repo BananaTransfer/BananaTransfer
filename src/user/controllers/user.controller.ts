@@ -8,8 +8,6 @@ import {
   Body,
   UseGuards,
   Logger,
-  UsePipes,
-  ValidationPipe,
 } from '@nestjs/common';
 import { Response } from 'express';
 
@@ -99,7 +97,6 @@ export class UserController {
 
   // endpoint to change password of user
   @Post('change-password')
-  @UsePipes(new ValidationPipe({ whitelist: true }))
   async changePassword(
     @Req() req: AuthenticatedRequest,
     @Res() res: Response,
@@ -127,7 +124,6 @@ export class UserController {
 
   // endpoint to update private and public key of user
   @Post('set-keys')
-  @UsePipes(new ValidationPipe({ whitelist: true }))
   async setUserKeys(
     @Req() req: AuthenticatedRequest,
     @Res() res: Response,
