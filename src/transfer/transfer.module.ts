@@ -13,6 +13,7 @@ import { FileTransfer } from '@database/entities/file-transfer.entity';
 import { TransferLog } from '@database/entities/transfer-log.entity';
 import { DnsService } from '@transfer/services/dns.service';
 import { Resolver } from 'dns/promises';
+import { RemoteController } from '@transfer/controllers/remote.controller';
 
 // This module handles all file sharing related operations that are done by the authenticated users
 
@@ -22,7 +23,7 @@ import { Resolver } from 'dns/promises';
     UserModule,
     TypeOrmModule.forFeature([FileTransfer, TransferLog]),
   ],
-  controllers: [TransferController],
+  controllers: [TransferController, RemoteController],
   providers: [
     {
       provide: Resolver,
