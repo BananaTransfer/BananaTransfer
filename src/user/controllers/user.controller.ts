@@ -14,7 +14,7 @@ import {
 import { Response } from 'express';
 
 import { UserService } from '@user/services/user.service';
-import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '@auth/jwt/guards/jwt-auth.guard';
 import { AuthenticatedRequest } from '@auth/types/authenticated-request.interface';
 import { ChangePasswordDto } from '@user/dto/changePassword.dto';
 import { SetKeysDto } from '@user/dto/setKeys.dto';

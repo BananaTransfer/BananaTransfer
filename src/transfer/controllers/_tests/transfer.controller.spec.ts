@@ -5,7 +5,6 @@ import { JwtService } from '@nestjs/jwt';
 
 import { TransferController } from '@transfer/controllers/transfer.controller';
 import { TransferService } from '@transfer/services/transfer.service';
-import { AuthService } from '@auth/services/auth.service';
 import { UserService } from '@user/services/user.service';
 import { PasswordService } from '@user/services/password.service';
 
@@ -33,7 +32,6 @@ describe('TransferController', () => {
       controllers: [TransferController],
       providers: [
         TransferService,
-        AuthService,
         UserService,
         PasswordService,
         JwtService,
