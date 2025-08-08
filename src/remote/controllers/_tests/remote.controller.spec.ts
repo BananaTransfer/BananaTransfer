@@ -16,6 +16,7 @@ import { RemoteUser } from '@database/entities/remote-user.entity';
 import { TrustedRecipient } from '@database/entities/trusted-recipient.entity';
 import { FileTransfer } from '@database/entities/file-transfer.entity';
 import { TransferLog } from '@database/entities/transfer-log.entity';
+import { BucketService } from '@transfer/services/bucket.service';
 
 describe('RemoteController', () => {
   let remoteController: RemoteController;
@@ -33,6 +34,7 @@ describe('RemoteController', () => {
       // imports: [ConfigModule.forRoot({ isGlobal: true })], // Commented Since there is no .env file for now
       controllers: [RemoteController],
       providers: [
+        BucketService,
         RemoteService,
         AuthService,
         TransferService,

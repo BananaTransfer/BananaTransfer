@@ -17,6 +17,7 @@ import { RemoteUser } from '@database/entities/remote-user.entity';
 import { TrustedRecipient } from '@database/entities/trusted-recipient.entity';
 import { FileTransfer } from '@database/entities/file-transfer.entity';
 import { TransferLog } from '@database/entities/transfer-log.entity';
+import { BucketService } from '@transfer/services/bucket.service';
 
 describe('RemoteModule', () => {
   let module: TestingModule;
@@ -37,6 +38,7 @@ describe('RemoteModule', () => {
         RemoteService,
         AuthService,
         JwtService,
+        BucketService,
         TransferService,
         UserService,
         PasswordService,

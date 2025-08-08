@@ -7,6 +7,8 @@ import { UserModule } from '@user/user.module';
 import { TransferController } from '@transfer/controllers/transfer.controller';
 import { TransferService } from '@transfer/services/transfer.service';
 
+import { BucketService } from '@transfer/services/bucket.service';
+
 import { FileTransfer } from '@database/entities/file-transfer.entity';
 import { TransferLog } from '@database/entities/transfer-log.entity';
 import { DnsService } from '@transfer/services/dns.service';
@@ -26,6 +28,7 @@ import { Resolver } from 'dns/promises';
       provide: Resolver,
       useFactory: () => new Resolver(),
     },
+    BucketService,
     TransferService,
     DnsService,
   ],

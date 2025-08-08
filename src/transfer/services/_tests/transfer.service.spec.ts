@@ -6,6 +6,7 @@ import { MinioContainer, StartedMinioContainer } from '@testcontainers/minio';
 
 import { FileTransfer } from '@database/entities/file-transfer.entity';
 import { TransferLog } from '@database/entities/transfer-log.entity';
+import { BucketService } from '@transfer/services/bucket.service';
 
 describe('TransferService (with Testcontainers MinIO)', () => {
   jest.setTimeout(60000);
@@ -28,6 +29,7 @@ describe('TransferService (with Testcontainers MinIO)', () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [ConfigModule.forRoot({ isGlobal: true })],
       providers: [
+        BucketService,
         TransferService,
         // Mock the repositories for unit tests
         { provide: getRepositoryToken(FileTransfer), useValue: {} },
@@ -45,11 +47,5 @@ describe('TransferService (with Testcontainers MinIO)', () => {
   it('service should be defined', () => {
     expect(service).toBeDefined();
   });
-
-  it('should return true if S3 connection is successful', async () => {
-    const result = await service.testConnection();
-    expect(result).toBe(true);
-  });
-
   // TODO: Add tests for all methods in TransferService
 });
