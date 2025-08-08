@@ -1,34 +1,41 @@
 extends ../layout
 
 block content
-  .container
-    .row.justify-content-center
-      .col-md-6.col-lg-6
-        .text-center.mt-5
-          img(src="/images/logo.png" alt="BananaTransfer" style="width:80px;")
-          h2.mt-3.mb-4 Create an account
-        if error
-          .alert.alert-danger.text-center= error
-        form(method="POST" action="/auth/register" class="bg-light p-4 rounded shadow-sm")
-          input(type="hidden" name="_csrf" value=csrfToken)
-          .mb-3
-            label.form-label(for="username") Username
-            .input-group
-              input.form-control(type="text" name="username" id="username" placeholder="username" value=username required)
-              span.input-group-text @#{domain}
-          .mb-3
-            label.form-label(for="email") Email address
-            input.form-control(type="email" name="email" id="email" placeholder="email (username by default)" value=email required)
-          .mb-3
-            label.form-label(for="password") Password
-            input.form-control(type="password" name="password" id="password" placeholder="password" required)
-          .mb-3
-            label.form-label(for="confirmPassword") Confirm password
-            input.form-control(type="password" name="confirmPassword" id="confirmPassword" placeholder="password confirmation" required)
-          .d-flex.justify-content-between.align-items-center.mb-3
-            span Already have an account? 
-              a.ms-1(href="/auth/login") Login
-            button.btn.btn-dark(type="submit" data-testid="register-submit-btn") Continue
+  .row.justify-content-center.mb-3
+    .col-1
+      a.btn.btn-outline-secondary(href="/" style="border-radius:12px;")
+        i.bi.bi-arrow-left.align-middle
+    .col-4.text-center
+      h2 Create an account
+    .col-1
+
+  if error
+    .row.justify-content-center.mb-3
+      .col-8
+        .alert.alert-danger.text-center= error
+
+  .row.justify-content-center.mb-3
+    .col-6
+      form(method="POST" action="/auth/register" class="bg-light p-4 rounded shadow-sm")
+        input(type="hidden" name="_csrf" value=csrfToken)
+        .mb-3
+          label.form-label(for="username") Username
+          .input-group
+            input.form-control(type="text" name="username" id="username" placeholder="username" value=username required)
+            span.input-group-text @#{domain}
+        .mb-3
+          label.form-label(for="email") Email address
+          input.form-control(type="email" name="email" id="email" placeholder="email (username by default)" value=email required)
+        .mb-3
+          label.form-label(for="password") Password
+          input.form-control(type="password" name="password" id="password" placeholder="password" required)
+        .mb-3
+          label.form-label(for="confirmPassword") Confirm password
+          input.form-control(type="password" name="confirmPassword" id="confirmPassword" placeholder="password confirmation" required)
+        .d-flex.justify-content-between.align-items-center.mb-3
+          span Already have an account? 
+            a.ms-1(href="/auth/login") Login
+          button.btn.btn-dark(type="submit" data-testid="register-submit-btn") Continue
 
   script.
     document.addEventListener('DOMContentLoaded', function() {

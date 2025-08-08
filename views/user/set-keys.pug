@@ -1,68 +1,64 @@
 extends ../layout
 
 block content
-  .container
-    .row.justify-content-center
-      .col-md-6.col-lg-6
-        .text-center.mt-5
-          img(src="/images/logo.png" alt="BananaTransfer" style="width:80px;")
-    .row.justify-content-center
-      .col-1
-        a.btn.btn-outline-secondary.mt-3(href="/user" style="border-radius:12px;") &larr;
-      .col-6.text-center
-        h2.mt-3.mb-4 Key-Pair and Master-Password
-      .col-1
+  .row.justify-content-center.mb-3
+    .col-1
+      a.btn.btn-outline-secondary(href="/user" style="border-radius:12px;")
+        i.bi.bi-arrow-left.align-middle
+    .col-6.text-center
+      h2 Key-Pair and Master-Password
+    .col-1
 
-    .row.justify-content-center
-      .col-md-8
-        if error
-          .alert.alert-danger.text-center= error
+  if error
+    .row.justify-content-center.mb-3
+      .col-8
+        .alert.alert-danger.text-center= error
 
-    .row.justify-content-center
-      .col-md-8.mb-3
-        h4.font-weight-bold Generate new Private and Public Key
-        hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
-        button.btn.btn-outline-secondary(type="button" onclick="generatePrivateKey()")
-          i.bi.bi-key.me-1
-          | Generate Key-Pair
-        div.small.text-muted.mt-1
-          | The Private and Public Key will be used to encrypt the files shared with you.        
-        label.mt-3.form-label(for="publicKeyField") Public Key
-        .input-group.mb-2.mx-auto(style="max-width:100%")
-          input.form-control(type="text", id="publicKeyField", value=publicKey, readonly)
-          button.btn.btn-outline-secondary(type="button", id="copyPublicKeyBtn", onclick="copyToClipboard('publicKeyField', 'copyPublicKeyBtn')")
-            i.bi.bi-clipboard
-        div.small.text-muted.mb-2
-          | This is your public key. It will be automatically shared with others so they can send you files.
+  .row.justify-content-center
+    .col-md-8.mb-3
+      h4.font-weight-bold Generate new Private and Public Key
+      hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
+      button.btn.btn-outline-secondary(type="button" onclick="generatePrivateKey()")
+        i.bi.bi-key.me-1
+        | Generate Key-Pair
+      div.small.text-muted.mt-1
+        | The Private and Public Key will be used to encrypt the files shared with you.        
+      label.mt-3.form-label(for="publicKeyField") Public Key
+      .input-group.mb-2.mx-auto(style="max-width:100%")
+        input.form-control(type="text", id="publicKeyField", value=publicKey, readonly)
+        button.btn.btn-outline-secondary(type="button", id="copyPublicKeyBtn", onclick="copyToClipboard('publicKeyField', 'copyPublicKeyBtn')")
+          i.bi.bi-clipboard
+      div.small.text-muted.mb-2
+        | This is your public key. It will be automatically shared with others so they can send you files.
 
-      .col-md-8.mb-3
-        h4.font-weight-bold Generate new Master-Password
-        hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
-        button.btn.btn-outline-secondary(type="button" onclick="generateMasterPassword()")
-          i.bi.bi-shield-lock.me-1
-          | Generate Master-Password
-        div.small.text-muted.mt-1
-          | The Master-Password is used to encrypt your private Key and store it securely on your organization's server.
-        label.mt-3.form-label(for="masterPasswordField") Master Password
-        .input-group.mb-2.mx-auto(style="max-width:100%")
-          input.form-control(type="text", id="masterPasswordField", value=password, readonly, style="min-width:300px; word-break:break-all;")
-          button.btn.btn-outline-secondary(type="button", id="copyMasterPasswordBtn", onclick="copyToClipboard('masterPasswordField', 'copyMasterPasswordBtn')")
-            i.bi.bi-clipboard
-        div.small.text-muted.mt-1
-          | Please make sure you store it in your Password-Manager.
-          | Before downloading and decrypting files that were shared with you, you will be asked for this Master-Password.
+    .col-md-8.mb-3
+      h4.font-weight-bold Generate new Master-Password
+      hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
+      button.btn.btn-outline-secondary(type="button" onclick="generateMasterPassword()")
+        i.bi.bi-shield-lock.me-1
+        | Generate Master-Password
+      div.small.text-muted.mt-1
+        | The Master-Password is used to encrypt your private Key and store it securely on your organization's server.
+      label.mt-3.form-label(for="masterPasswordField") Master Password
+      .input-group.mb-2.mx-auto(style="max-width:100%")
+        input.form-control(type="text", id="masterPasswordField", value=password, readonly, style="min-width:300px; word-break:break-all;")
+        button.btn.btn-outline-secondary(type="button", id="copyMasterPasswordBtn", onclick="copyToClipboard('masterPasswordField', 'copyMasterPasswordBtn')")
+          i.bi.bi-clipboard
+      div.small.text-muted.mt-1
+        | Please make sure you store it in your Password-Manager.
+        | Before downloading and decrypting files that were shared with you, you will be asked for this Master-Password.
 
-      .col-md-8.mb-3
-        h4.font-weight-bold Encrypt and Save new Keys
-        hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
-        p.mt-2.text-warning.small
-          | Warning: This will override your current keys stored on the server. Files that were previously shared with you, wont be accessible anymore with the new key
-        
-        button.btn.btn-outline-secondary.mt-1.mb-1(type="button" onclick="encryptAndSaveKey()")
-          i.bi.bi-upload.me-1
-          | Encrypt and save Keys
-        div.small.text-muted
-          | Your private key will be encrypted with your master-password and stored on your organizations server.
+    .col-md-8.mb-3
+      h4.font-weight-bold Encrypt and Save new Keys
+      hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
+      p.mt-2.text-warning.small
+        | Warning: This will override your current keys stored on the server. Files that were previously shared with you, wont be accessible anymore with the new key
+      
+      button.btn.btn-outline-secondary.mt-1.mb-1(type="button" onclick="encryptAndSaveKey()")
+        i.bi.bi-upload.me-1
+        | Encrypt and save Keys
+      div.small.text-muted
+        | Your private key will be encrypted with your master-password and stored on your organizations server.
                 
   script.
     function copyPassword() {
