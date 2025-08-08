@@ -1,13 +1,15 @@
 import { ConfigService } from '@nestjs/config';
 import { BucketService } from '@transfer/services/bucket.service';
 import { MinioContainer, StartedMinioContainer } from '@testcontainers/minio';
-import { writeFile, unlink } from 'fs/promises';
+import { writeFile, readFile, rm } from 'fs/promises';
 import {
   CreateBucketCommand,
   BucketLocationConstraint,
   S3Client,
 } from '@aws-sdk/client-s3';
 import { join } from 'path';
+import { tmpdir } from 'os';
+import validator from 'validator';
 
 describe('BucketService (with Testcontainers MinIO)', () => {
   jest.setTimeout(60000);
@@ -42,39 +44,38 @@ describe('BucketService (with Testcontainers MinIO)', () => {
     await minioContainer.stop();
   });
 
-  it('service should be defined', () => {
-    expect(service).toBeDefined();
+  describe('testConnection', () => {
+    it('should be connected to s3', async () => {
+      expect(await service.testConnection()).toBe(true);
+    });
   });
 
-  it('should connect to S3', async () => {
-    expect(await service.testConnection()).toBe(true);
+  it('should upload and download a file', async () => {
+    // Write a temp file
+    const testFilePath = join(tmpdir(), 'testupload.txt');
+    await writeFile(testFilePath, 'banana!');
+
+    const key = await service.uploadFile(testFilePath);
+    await rm(testFilePath);
+
+    expect(validator.isUUID(key)).toBe(true);
+
+    // Get file back from S3
+    const downloadedPath = await service.getFile(key);
+    const data = await readFile(downloadedPath, 'utf-8');
+    await rm(downloadedPath);
+
+    expect(data).toBe('banana!');
   });
-  //
-  // it('should upload and download a file', async () => {
-  //   // Write a temp file
-  //   const testFilePath = join(__dirname, 'testupload.txt');
-  //   await writeFile(testFilePath, 'banana!');
-  //   const key = await service.uploadFile(testFilePath);
-  //   expect(key).toBe('testupload.txt');
-  //
-  //   // Get file back from S3
-  //   const downloadedPath = await service.getFile(key);
-  //   const data = require('fs').readFileSync(downloadedPath, 'utf-8');
-  //   expect(data).toBe('banana!');
-  //
-  //   // Clean up
-  //   await unlink(testFilePath);
-  //   await unlink(downloadedPath);
-  // });
 
   it('should delete a file', async () => {
-    const testFilePath = join(__dirname, 'todelete.txt');
+    const testFilePath = join(tmpdir(), 'todelete.txt');
     await writeFile(testFilePath, 'todelete!');
     const key = await service.uploadFile(testFilePath);
+    await rm(testFilePath);
     await service.deleteFile(key);
 
     // Try to fetch (should throw)
     await expect(service.getFile(key)).rejects.toThrow();
-    await unlink(testFilePath);
   });
 });
