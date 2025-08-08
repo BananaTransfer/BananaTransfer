@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request, Response } from 'express';
-import { JwtPayload } from '@auth/interfaces/jwt-payload.interface';
+import { UserPayload } from '@auth/types/user-payload.interface';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -18,7 +18,7 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     try {
-      req.user = await this.jwtService.verifyAsync<JwtPayload>(token);
+      req.user = await this.jwtService.verifyAsync<UserPayload>(token);
       return true;
     } catch (err) {
       console.error('JWT verification failed:', err);

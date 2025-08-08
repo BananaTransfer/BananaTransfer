@@ -1,9 +1,10 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { JwtCoreModule } from '@auth/jwt/jwt-core.module';
 
-import { AuthModule } from '@auth/auth.module';
 import { UserController } from '@user/controllers/user.controller';
 import { UserService } from '@user/services/user.service';
+import { PasswordService } from '@user/services/password.service';
 
 import { User } from '@database/entities/user.entity';
 import { LocalUser } from '@database/entities/local-user.entity';
@@ -14,11 +15,11 @@ import { TrustedRecipient } from '@database/entities/trusted-recipient.entity';
 
 @Module({
   imports: [
-    forwardRef(() => AuthModule),
+    JwtCoreModule,
     TypeOrmModule.forFeature([User, LocalUser, RemoteUser, TrustedRecipient]),
   ],
   controllers: [UserController],
-  providers: [UserService],
-  exports: [UserService],
+  providers: [UserService, PasswordService],
+  exports: [UserService, PasswordService],
 })
 export class UserModule {}

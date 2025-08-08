@@ -5,6 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 
 import { AuthService } from '@auth/services/auth.service';
 import { UserService } from '@user/services/user.service';
+import { PasswordService } from '@user/services/password.service';
 
 import { User } from '@database/entities/user.entity';
 import { LocalUser } from '@database/entities/local-user.entity';
@@ -26,8 +27,9 @@ describe('AuthService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
-        UserService,
         JwtService,
+        UserService,
+        PasswordService,
         // Mock ConfigService
         {
           provide: ConfigService,

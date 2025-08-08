@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-//import { ConfigModule } from '@nestjs/config';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 
 import { UserController } from '@user/controllers/user.controller';
 import { UserService } from '@user/services/user.service';
+import { PasswordService } from '@user/services/password.service';
 
 import { User } from '@database/entities/user.entity';
 import { LocalUser } from '@database/entities/local-user.entity';
@@ -28,6 +28,7 @@ describe('UserController', () => {
       controllers: [UserController],
       providers: [
         UserService,
+        PasswordService,
         JwtService,
         // Mock ConfigService
         {

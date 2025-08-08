@@ -1,12 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 
 // import { RemoteModule } from './remote.module';
 import { RemoteController } from '@remote/controllers/remote.controller';
 import { RemoteService } from '@remote/services/remote.service';
+import { AuthService } from '@auth/services/auth.service';
 import { TransferService } from '@transfer/services/transfer.service';
 import { UserService } from '@user/services/user.service';
+import { PasswordService } from '@user/services/password.service';
 
 import { User } from '@database/entities/user.entity';
 import { LocalUser } from '@database/entities/local-user.entity';
@@ -32,8 +35,11 @@ describe('RemoteModule', () => {
       controllers: [RemoteController],
       providers: [
         RemoteService,
+        AuthService,
+        JwtService,
         TransferService,
         UserService,
+        PasswordService,
         // Mock ConfigService
         {
           provide: ConfigService,

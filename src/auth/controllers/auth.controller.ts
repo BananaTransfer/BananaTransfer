@@ -1,25 +1,11 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Req,
-  Res,
-  Body,
-  Logger,
-  UsePipes,
-  ValidationPipe,
-} from '@nestjs/common';
+import { Controller, Get, Post, Req, Res, Body, Logger } from '@nestjs/common';
 import { Request, Response } from 'express';
 
 import { AuthService } from '@auth/services/auth.service';
 import { UserService } from '@user/services/user.service';
+import { CsrfRequest } from '@auth/types/csrf-request.interface';
 import { LoginDto } from '@auth/dto/login.dto';
 import { RegisterDto } from '@auth/dto/register.dto';
-
-interface CsrfRequest extends Request {
-  csrfToken: () => string;
-  cookies: { [key: string]: string };
-}
 
 @Controller('auth')
 export class AuthController {
@@ -30,9 +16,37 @@ export class AuthController {
     private readonly userService: UserService,
   ) {}
 
-  @Get('login')
-  async renderLogin(@Req() req: CsrfRequest, @Res() res: Response) {
+  private renderLoginPage(
+    req: CsrfRequest,
+    res: Response,
+    options: { username?: string; error?: string } = {},
+  ) {
     const domain = this.userService.getDomain();
+    return res.render('auth/login', {
+      domain,
+      csrfToken: req.csrfToken(),
+      username: options.username,
+      error: options.error,
+    });
+  }
+
+  private renderRegisterPage(
+    req: CsrfRequest,
+    res: Response,
+    options: { username?: string; email?: string; error?: string } = {},
+  ) {
+    const domain = this.userService.getDomain();
+    return res.render('auth/register', {
+      domain,
+      csrfToken: req.csrfToken(),
+      username: options.username,
+      email: options.email,
+      error: options.error,
+    });
+  }
+
+  @Get('login')
+  protected async getLogin(@Req() req: CsrfRequest, @Res() res: Response) {
     const token = req.cookies?.jwt;
     if (token) {
       try {
@@ -43,12 +57,11 @@ export class AuthController {
         // Token invalid, fall through to render login
       }
     }
-    return res.render('auth/login', { domain, csrfToken: req.csrfToken() });
+    return this.renderLoginPage(req, res);
   }
 
   @Get('register')
-  async renderRegister(@Req() req: CsrfRequest, @Res() res: Response) {
-    const domain = this.userService.getDomain();
+  async getRegister(@Req() req: CsrfRequest, @Res() res: Response) {
     const token = req.cookies?.jwt;
     if (token) {
       try {
@@ -59,15 +72,14 @@ export class AuthController {
         // Token invalid, fall through to render register
       }
     }
-    res.render('auth/register', { domain, csrfToken: req.csrfToken() });
+    return this.renderRegisterPage(req, res);
   }
 
   @Post('login')
-  @UsePipes(new ValidationPipe({ whitelist: true }))
   async login(
-    @Body() loginDto: LoginDto,
     @Req() req: CsrfRequest,
     @Res() res: Response,
+    @Body() loginDto: LoginDto,
   ) {
     try {
       const user = await this.authService.validateUser(
@@ -76,45 +88,37 @@ export class AuthController {
       );
       await this.authService.authenticateUser(user, res);
       return res.redirect('/transfer');
-    } catch (err) {
-      this.logger.error(err);
-      const domain = this.userService.getDomain();
-      return res.status(401).render('auth/login', {
-        domain,
+    } catch (error) {
+      this.logger.error('Error logging in user', error);
+      return this.renderLoginPage(req, res, {
         username: loginDto.username,
-        csrfToken: req.csrfToken(),
-        error: (err as { message: string }).message || 'Login failed',
+        error: (error as { message: string }).message || 'Login failed',
       });
     }
   }
 
   @Post('register')
-  @UsePipes(new ValidationPipe({ whitelist: true }))
   async register(
-    @Body() registerDto: RegisterDto,
     @Req() req: CsrfRequest,
     @Res() res: Response,
+    @Body() registerDto: RegisterDto,
   ) {
     try {
       // TODO: check if password match.
 
-      const user = await this.authService.registerUser(
+      const user = await this.userService.createUser(
         registerDto.username,
         registerDto.email,
         registerDto.password,
       );
       await this.authService.authenticateUser(user, res);
       return res.redirect('/transfer');
-    } catch (err) {
-      this.logger.error(err);
-      // Render register page with error message
-      const domain = this.userService.getDomain();
-      return res.status(400).render('auth/register', {
-        domain,
+    } catch (error) {
+      this.logger.error('Error registering user', error);
+      return this.renderRegisterPage(req, res, {
         username: registerDto.username,
         email: registerDto.email,
-        csrfToken: req.csrfToken(),
-        error: (err as { message: string }).message || 'Registration failed',
+        error: (error as { message: string }).message || 'Registration failed',
       });
     }
   }

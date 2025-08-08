@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { AuthModule } from '@auth/auth.module';
+import { JwtCoreModule } from '@auth/jwt/jwt-core.module';
 import { UserModule } from '@user/user.module';
 
 import { TransferController } from '@transfer/controllers/transfer.controller';
@@ -16,7 +16,7 @@ import { Resolver } from 'dns/promises';
 
 @Module({
   imports: [
-    AuthModule,
+    JwtCoreModule,
     UserModule,
     TypeOrmModule.forFeature([FileTransfer, TransferLog]),
   ],
