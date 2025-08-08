@@ -10,7 +10,7 @@ test('login with valid credentials', async ({
   transferListPage,
 }) => {
   const credentials = {
-    username: faker.internet.username(),
+    username: faker.person.firstName(),
     password: faker.internet.password({ length: 13 }),
   };
 
@@ -29,12 +29,13 @@ test('user should be redirected to transfer list if logged in', async ({
   transferListPage,
 }) => {
   const credentials = {
-    username: faker.internet.username(),
+    username: faker.person.firstName(),
     password: faker.internet.password({ length: 13 }),
   };
 
   await registerPage.goto();
   await registerPage.register(credentials);
+  await expect(page).toHaveURL(transferListPage.URL);
   await loginPage.goto();
   await expect(page).toHaveURL(transferListPage.URL);
 });

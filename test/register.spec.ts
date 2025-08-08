@@ -12,7 +12,7 @@ test('registering with username and password works (twice same password and defa
   transferListPage,
 }) => {
   await registerPage.register({
-    username: faker.internet.username(),
+    username: faker.person.firstName(),
     password: faker.internet.password({ length: 13 }),
   });
   await expect(page).toHaveURL(transferListPage.URL);
@@ -24,25 +24,22 @@ test('registering with username, email and password works (twice same password)'
   transferListPage,
 }) => {
   await registerPage.register({
-    username: faker.internet.username(),
+    username: faker.person.firstName(),
     email: faker.internet.email(),
     password: faker.internet.password({ length: 13 }),
   });
   await expect(page).toHaveURL(transferListPage.URL);
 });
 
-// TODO enable once fixed
-// test('registering with two different password dont work', async ({
-//   page,
-//   registerPage,
-// }) => {
-//   await registerPage.register({
-//     username: faker.internet.username(),
-//     password: faker.internet.password({ length: 13 }),
-//     confirmPassword: faker.internet.password({ length: 13 }),
-//   });
-//   await expect(page).toHaveURL(registerPage.URL);
-// });
+test('registering with two different password dont work', async ({
+  page,
+  registerPage,
+}) => {
+  await registerPage.setUsername(faker.person.firstName());
+  await registerPage.setFirstPassword(faker.internet.password({ length: 13 }));
+  await registerPage.setSecondPassword(faker.internet.password({ length: 13 }));
+  await expect(page.locator('#submitBtn')).toBeDisabled();
+});
 
 test('user should be redirected to transfer list if logged in', async ({
   registerPage,
@@ -50,7 +47,7 @@ test('user should be redirected to transfer list if logged in', async ({
   transferListPage,
 }) => {
   const credentials = {
-    username: faker.internet.username(),
+    username: faker.person.firstName(),
     password: faker.internet.password({ length: 13 }),
   };
 
