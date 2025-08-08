@@ -41,19 +41,19 @@ jobs:
           ENVIRONMENT_NAME: e2e-a
           SSH_PUB_KEY: ${{ vars.SSH_PUB_KEY }}
           SSH_PRIV_KEY: ${{ secrets.SSH_PRIV_KEY }}
-          INTERNAL_HOSTNAME: A.${{ vars.BASE_HOSTNAME }}
-          EXTERNAL_HOSTNAME: A.${{ vars.BASE_HOSTNAME }}
+          INTERNAL_HOSTNAME: a.${{ vars.BASE_HOSTNAME }}
+          EXTERNAL_HOSTNAME: a.${{ vars.BASE_HOSTNAME }}
           DOCKER_REPO_USER: ${{ secrets.DOCKER_REPO_USER }}
           DOCKER_REPO_TOKEN: ${{ secrets.DOCKER_REPO_TOKEN }}
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASS: ${{ secrets.DB_PASS }}
-          DOMAIN: A.${{ vars.BASE_HOSTNAME }}
+          DOMAIN: a.${{ vars.BASE_HOSTNAME }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           DOCKER_IMAGE_TAG: e2e
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
       - name: Run Playwright tests
-        run: BASE_URL=https://A.${{ vars.BASE_HOSTNAME }} npm run test:e2e
+        run: BASE_URL=https://a.${{ vars.BASE_HOSTNAME }} npm run test:e2e
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
@@ -66,7 +66,7 @@ jobs:
           terraform destroy -auto-approve -auto-approve -input=false \
             -var="ssh_pub_key=${{ vars.SSH_PUB_KEY }}" \
             -var="environment_name=e2e-a" \
-            -var="hostname=A.${{ vars.BASE_HOSTNAME }}"
+            -var="hostname=a.${{ vars.BASE_HOSTNAME }}"
         working-directory: infra/terraform
         shell: bash
       - name: Deploy latest docker image
