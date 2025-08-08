@@ -2,4 +2,55 @@ extends ../layout
 
 block content
   .container
-   .p transfer list
+    .row.justify-content-center
+      .col-md-6.col-lg-6
+        .text-center.mt-5
+          img(src="/images/logo.png" alt="BananaTransfer" style="width:80px;")
+    .row.justify-content-center.mb-4
+      .col-2
+      .col-6.text-center
+        h2.mt-3.mb-0 Transfers
+      .col-2.d-flex.align-items-center
+        a.btn.btn-success.mt-3.ms-1(href="/transfer/new" style="border-radius:12px;" title="New Transfer")
+          i.bi.bi-plus-lg.align-middle
+        a.btn.btn-outline-secondary.mt-3.ms-1(href="/user" style="border-radius:12px;" title="User Settings")
+          i.bi.bi-gear.align-middle
+        a.btn.btn-outline-danger.mt-3.ms-1(href="/auth/logout" style="border-radius:12px;" title="Logout")
+          i.bi.bi-box-arrow-right.align-middle
+    
+    .row.justify-content-center
+      .col-md-8
+        if error
+          .alert.alert-danger.text-center= error
+
+    .row.justify-content-center
+      .col-md-10
+        table.table.table-striped.table-hover.mt-4
+          thead
+            tr
+              th Sender
+              th Recipient
+              th Filename
+              th Subject
+              th Date
+              th Size
+              th Status
+              th.text-center Actions
+          tbody
+            if transfers && transfers.length
+              each transfer in transfers
+                tr
+                  td= transfer.sender
+                  td= transfer.recipient
+                  td= transfer.filename
+                  td= transfer.subject
+                  td= transfer.date
+                  td= transfer.size
+                  td= transfer.status
+                  td.text-center
+                    a.btn.btn-sm.btn-primary(href=`/transfer/view/${transfer.id}`) View
+                    a.btn.btn-sm.btn-success.ms-1(href=`/transfer/download/${transfer.id}`) Download
+                    a.btn.btn-sm.btn-danger.ms-1(href=`/transfer/delete/${transfer.id}`) Delete
+            else
+              tr
+                td(colspan="8" class="text-center") No transfers found.
