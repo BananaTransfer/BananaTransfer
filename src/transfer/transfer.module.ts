@@ -1,27 +1,37 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { AuthModule } from '@auth/auth.module';
+import { JwtCoreModule } from '@auth/jwt/jwt-core.module';
 import { UserModule } from '@user/user.module';
 
 import { TransferController } from '@transfer/controllers/transfer.controller';
 import { TransferService } from '@transfer/services/transfer.service';
 
-import { BucketService } from '@transfer/bucket/bucket.service';
+import { BucketService } from '@transfer/services/bucket.service';
 
 import { FileTransfer } from '@database/entities/file-transfer.entity';
 import { TransferLog } from '@database/entities/transfer-log.entity';
+import { DnsService } from '@transfer/services/dns.service';
+import { Resolver } from 'dns/promises';
 
 // This module handles all file sharing related operations that are done by the authenticated users
 
 @Module({
   imports: [
-    AuthModule,
+    JwtCoreModule,
     UserModule,
     TypeOrmModule.forFeature([FileTransfer, TransferLog]),
   ],
   controllers: [TransferController],
-  providers: [TransferService, BucketService],
-  exports: [TransferService, BucketService],
+  providers: [
+    {
+      provide: Resolver,
+      useFactory: () => new Resolver(),
+    },
+    BucketService,
+    TransferService,
+    DnsService,
+  ],
+  exports: [TransferService],
 })
 export class TransferModule {}
