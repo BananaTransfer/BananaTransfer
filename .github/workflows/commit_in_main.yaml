@@ -10,7 +10,7 @@ on:
       - "docker-compose.yaml"
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false # otherwise may corrupt terraform state
 jobs:
   build_and_push_docker_image:
     runs-on: ubuntu-latest
