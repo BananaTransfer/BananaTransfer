@@ -33,41 +33,38 @@ jobs:
         uses: ./.github/actions/build_push_docker
         with:
           TAG: e2e
-      - name: Deploy integration test environment A
+      - name: Deploy integration test environment alpha
         uses: ./.github/actions/deploy
         with:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          ENVIRONMENT_NAME: e2e-a
+          ENVIRONMENT_NAME: e2e-alpha
           SSH_PUB_KEY: ${{ vars.SSH_PUB_KEY }}
           SSH_PRIV_KEY: ${{ secrets.SSH_PRIV_KEY }}
-          INTERNAL_HOSTNAME: a.${{ vars.BASE_HOSTNAME }}
-          EXTERNAL_HOSTNAME: a.${{ vars.BASE_HOSTNAME }}
+          INTERNAL_HOSTNAME: alpha.${{ vars.BASE_HOSTNAME }}
+          EXTERNAL_HOSTNAME: alpha.${{ vars.BASE_HOSTNAME }}
           DOCKER_REPO_USER: ${{ secrets.DOCKER_REPO_USER }}
           DOCKER_REPO_TOKEN: ${{ secrets.DOCKER_REPO_TOKEN }}
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASS: ${{ secrets.DB_PASS }}
-          DOMAIN: a.${{ vars.BASE_HOSTNAME }}
+          DOMAIN: alpha.${{ vars.BASE_HOSTNAME }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           DOCKER_IMAGE_TAG: e2e
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
       - name: Run Playwright tests
-        run: BASE_URL=https://a.${{ vars.BASE_HOSTNAME }} npm run test:e2e
+        run: BASE_URL=https://alpha.${{ vars.BASE_HOSTNAME }} npm run test:e2e
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
-      - name: Destroy the integration test environment A
+      - name: Remove all data from the integration test environment alpha
         if: ${{ !cancelled() }} # run even in case of failure, but not if cancelled
         run: | 
-          terraform destroy -auto-approve -auto-approve -input=false \
-            -var="ssh_pub_key=${{ vars.SSH_PUB_KEY }}" \
-            -var="environment_name=e2e-a" \
-            -var="hostname=a.${{ vars.BASE_HOSTNAME }}"
-        working-directory: infra/terraform
+          ./cleanup.sh alpha.${{ vars.BASE_HOSTNAME }} bananatransfer-e2e-alpha-s3-bucket
+        working-directory: infra
         shell: bash
       - name: Deploy latest docker image
         uses: ./.github/actions/build_push_docker
