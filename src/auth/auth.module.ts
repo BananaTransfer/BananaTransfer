@@ -1,31 +1,19 @@
-import { forwardRef, Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
-import { JwtModule } from '@nestjs/jwt';
+import { JwtCoreModule } from '@auth/jwt/jwt-core.module';
 import { UserModule } from '@user/user.module';
 
 import { AuthController } from '@auth/controllers/auth.controller';
 import { AuthService } from '@auth/services/auth.service';
-import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '@auth/jwt/guards/jwt-auth.guard';
 
 // This module handles authentication using Passport.js with a local strategy.
 
 @Module({
-  imports: [
-    PassportModule,
-    ConfigModule,
-    forwardRef(() => UserModule),
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET'),
-        signOptions: { expiresIn: '1h' },
-      }),
-    }),
-  ],
+  imports: [PassportModule, ConfigModule, UserModule, JwtCoreModule],
   controllers: [AuthController],
   providers: [AuthService, JwtAuthGuard],
-  exports: [AuthService, JwtModule],
+  exports: [AuthService],
 })
 export class AuthModule {}
