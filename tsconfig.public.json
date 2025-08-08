@@ -1,0 +1,25 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "ES2022",
+    "target": "ES2022",
+    "outDir": "./public/js",
+    "rootDir": "frontend/",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": false,
+    "declaration": false,
+    "sourceMap": true,
+    "strict": true,
+    "lib": ["DOM", "ES2022"],
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "include": [
+    "frontend/**/*.ts"
+  ],
+  "exclude": [
+    "frontend/**/*.spec.ts",
+    "frontend/js/**/*.test.ts",
+    "node_modules"
+  ]
+}
