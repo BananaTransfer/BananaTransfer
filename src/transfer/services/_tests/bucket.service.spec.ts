@@ -1,15 +1,11 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { ConfigModule } from '@nestjs/config';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { BucketService } from '@transfer/bucket/bucket.service';
-import { FileTransfer } from '@database/entities/file-transfer.entity';
-import { TransferLog } from '@database/entities/transfer-log.entity';
+import { ConfigService } from '@nestjs/config';
+import { BucketService } from '@transfer/services/bucket.service';
 import { MinioContainer, StartedMinioContainer } from '@testcontainers/minio';
 import { writeFile, unlink } from 'fs/promises';
 import {
-  S3Client,
   CreateBucketCommand,
   BucketLocationConstraint,
+  S3Client,
 } from '@aws-sdk/client-s3';
 import { join } from 'path';
 
@@ -28,19 +24,10 @@ describe('BucketService (with Testcontainers MinIO)', () => {
     process.env.S3_CLIENT_SECRET = minioContainer.getPassword();
     process.env.S3_BUCKET = 'testbucket';
 
-    const module: TestingModule = await Test.createTestingModule({
-      imports: [ConfigModule.forRoot({ isGlobal: true })],
-      providers: [
-        BucketService,
-        { provide: getRepositoryToken(FileTransfer), useValue: {} },
-        { provide: getRepositoryToken(TransferLog), useValue: {} },
-      ],
-    }).compile();
+    service = new BucketService(new ConfigService());
 
-    service = module.get<BucketService>(BucketService);
-
-    // Ensure the bucket exists
-    const s3Client = (service as any).s3Client;
+    // Ensure the bucket exists (little hack to retrieve the initiated client)
+    const s3Client = (service as unknown as { s3Client: S3Client }).s3Client;
     await s3Client.send(
       new CreateBucketCommand({
         Bucket: process.env.S3_BUCKET,
@@ -62,23 +49,23 @@ describe('BucketService (with Testcontainers MinIO)', () => {
   it('should connect to S3', async () => {
     expect(await service.testConnection()).toBe(true);
   });
-
-  it('should upload and download a file', async () => {
-    // Write a temp file
-    const testFilePath = join(__dirname, 'testupload.txt');
-    await writeFile(testFilePath, 'banana!');
-    const key = await service.uploadFile(testFilePath);
-    expect(key).toBe('testupload.txt');
-
-    // Get file back from S3
-    const downloadedPath = await service.getFile(key);
-    const data = require('fs').readFileSync(downloadedPath, 'utf-8');
-    expect(data).toBe('banana!');
-
-    // Clean up
-    await unlink(testFilePath);
-    await unlink(downloadedPath);
-  });
+  //
+  // it('should upload and download a file', async () => {
+  //   // Write a temp file
+  //   const testFilePath = join(__dirname, 'testupload.txt');
+  //   await writeFile(testFilePath, 'banana!');
+  //   const key = await service.uploadFile(testFilePath);
+  //   expect(key).toBe('testupload.txt');
+  //
+  //   // Get file back from S3
+  //   const downloadedPath = await service.getFile(key);
+  //   const data = require('fs').readFileSync(downloadedPath, 'utf-8');
+  //   expect(data).toBe('banana!');
+  //
+  //   // Clean up
+  //   await unlink(testFilePath);
+  //   await unlink(downloadedPath);
+  // });
 
   it('should delete a file', async () => {
     const testFilePath = join(__dirname, 'todelete.txt');

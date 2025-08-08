@@ -1,7 +1,5 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import {
   S3Client,
   PutObjectCommand,
@@ -10,31 +8,18 @@ import {
   ListBucketsCommand,
 } from '@aws-sdk/client-s3';
 import { S3ClientConfig } from '@aws-sdk/client-s3/dist-types/S3Client';
-import {
-  createReadStream,
-  createWriteStream,
-  promises as fsPromises,
-} from 'fs';
-import { basename } from 'path';
+import { createReadStream, createWriteStream } from 'fs';
 import { tmpdir } from 'os';
-import { randomBytes } from 'crypto';
-import { Readable } from 'stream';
-
-import { FileTransfer } from '@database/entities/file-transfer.entity';
-import { TransferLog } from '@database/entities/transfer-log.entity';
+import { v4 as uuidv4 } from 'uuid';
+import { mkdtemp, rm } from 'fs/promises';
+import { join } from 'path';
 
 @Injectable()
 export class BucketService {
   private readonly s3Client: S3Client;
   private readonly bucket: string;
 
-  constructor(
-    private configService: ConfigService,
-    @InjectRepository(FileTransfer)
-    private fileTransferRepository: Repository<FileTransfer>,
-    @InjectRepository(TransferLog)
-    private transferLogRepository: Repository<TransferLog>,
-  ) {
+  constructor(private configService: ConfigService) {
     const isLocal = !!this.configService.get<string>('S3_ENDPOINT');
     this.s3Client = new S3Client({
       region: this.configService.get<string>('S3_REGION'),
@@ -56,9 +41,7 @@ export class BucketService {
    * Returns the key of the uploaded object.
    */
   async uploadFile(filePath: string): Promise<string> {
-    const fileName = basename(filePath);
-    const key = fileName;
-
+    const key = uuidv4();
     const fileStream = createReadStream(filePath);
 
     try {
@@ -69,11 +52,14 @@ export class BucketService {
           Body: fileStream,
         }),
       );
+
       return key;
-    } catch (error) {
+    } catch (error: any) {
+      const message = (error as { message?: string })?.message;
+
       throw new InternalServerErrorException(
         'Failed to upload file to S3',
-        error?.message,
+        message,
       );
     }
   }
@@ -81,49 +67,58 @@ export class BucketService {
   /**
    * Downloads a file from S3 by key.
    * Returns the path to a temporary file containing the downloaded data.
+   *
+   * The caller must delete the returned file path
    */
   async getFile(key: string): Promise<string> {
-    // Generate a unique temp file path
-    const tempFilePath = `${tmpdir()}/bananatransfer-${randomBytes(8).toString('hex')}-${basename(key)}`;
+    // Generate a unique temp file path. Does not directly use the key
+    // to generate a file path to avoid concurrency issue if a user
+    //  requests multiple times the same file at the same time
+    const tmpDownloadDir = await mkdtemp(join(tmpdir(), 'download-'));
+    const tmpFile = join(tmpDownloadDir, key);
 
     try {
-      const { Body } = await this.s3Client.send(
+      const result = await this.s3Client.send(
         new GetObjectCommand({
           Bucket: this.bucket,
           Key: key,
         }),
       );
 
-      // Body is a stream, pipe to temp file
-      const writeStream = createWriteStream(tempFilePath);
+      // credits to https://github.com/aws/aws-sdk-js-v3/issues/5582#issuecomment-1854907253
+      const writeStream = createWriteStream(tmpFile, 'binary');
+      const stream = new WritableStream({
+        write(chunk) {
+          writeStream.write(chunk);
+        },
+        close() {
+          writeStream.close();
+        },
+        abort(err) {
+          writeStream.destroy(err as Error);
+          throw err;
+        },
+      });
 
-      function isReadableStream(obj: any): obj is Readable {
-        return obj && typeof obj.pipe === 'function';
-      }
+      await new Promise((resolve, reject) => {
+        writeStream.on('finish', () => resolve(null));
+        writeStream.on('error', reject);
+        result.Body?.transformToWebStream()
+          .pipeTo(stream)
+          // ignored since already catched by the writeStream
+          .then(() => {})
+          .catch(() => {});
+      });
 
-      if (isReadableStream(Body)) {
-        await new Promise<void>((resolve, reject) => {
-          Body.pipe(writeStream).on('error', reject).on('finish', resolve);
-        });
-      } else if (typeof (Body as any).transformToWebStream === 'function') {
-        const nodeStream = Readable.fromWeb(
-          (Body as any).transformToWebStream(),
-        );
-        await new Promise<void>((resolve, reject) => {
-          nodeStream
-            .pipe(writeStream)
-            .on('error', reject)
-            .on('finish', resolve);
-        });
-      } else {
-        throw new Error('Unsupported S3 Body stream type');
-      }
-
-      return tempFilePath;
+      return tmpFile;
     } catch (error) {
+      await rm(tmpDownloadDir, { recursive: true, force: true });
+
+      const message = (error as { message?: string })?.message;
+
       throw new InternalServerErrorException(
         'Failed to download file from S3',
-        error?.message,
+        message,
       );
     }
   }
@@ -140,9 +135,11 @@ export class BucketService {
         }),
       );
     } catch (error) {
+      const message = (error as { message?: string })?.message;
+
       throw new InternalServerErrorException(
         'Failed to delete file from S3',
-        error?.message,
+        message,
       );
     }
   }

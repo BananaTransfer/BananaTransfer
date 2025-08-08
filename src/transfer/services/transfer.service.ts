@@ -1,23 +1,25 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { S3Client, ListBucketsCommand } from '@aws-sdk/client-s3';
-import { S3ClientConfig } from '@aws-sdk/client-s3/dist-types/S3Client';
 
 // import { TransferStatus, LogInfo } from '@database/entities/enums';
 import { FileTransfer } from '@database/entities/file-transfer.entity';
 import { TransferLog } from '@database/entities/transfer-log.entity';
+import { BucketService } from '@transfer/services/bucket.service';
 
 @Injectable()
 export class TransferService {
+  private readonly bucketService: BucketService;
+
   constructor(
-    private configService: ConfigService,
+    private _bucketService: BucketService,
     @InjectRepository(FileTransfer)
     private fileTransferRepository: Repository<FileTransfer>,
     @InjectRepository(TransferLog)
     private transferLogRepository: Repository<TransferLog>,
-  ) {}
+  ) {
+    this.bucketService = _bucketService;
+  }
 
   // local transfer handling methods
   async getTransferList(userId: number): Promise<FileTransfer[]> {

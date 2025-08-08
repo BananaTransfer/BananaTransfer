@@ -6,8 +6,9 @@ import { JwtService } from '@nestjs/jwt';
 // import { AuthModule } from '@auth/auth.module';
 import { AuthController } from '@auth/controllers/auth.controller';
 import { AuthService } from '@auth/services/auth.service';
-import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '@auth/jwt/guards/jwt-auth.guard';
 import { UserService } from '@user/services/user.service';
+import { PasswordService } from '@user/services/password.service';
 
 import { User } from '@database/entities/user.entity';
 import { LocalUser } from '@database/entities/local-user.entity';
@@ -19,13 +20,13 @@ describe('AuthModule', () => {
 
   beforeAll(async () => {
     module = await Test.createTestingModule({
-      // imports: [/*AuthModule,*/ ConfigModule.forRoot({ isGlobal: true })],
       controllers: [AuthController],
       providers: [
         AuthService,
         JwtAuthGuard,
-        UserService,
         JwtService,
+        UserService,
+        PasswordService,
         // Mock ConfigService
         {
           provide: ConfigService,

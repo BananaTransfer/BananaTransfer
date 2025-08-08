@@ -13,7 +13,7 @@ import { Request, Response } from 'express';
 
 import { TransferService } from '@transfer/services/transfer.service';
 import { UserService } from '@user/services/user.service';
-import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '@auth/jwt/guards/jwt-auth.guard';
 
 // all routes in this controller are protected by the JwtAuthGuard and require authentication
 @UseGuards(JwtAuthGuard)

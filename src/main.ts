@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { ForbiddenException } from '@nestjs/common';
+import { ValidationPipe, ForbiddenException } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { Request, Response, NextFunction, urlencoded } from 'express';
 import { join } from 'path';
@@ -25,7 +25,10 @@ async function bootstrap() {
   app.useStaticAssets(join(__dirname, 'public')); // serve static assets (bootstrap CSS)
   app.setBaseViewsDir(join(__dirname, '..', 'views')); // set the base directory for views templates
   app.setViewEngine('pug'); // set the view engine to Pug
+
   app.use(urlencoded({ extended: true })); // parse URL-encoded bodies (as sent by HTML forms)
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true })); // setup global validation pipe for inputs
+
   app.use(cookieParser()); // parse cookies from the request
 
   // Middleware to generate CSRF token and set cookie
