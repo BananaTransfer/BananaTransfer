@@ -12,6 +12,7 @@ import {
 import { Request, Response } from 'express';
 
 import { AuthService } from '@auth/services/auth.service';
+import { PasswordService } from '@user/services/password.service';
 import { UserService } from '@user/services/user.service';
 import { CsrfRequest } from '@auth/types/csrf-request.interface';
 import { LoginDto } from '@auth/dto/login.dto';
@@ -23,6 +24,7 @@ export class AuthController {
 
   constructor(
     private readonly authService: AuthService,
+    private readonly passwordService: PasswordService,
     private readonly userService: UserService,
   ) {}
 
@@ -118,7 +120,7 @@ export class AuthController {
     try {
       // TODO: check if password match.
 
-      const user = await this.authService.registerUser(
+      const user = await this.userService.createUser(
         registerDto.username,
         registerDto.email,
         registerDto.password,

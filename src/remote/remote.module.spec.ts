@@ -9,6 +9,7 @@ import { RemoteService } from '@remote/services/remote.service';
 import { AuthService } from '@auth/services/auth.service';
 import { TransferService } from '@transfer/services/transfer.service';
 import { UserService } from '@user/services/user.service';
+import { PasswordService } from '@user/services/password.service';
 
 import { User } from '@database/entities/user.entity';
 import { LocalUser } from '@database/entities/local-user.entity';
@@ -35,9 +36,10 @@ describe('RemoteModule', () => {
       providers: [
         RemoteService,
         AuthService,
+        JwtService,
         TransferService,
         UserService,
-        JwtService,
+        PasswordService,
         // Mock ConfigService
         {
           provide: ConfigService,

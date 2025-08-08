@@ -1,7 +1,5 @@
 import {
   Injectable,
-  Inject,
-  forwardRef,
   ConflictException,
   NotFoundException,
   UnauthorizedException,
@@ -10,7 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { AuthService } from '@auth/services/auth.service';
+import { PasswordService } from '@user/services/password.service';
 import { UserStatus } from '@database/entities/enums';
 import { User } from '@database/entities/user.entity';
 import { LocalUser } from '@database/entities/local-user.entity';
@@ -23,8 +21,7 @@ export class UserService {
 
   constructor(
     private readonly configService: ConfigService,
-    @Inject(forwardRef(() => AuthService))
-    private readonly authService: AuthService,
+    private readonly passwordService: PasswordService,
     @InjectRepository(User) private userRepository: Repository<User>,
     @InjectRepository(LocalUser)
     private localUserRepository: Repository<LocalUser>,
@@ -67,7 +64,7 @@ export class UserService {
   async createUser(
     username: string,
     email: string,
-    password_hash: string,
+    password: string,
   ): Promise<LocalUser> {
     if (await this.findByUsername(username)) {
       throw new ConflictException('Username already exists');
@@ -75,6 +72,7 @@ export class UserService {
     if (await this.findByEmail(email)) {
       throw new ConflictException('Email already exists');
     }
+    const password_hash = await this.passwordService.hashPassword(password);
     const user = this.localUserRepository.create({
       username,
       email,
@@ -107,10 +105,10 @@ export class UserService {
     newPassword: string,
   ): Promise<LocalUser | null> {
     const user = await this.getCurrentUser(userId);
-    if (!(await this.authService.validateUserPassword(user, currentPassword))) {
+    if (!(await this.passwordService.validatePassword(user, currentPassword))) {
       throw new UnauthorizedException('Current password is incorrect');
     }
-    user.password_hash = await this.authService.hashPassword(newPassword);
+    user.password_hash = await this.passwordService.hashPassword(newPassword);
     return await this.localUserRepository.save(user);
   }
 
@@ -122,7 +120,7 @@ export class UserService {
     publicKey: string,
   ): Promise<LocalUser> {
     const user = await this.getCurrentUser(userId);
-    if (!(await this.authService.validateUserPassword(user, password))) {
+    if (!(await this.passwordService.validatePassword(user, password))) {
       throw new UnauthorizedException('Invalid password');
     }
     user.private_key_encrypted = privateKeyEncrypted;

@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 
 import { UserService } from '@user/services/user.service';
-import { AuthService } from '@auth/services/auth.service';
+import { PasswordService } from '@user/services/password.service';
 
 import { User } from '@database/entities/user.entity';
 import { LocalUser } from '@database/entities/local-user.entity';
@@ -26,7 +26,7 @@ describe('UserService', () => {
       // imports: [ConfigModule.forRoot({ isGlobal: true })], // Commented Since there is no .env file for now
       providers: [
         UserService,
-        AuthService,
+        PasswordService,
         JwtService,
         // Mock ConfigService
         {
