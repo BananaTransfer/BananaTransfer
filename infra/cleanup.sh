@@ -1,4 +1,4 @@
-#!/usr/bin/zsh
+#!/usr/bin/sh
 
 HOSTNAME="$1"
 BUCKET="$2"
