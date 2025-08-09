@@ -37,14 +37,6 @@ block content
             a.ms-1(href="/auth/login") Login
           button.btn.btn-dark(type="submit" data-testid="register-submit-btn") Continue
 
-  script.
-    document.addEventListener('DOMContentLoaded', function() {
-      const usernameInput = document.getElementById('username');
-      const emailInput = document.getElementById('email');
-      const domain = '#{domain}';
-      usernameInput.addEventListener('input', function() {
-        emailInput.value = usernameInput.value ? usernameInput.value + '@' + domain : '';
-      });
-    });
-
-    // TODO: CHECK if PW match
+  script(type="module").
+    import { setupRegisterForm } from '/js/authentication.js';
+    setupRegisterForm("#{domain}");
