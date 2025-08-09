@@ -6,7 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "nest build && tsc -p tsconfig.public.json",
+    "build": "nest build && tsc -p tsconfig.public.json && npm run copy:assets",
     "watch:frontend": "tsc -p tsconfig.public.json --watch",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
@@ -20,14 +20,17 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "playwright test",
-    "clean": "rm -rf dist node_modules",
-    "clean:all": "rm -rf dist node_modules package-lock.json",
+    "clean": "npm run clean:dist && npm run clean:node_modules && npm run clean:public",
+    "clean:all": "npm run clean:dist && npm run clean:node_modules && npm run clean:public && npm run clean:package-lock",
     "clean:dist": "rm -rf dist",
     "clean:node_modules": "rm -rf node_modules",
+    "clean:package-lock": "rm -f package-lock.json",
+    "clean:public": "rm -rf public/js public/bootstrap public/htmx",
     "ts-node:typeorm": "ts-node --transpile-only ./node_modules/typeorm/cli.js -d ./src/database/data-source.ts",
     "migration:generate": "npm run ts-node:typeorm migration:generate -n",
     "migration:run": "npm run ts-node:typeorm migration:run",
-    "migration:revert": "npm run ts-node:typeorm migration:revert"
+    "migration:revert": "npm run ts-node:typeorm migration:revert",
+    "copy:assets": "node copy-assets.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.858.0",

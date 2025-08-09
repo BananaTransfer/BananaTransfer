@@ -6,10 +6,14 @@
 # TypeScript cache
 *.tsbuildinfo
 
+# Public Bootstrap files
+/public/bootstrap/
 
-# Public Javascript files
-/public/js/**/*.js
-/public/js/**/*.js.map
+# Public HTMX files
+/public/htmx/
+
+# Public rendered Javascript files
+/public/js/
 
 # Logs
 logs
