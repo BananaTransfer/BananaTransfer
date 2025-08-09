@@ -3,7 +3,7 @@
 HOSTNAME="$1"
 BUCKET="$2"
 
-ssh admin@"$HOSTNAME" <<EOF
+ssh -o StrictHostKeyChecking=no admin@"$HOSTNAME" <<EOF
 sudo bash -c "
 cd /opt/app && \
 aws s3 rm \"s3://$BUCKET/\" --recursive && \

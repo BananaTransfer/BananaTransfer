@@ -63,7 +63,6 @@ jobs:
       - name: Remove all data from the integration test environment alpha
         if: ${{ !cancelled() }} # run even in case of failure, but not if cancelled
         run: | 
-          pwd;
           ./infra/cleanup.sh alpha.${{ vars.BASE_HOSTNAME }} bananatransfer-e2e-alpha-s3-bucket
       - name: Deploy latest docker image
         uses: ./.github/actions/build_push_docker
