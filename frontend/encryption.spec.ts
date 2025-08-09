@@ -223,9 +223,9 @@ describe('Streaming Encryption', () => {
 
     // Decrypt to verify data integrity
     const decrypted = await crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv: result!.iv },
+      { name: 'AES-GCM', iv: result!.iv as BufferSource },
       aesKey,
-      result!.encryptedData,
+      result!.encryptedData as BufferSource,
     );
 
     const decryptedText = new TextDecoder().decode(decrypted);
@@ -249,9 +249,9 @@ describe('Streaming Encryption', () => {
 
     // Verify data integrity
     const decrypted = await crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv: result!.iv },
+      { name: 'AES-GCM', iv: result!.iv as BufferSource },
       aesKey,
-      result!.encryptedData,
+      result!.encryptedData as BufferSource,
     );
 
     const decryptedText = new TextDecoder().decode(decrypted);

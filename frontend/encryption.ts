@@ -127,9 +127,9 @@ export class FileEncryption {
     for (const chunk of sortedChunks) {
       try {
         const decryptedData = await crypto.subtle.decrypt(
-          { name: 'AES-GCM', iv: chunk.iv },
+          { name: 'AES-GCM', iv: chunk.iv as BufferSource },
           key,
-          chunk.encryptedData,
+          chunk.encryptedData as BufferSource,
         );
 
         decryptedChunks.push(new Uint8Array(decryptedData));
@@ -205,9 +205,9 @@ class ParallelStreamingEncryptor implements StreamingEncryptor {
 
       // Encrypt chunk
       const encryptedData = await crypto.subtle.encrypt(
-        { name: 'AES-GCM', iv },
+        { name: 'AES-GCM', iv: iv as BufferSource },
         this.key,
-        dataToEncrypt,
+        dataToEncrypt as BufferSource,
       );
 
       // Create result
