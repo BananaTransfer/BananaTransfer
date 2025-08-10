@@ -73,7 +73,6 @@
         append: true
 
     - name: Login to GitHub Container Registry (ghcr.io)
-      become: true
       community.docker.docker_login:
         registry_url: ghcr.io
         username: "{{ ghcr_username }}"
