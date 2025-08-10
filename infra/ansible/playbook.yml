@@ -85,7 +85,7 @@
         state: directory
         owner: admin
         group: admin
-        mode: '0640'
+        mode: '0740'
         recurse: true
 
   tasks:
