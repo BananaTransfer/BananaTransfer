@@ -39,7 +39,7 @@ block content
         input.form-control(type="text", id="publicKeyField", value=publicKey, readonly)
         button.btn.btn-outline-secondary(type="button", id="copyPublicKeyBtn", onclick="copyToClipboard('publicKeyField', 'copyPublicKeyBtn')")
           i.bi.bi-clipboard
-      div.small.text-muted.mb-3
+      div.text-muted.mb-3
         | This is your public key. It will be automatically shared with others so they can send you files.
       a.btn.btn-dark.mt-2(href="/user/set-keys" style="border-radius:15px; padding:10px 30px;") Change Key-Pair and Master-Password
       p.mt-2.text-warning(style="font-size:0.95em;") Warning: previously received files will become irretrievable upon changing your Key-Pair

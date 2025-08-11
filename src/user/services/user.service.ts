@@ -115,17 +115,20 @@ export class UserService {
   async setUserKeys(
     userId: number,
     password: string,
-    privateKeyEncrypted: string,
-    privateKeyKdf: string,
     publicKey: string,
+    privateKeyEncrypted: string,
+    privateKeySalt: string,
+    privateKeyIv: string,
   ): Promise<LocalUser> {
     const user = await this.getCurrentUser(userId);
     if (!(await this.passwordService.validatePassword(user, password))) {
       throw new UnauthorizedException('Invalid password');
     }
     user.private_key_encrypted = privateKeyEncrypted;
-    user.private_key_kdf = privateKeyKdf;
+    user.private_key_salt = privateKeySalt;
+    user.private_key_iv = privateKeyIv;
     user.public_key = publicKey;
+    user.key_created_at = new Date();
     return await this.localUserRepository.save(user);
   }
 

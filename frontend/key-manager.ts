@@ -38,30 +38,20 @@ export class KeyManager {
   /**
    * Export encrypted private key to Base64 string
    */
-  static async exportEncryptedPrivateKey(
-    privateKey: CryptoKey,
-    masterPassword: string,
-  ): Promise<string> {
-    const encryptedPrivateKey = await this.encryptPrivateKey(
-      privateKey,
-      masterPassword,
-    );
-    const combined = new Uint8Array(
-      encryptedPrivateKey.encryptedData.byteLength +
-        encryptedPrivateKey.salt.byteLength +
-        encryptedPrivateKey.iv.byteLength,
-    );
-    combined.set(new Uint8Array(encryptedPrivateKey.encryptedData), 0);
-    combined.set(
-      encryptedPrivateKey.salt,
-      encryptedPrivateKey.encryptedData.byteLength,
-    );
-    combined.set(
-      encryptedPrivateKey.iv,
-      encryptedPrivateKey.encryptedData.byteLength +
-        encryptedPrivateKey.salt.byteLength,
-    );
-    return btoa(String.fromCharCode(...combined));
+  static exportEncryptedPrivateKey(encryptedPrivateKey: EncryptedPrivateKey): {
+    privateKey: string;
+    salt: string;
+    iv: string;
+  } {
+    return {
+      privateKey: btoa(
+        String.fromCharCode(
+          ...new Uint8Array(encryptedPrivateKey.encryptedData),
+        ),
+      ),
+      salt: btoa(String.fromCharCode(...encryptedPrivateKey.salt)),
+      iv: btoa(String.fromCharCode(...encryptedPrivateKey.iv)),
+    };
   }
 
   /**

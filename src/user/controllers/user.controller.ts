@@ -133,9 +133,10 @@ export class UserController {
       const user = await this.userService.setUserKeys(
         req.user.id,
         setKeysDto.password,
-        setKeysDto.private_key_encrypted,
-        setKeysDto.private_key_kdf,
-        setKeysDto.public_key,
+        setKeysDto.publicKey,
+        setKeysDto.privateKeyEncrypted,
+        setKeysDto.privateKeySalt,
+        setKeysDto.privateKeyIv,
       );
       if (!user) {
         throw new Error('Failed to set user keys');

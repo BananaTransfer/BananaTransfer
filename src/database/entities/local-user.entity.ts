@@ -21,7 +21,10 @@ export class LocalUser extends User {
   private_key_encrypted: string;
 
   @Column({ type: 'text' })
-  private_key_kdf: string;
+  private_key_salt: string;
+
+  @Column({ type: 'text' })
+  private_key_iv: string;
 
   @Column({ type: 'text' })
   public_key: string;
