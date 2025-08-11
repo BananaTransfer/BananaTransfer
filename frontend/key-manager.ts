@@ -28,11 +28,48 @@ export class KeyManager {
   }
 
   /**
+   * Export public key to Base64 string
+   */
+  static async exportPublicKey(publicKey: CryptoKey): Promise<string> {
+    const exported = await crypto.subtle.exportKey('spki', publicKey);
+    return btoa(String.fromCharCode(...new Uint8Array(exported)));
+  }
+
+  /**
+   * Export encrypted private key to Base64 string
+   */
+  static async exportEncryptedPrivateKey(
+    privateKey: CryptoKey,
+    masterPassword: string,
+  ): Promise<string> {
+    const encryptedPrivateKey = await this.encryptPrivateKey(
+      privateKey,
+      masterPassword,
+    );
+    const combined = new Uint8Array(
+      encryptedPrivateKey.encryptedData.byteLength +
+        encryptedPrivateKey.salt.byteLength +
+        encryptedPrivateKey.iv.byteLength,
+    );
+    combined.set(new Uint8Array(encryptedPrivateKey.encryptedData), 0);
+    combined.set(
+      encryptedPrivateKey.salt,
+      encryptedPrivateKey.encryptedData.byteLength,
+    );
+    combined.set(
+      encryptedPrivateKey.iv,
+      encryptedPrivateKey.encryptedData.byteLength +
+        encryptedPrivateKey.salt.byteLength,
+    );
+    return btoa(String.fromCharCode(...combined));
+  }
+
+  /**
    * Derive key from password using PBKDF2
    * @param {string} password - Password used to derive key
    * @param {Uint8Array} salt - Salt used to derive key
    */
-  static async deriveKeyFromPassword(
+  static async deriveEncryptionKeyFromMasterPassword(
     password: string,
     salt: Uint8Array,
   ): Promise<CryptoKey> {
@@ -70,7 +107,10 @@ export class KeyManager {
     const salt = SecurityUtils.generateSalt();
     const iv = SecurityUtils.generateIV();
 
-    const derivedKey = await this.deriveKeyFromPassword(password, salt);
+    const derivedKey = await this.deriveEncryptionKeyFromMasterPassword(
+      password,
+      salt,
+    );
     const privateKeyData = await crypto.subtle.exportKey('pkcs8', privateKey);
 
     const encryptedData: ArrayBuffer = await crypto.subtle.encrypt(
@@ -93,7 +133,7 @@ export class KeyManager {
     encryptedData: EncryptedPrivateKey,
     password: string,
   ): Promise<CryptoKey> {
-    const derivedKey = await this.deriveKeyFromPassword(
+    const derivedKey = await this.deriveEncryptionKeyFromMasterPassword(
       password,
       encryptedData.salt,
     );

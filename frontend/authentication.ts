@@ -1,18 +1,6 @@
-function enforceLowerCase(input: HTMLInputElement) {
-  // get current cursor position in the field
-  // the property selectionStart isn't supported in some browser for fields with type email
-  const pos = input.selectionStart;
-  const lower = input.value.toLowerCase();
-  if (input.value !== lower) {
-    input.value = lower;
-    if (pos !== null) {
-      // restore the cursor position after modifying the value
-      input.setSelectionRange(pos, pos);
-    }
-  }
-}
+import { enforceLowerCase } from './common';
 
-function validatePasswordsMatch(
+export function validatePasswordsMatch(
   passwordInput: HTMLInputElement,
   confirmPasswordInput: HTMLInputElement,
 ) {
@@ -23,7 +11,7 @@ function validatePasswordsMatch(
   }
 }
 
-function validatePasswordsDoNotMatch(
+export function validatePasswordsDoNotMatch(
   currentPasswordInput: HTMLInputElement,
   passwordInput: HTMLInputElement,
 ) {
@@ -36,7 +24,7 @@ function validatePasswordsDoNotMatch(
   }
 }
 
-function setupUsernameCheck() {
+export function setupUsernameCheck() {
   const usernameInput = document.getElementById(
     'username',
   ) as HTMLInputElement | null;
@@ -47,7 +35,7 @@ function setupUsernameCheck() {
   });
 }
 
-function setupEmailCheck(domain: string) {
+export function setupEmailCheck(domain: string) {
   const usernameInput = document.getElementById(
     'username',
   ) as HTMLInputElement | null;
@@ -77,7 +65,7 @@ function setupEmailCheck(domain: string) {
   });
 }
 
-function setupPasswordMatchCheck() {
+export function setupPasswordMatchCheck() {
   const passwordInput = document.getElementById(
     'password',
   ) as HTMLInputElement | null;
@@ -95,7 +83,7 @@ function setupPasswordMatchCheck() {
   });
 }
 
-function setupPasswordDoNotMatchCheck() {
+export function setupPasswordDoNotMatchCheck() {
   const currentPasswordInput = document.getElementById(
     'currentPassword',
   ) as HTMLInputElement | null;

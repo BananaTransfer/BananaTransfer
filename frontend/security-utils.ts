@@ -12,6 +12,22 @@ export class SecurityUtils {
   public static readonly CHUNK_SIZE: number = 1024 * 1024; //1MB
   public static readonly GCM_AUTH_TAG_SIZE: number = 16;
   private static readonly MAX_RANDOM_BYTES: number = 65536;
+
+  /**
+   * Generate a random master password of specified length (default 64 chars)
+   * Uses base64url charset for maximum compatibility
+   */
+  static generateMasterPassword(length: number = 64): string {
+    const charset =
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*?-';
+    const bytes = this.generateSecureRandom(length);
+    let password = '';
+    for (let i = 0; i < length; i++) {
+      password += charset[bytes[i] % charset.length];
+    }
+    return password;
+  }
+
   /**
    * Generate cryptographically secure random bytes
    * @param {number} length - Number of bytes to generate
@@ -26,6 +42,7 @@ export class SecurityUtils {
     crypto.getRandomValues(bytes);
     return bytes;
   }
+
   /**
    * Generate a random salt for key derivation
    * @param {number} length - Salt length in bytes
@@ -34,6 +51,7 @@ export class SecurityUtils {
   static generateSalt(length: number = this.DEFAULT_SALT_LENGTH): Uint8Array {
     return this.generateSecureRandom(length);
   }
+
   /**
    * Generate a random initialization vector
    * @param {number} length - IV length in bytes

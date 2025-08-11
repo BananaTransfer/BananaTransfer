@@ -126,10 +126,16 @@ Once the DB is started, you need to execute the migration with
 npm run migration:run
 ```
 
+Build the frontend and copy the bootstrap and htmx files into public
+
+```bash
+npm run build
+```
+
 Then you can run the app in watch mode with
 
 ```bash
-npm run start:dev:all
+npm run start:dev
 ```
 The app will be available on: http://localhost:3000
 

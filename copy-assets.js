@@ -6,7 +6,7 @@ function copyFile(src, dest) {
   fs.copyFileSync(src, dest);
 }
 
-// Bootstrap CSS & JS
+// Bootstrap CSS
 copyFile(
   'node_modules/bootstrap/dist/css/bootstrap.min.css',
   'public/bootstrap/css/bootstrap.min.css'
