@@ -2,12 +2,14 @@ import {
   IsAlphanumeric,
   IsEmail,
   IsNotEmpty,
-  IsString,
+  IsLowercase,
   MaxLength,
   MinLength,
+  IsString
 } from 'class-validator';
 
 export class RegisterDto {
+  @IsLowercase()
   @IsAlphanumeric()
   @IsNotEmpty()
   @MinLength(4)
@@ -15,6 +17,7 @@ export class RegisterDto {
   username: string;
 
   @IsEmail()
+  @IsLowercase()
   @IsNotEmpty()
   email: string;
 

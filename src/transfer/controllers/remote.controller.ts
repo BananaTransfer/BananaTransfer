@@ -1,6 +1,5 @@
 import { Controller, Get, Post, Param, Body } from '@nestjs/common';
 
-import { RemoteService } from '@remote/services/remote.service';
 import { TransferService } from '@transfer/services/transfer.service';
 import { UserService } from '@user/services/user.service';
 
@@ -11,7 +10,6 @@ import { UserService } from '@user/services/user.service';
 @Controller('remote')
 export class RemoteController {
   constructor(
-    private readonly remoteService: RemoteService,
     private readonly transferService: TransferService,
     private readonly userService: UserService,
   ) {}
@@ -20,7 +18,7 @@ export class RemoteController {
   // this is used to check if the server is reachable
   @Get('get/server-info')
   getServerInfo(): string {
-    return this.remoteService.getServerInfo();
+    return 'hi';
   }
 
   // endpoint to get the public key of a user

@@ -6,7 +6,6 @@ import { join } from 'path';
 import { AuthModule } from '@auth/auth.module';
 import { JwtCoreModule } from '@auth/jwt/jwt-core.module';
 import { DatabaseModule } from '@database/database.module';
-import { RemoteModule } from '@remote/remote.module';
 import { TransferModule } from '@transfer/transfer.module';
 import { UserModule } from '@user/user.module';
 
@@ -23,7 +22,6 @@ import { AppController } from './app.controller';
     AuthModule,
     DatabaseModule,
     JwtCoreModule,
-    RemoteModule,
     TransferModule,
     UserModule,
   ],

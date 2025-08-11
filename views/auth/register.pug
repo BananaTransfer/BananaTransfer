@@ -33,39 +33,10 @@ block content
           label.form-label(for="confirmPassword") Confirm password
           input.form-control(type="password" name="confirmPassword" id="confirmPassword" placeholder="password confirmation" required)
         .d-flex.justify-content-between.align-items-center.mb-3
-          span Already have an account?
+          span Already have an account? 
             a.ms-1(href="/auth/login") Login
-          button.btn.btn-dark(type="submit" id="submitBtn" disabled=true) Continue
+          button.btn.btn-dark(type="submit" data-testid="register-submit-btn") Continue
 
-  script.
-    document.addEventListener('DOMContentLoaded', function() {
-      const usernameInput = document.getElementById('username');
-      const emailInput = document.getElementById('email');
-      const domain = '#{domain}';
-
-      function updateEmail() {
-        emailInput.value = usernameInput.value ? usernameInput.value + '@' + domain : '';
-      }
-
-      usernameInput.addEventListener('input', updateEmail);
-
-      // remove user input listener once user modify the email field for the first time
-      function onEmailModified() {
-        usernameInput.removeEventListener('input', updateEmail);
-        emailInput.removeEventListener('input', onEmailModified);
-      }
-
-      emailInput.addEventListener('input', onEmailModified);
-
-      // disable submit while both password don't match
-      const passwordInput = document.getElementById('password');
-      const confirmPasswordInput = document.getElementById('confirmPassword');
-      const submitBtn = document.getElementById('submitBtn');
-
-      function validatePasswords() {
-        submitBtn.disabled = passwordInput.value !== confirmPasswordInput.value;
-      }
-
-      passwordInput.addEventListener('input', validatePasswords);
-      confirmPasswordInput.addEventListener('input', validatePasswords);
-    });
+  script(type="module").
+    import { setupRegisterForm } from '/js/authentication.js';
+    setupRegisterForm("#{domain}");

@@ -35,3 +35,7 @@ block content
           | Forgot your credentials?
           br
           | Please contact your domain administrator
+
+  script(type="module").
+    import { setupLoginForm } from '/js/authentication.js';
+    setupLoginForm();
