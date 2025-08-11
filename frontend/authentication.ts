@@ -1,16 +1,4 @@
-export function enforceLowerCase(input: HTMLInputElement) {
-  // get current cursor position in the field
-  // the property selectionStart isn't supported in some browser for fields with type email
-  const pos = input.selectionStart;
-  const lower = input.value.toLowerCase();
-  if (input.value !== lower) {
-    input.value = lower;
-    if (pos !== null) {
-      // restore the cursor position after modifying the value
-      input.setSelectionRange(pos, pos);
-    }
-  }
-}
+import { enforceLowerCase } from './common';
 
 export function validatePasswordsMatch(
   passwordInput: HTMLInputElement,

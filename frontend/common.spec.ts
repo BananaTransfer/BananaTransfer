@@ -2,24 +2,39 @@
  * @jest-environment jsdom
  */
 
-import { copyToClipboard } from './common';
+import { createInput, mockClipboard } from './test-helpers';
+import { enforceLowerCase, copyToClipboard } from './common';
 
 describe('common.ts functions', () => {
   beforeEach(() => {
-    document.body.innerHTML = `
-      <input id="copyInput" value="test" />
-      <button id="copyBtn"></button>
-    `;
+    document.body.innerHTML = '';
+  });
 
-    // Mock clipboard if not present
-    if (!navigator.clipboard) {
-      // @ts-ignore
-      navigator.clipboard = {};
-    }
-    navigator.clipboard.writeText = jest.fn();
+  describe('enforceLowerCase', () => {
+    test('should convert input value to lowercase and preserve cursor', () => {
+      // given
+      const input = createInput('username', 'TestUser');
+      input.selectionStart = 4;
+
+      // when
+      enforceLowerCase(input);
+
+      // then
+      expect(input.value).toBe('testuser');
+      expect(input.selectionStart).toBe(4);
+    });
   });
 
   describe('copyToClipboard', () => {
+    beforeEach(() => {
+      document.body.innerHTML = `
+        <input id="copyInput" value="test" />
+        <button id="copyBtn"></button>
+      `;
+
+      mockClipboard();
+    });
+
     test('copyToClipboard updates button', async () => {
       // given
       const input = document.getElementById('copyInput') as HTMLInputElement;

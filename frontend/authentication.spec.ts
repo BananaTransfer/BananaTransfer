@@ -2,8 +2,8 @@
  * @jest-environment jsdom
  */
 
+import { createInput } from './test-helpers';
 import {
-  enforceLowerCase,
   validatePasswordsMatch,
   validatePasswordsDoNotMatch,
   setupUsernameCheck,
@@ -12,33 +12,9 @@ import {
   setupPasswordDoNotMatchCheck,
 } from './authentication';
 
-// Helper to create input elements
-function createInput(id: string, value = ''): HTMLInputElement {
-  const input = document.createElement('input');
-  input.id = id;
-  input.value = value;
-  document.body.appendChild(input);
-  return input;
-}
-
 describe('authentication.ts functions', () => {
   beforeEach(() => {
     document.body.innerHTML = '';
-  });
-
-  describe('enforceLowerCase', () => {
-    test('should convert input value to lowercase and preserve cursor', () => {
-      // given
-      const input = createInput('username', 'TestUser');
-      input.selectionStart = 4;
-
-      // when
-      enforceLowerCase(input);
-      expect(input.value).toBe('testuser');
-
-      // then
-      expect(input.selectionStart).toBe(4);
-    });
   });
 
   describe('validatePasswordsMatch', () => {
