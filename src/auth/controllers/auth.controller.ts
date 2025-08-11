@@ -46,7 +46,7 @@ export class AuthController {
   }
 
   @Get('login')
-  protected async getLogin(@Req() req: CsrfRequest, @Res() res: Response) {
+  async getLogin(@Req() req: CsrfRequest, @Res() res: Response) {
     const token = req.cookies?.jwt;
     if (token) {
       try {
