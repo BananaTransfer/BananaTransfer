@@ -26,7 +26,7 @@
     "clean:dist": "rm -rf dist",
     "clean:node_modules": "rm -rf node_modules",
     "clean:package-lock": "rm -f package-lock.json",
-    "clean:public": "rm -rf public/js public/bootstrap public/htmx",
+    "clean:public": "rm -rf public/js public/bootstrap public/htmx public/tsconfig.public.tsbuildinfo",
     "ts-node:typeorm": "ts-node --transpile-only ./node_modules/typeorm/cli.js -d ./src/database/data-source.ts",
     "migration:generate": "npm run ts-node:typeorm migration:generate -n",
     "migration:run": "npm run ts-node:typeorm migration:run",

@@ -1,4 +1,4 @@
-import { SecurityUtils } from './security-utils';
+import { SecurityUtils } from '../security-utils';
 
 describe('SecurityUtils', () => {
   describe('generateSecureRandom', () => {

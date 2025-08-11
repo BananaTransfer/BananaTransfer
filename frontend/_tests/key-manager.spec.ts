@@ -1,4 +1,4 @@
-import { KeyManager } from './key-manager';
+import { KeyManager } from '../key-manager';
 
 describe('KeyManager', () => {
   test('should generate RSA key pair', async () => {

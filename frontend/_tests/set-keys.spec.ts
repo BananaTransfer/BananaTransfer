@@ -2,10 +2,10 @@
  * @jest-environment jsdom
  */
 
-import { generateKeyPair, generateMasterPassword } from './set-keys';
+import { generateKeyPair, generateMasterPassword } from '../set-keys';
 
 // Mock KeyManager and SecurityUtils dependencies
-jest.mock('./key-manager.js', () => ({
+jest.mock('../key-manager', () => ({
   KeyManager: {
     generateRSAKeyPair: jest.fn(() => ({
       publicKey: 'mockPublicKey',
@@ -15,7 +15,7 @@ jest.mock('./key-manager.js', () => ({
     exportEncryptedPrivateKey: jest.fn(() => 'mockExportedEncryptedPrivateKey'),
   },
 }));
-jest.mock('./security-utils.js', () => ({
+jest.mock('../security-utils', () => ({
   SecurityUtils: {
     generateMasterPassword: jest.fn(() => 'mockMasterPassword'),
   },

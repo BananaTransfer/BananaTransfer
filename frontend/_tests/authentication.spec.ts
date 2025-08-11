@@ -10,7 +10,7 @@ import {
   setupEmailCheck,
   setupPasswordMatchCheck,
   setupPasswordDoNotMatchCheck,
-} from './authentication';
+} from '../authentication';
 
 describe('authentication.ts functions', () => {
   beforeEach(() => {

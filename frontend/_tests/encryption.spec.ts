@@ -1,6 +1,6 @@
-import { FileEncryption, StreamChunk, StreamingEncryptor } from './encryption';
-import { KeyManager } from './key-manager';
-import { SecurityUtils } from './security-utils';
+import { FileEncryption, StreamChunk, StreamingEncryptor } from '../encryption';
+import { KeyManager } from '../key-manager';
+import { SecurityUtils } from '../security-utils';
 
 // TODO - Complete Interface that output the wrapped key and the encrypted data
 

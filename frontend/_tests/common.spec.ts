@@ -3,7 +3,7 @@
  */
 
 import { createInput, mockClipboard } from './test-helpers';
-import { enforceLowerCase, copyToClipboard } from './common';
+import { enforceLowerCase, copyToClipboard } from '../common';
 
 describe('common.ts functions', () => {
   beforeEach(() => {

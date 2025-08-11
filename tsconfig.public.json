@@ -20,6 +20,7 @@
   "exclude": [
     "frontend/**/*.spec.ts",
     "frontend/js/**/*.test.ts",
+    "frontend/_tests/**/*.ts",
     "node_modules"
   ]
 }
