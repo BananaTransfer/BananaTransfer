@@ -32,7 +32,7 @@ export default class RegisterPage extends CommonPage {
   }
 
   public async submit() {
-    await this.PAGE.locator('#submitBtn').click();
+    await this.PAGE.getByTestId('register-submit-btn').click();
   }
 
   public async register(params: RegisterParams) {

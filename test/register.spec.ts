@@ -35,10 +35,14 @@ test('registering with two different password dont work', async ({
   page,
   registerPage,
 }) => {
-  await registerPage.setUsername(faker.person.firstName());
-  await registerPage.setFirstPassword(faker.internet.password({ length: 13 }));
-  await registerPage.setSecondPassword(faker.internet.password({ length: 13 }));
-  await expect(page.locator('#submitBtn')).toBeDisabled();
+  await registerPage.register({
+    username: faker.person.firstName(),
+    email: faker.internet.email(),
+    password: faker.internet.password({ length: 13 }),
+    confirmPassword: faker.internet.password({ length: 13 }),
+  });
+  // stay on same page -> register refused
+  await expect(page).toHaveURL(registerPage.URL);
 });
 
 test('user should be redirected to transfer list if logged in', async ({
