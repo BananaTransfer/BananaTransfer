@@ -35,6 +35,7 @@ test('user should be redirected to transfer list if logged in', async ({
 
   await registerPage.goto();
   await registerPage.register(credentials);
+  await expect(page).toHaveURL(transferListPage.URL);
   await loginPage.goto();
   await expect(page).toHaveURL(transferListPage.URL);
 });

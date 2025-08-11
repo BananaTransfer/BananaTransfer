@@ -3,17 +3,16 @@ import {
   IsNotEmpty,
   MinLength,
   MaxLength,
-  Matches,
+  IsAlphanumeric,
+  IsLowercase,
 } from 'class-validator';
 
 export class LoginDto {
-  @IsString()
+  @IsAlphanumeric()
+  @IsLowercase()
   @IsNotEmpty()
   @MinLength(4)
   @MaxLength(32)
-  @Matches(/^[a-z0-9]+$/, {
-    message: 'Username must be lowercase alphanumeric',
-  })
   username: string;
 
   @IsString()

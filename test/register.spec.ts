@@ -31,18 +31,19 @@ test('registering with username, email and password works (twice same password)'
   await expect(page).toHaveURL(transferListPage.URL);
 });
 
-// TODO enable once fixed
-// test('registering with two different password dont work', async ({
-//   page,
-//   registerPage,
-// }) => {
-//   await registerPage.register({
-//     username: faker.person.firstName(),
-//     password: faker.internet.password({ length: 13 }),
-//     confirmPassword: faker.internet.password({ length: 13 }),
-//   });
-//   await expect(page).toHaveURL(registerPage.URL);
-// });
+test('registering with two different password dont work', async ({
+  page,
+  registerPage,
+}) => {
+  await registerPage.register({
+    username: faker.person.firstName(),
+    email: faker.internet.email(),
+    password: faker.internet.password({ length: 13 }),
+    confirmPassword: faker.internet.password({ length: 13 }),
+  });
+  // stay on same page -> register refused
+  await expect(page).toHaveURL(registerPage.URL);
+});
 
 test('user should be redirected to transfer list if logged in', async ({
   registerPage,
