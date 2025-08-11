@@ -25,7 +25,12 @@ block content
         | The Private and Public Key will be used to encrypt the files shared with you.        
       label.mt-3.form-label(for="publicKeyField") Public Key
       .input-group.mb-2.mx-auto(style="max-width:100%")
-        input.form-control(type="text", id="publicKeyField", value=publicKey, readonly)
+        textarea.form-control.form-control-sm.small(
+          id="publicKeyField",
+          readonly,
+          rows="3",
+          style="word-break:break-all; overflow-wrap:anywhere;"
+        )= publicKey
         button.btn.btn-outline-secondary(type="button", id="copyPublicKeyBtn", onclick="copyToClipboard('publicKeyField', 'copyPublicKeyBtn')")
           i.bi.bi-clipboard
       div.small.text-muted.mb-2
@@ -38,41 +43,30 @@ block content
         i.bi.bi-shield-lock.me-1
         | Generate Master-Password
       div.small.text-muted.mt-1
-        | The Master-Password is used to encrypt your private Key and store it securely on your organization's server.
+        | The Master-Password is used to encrypt your private Key before storing it securely on your organization's server.
+      div.small.text-muted.mt-1
+        | Before downloading and decrypting files that were shared with you, you will be asked for this Master-Password.
       label.mt-3.form-label(for="masterPasswordField") Master Password
       .input-group.mb-2.mx-auto(style="max-width:100%")
-        input.form-control(type="text", id="masterPasswordField", value=password, readonly, style="min-width:300px; word-break:break-all;")
+        input.form-control.form-control-sm.small(type="text", id="masterPasswordField", value=password, readonly, style="min-width:300px;")
         button.btn.btn-outline-secondary(type="button", id="copyMasterPasswordBtn", onclick="copyToClipboard('masterPasswordField', 'copyMasterPasswordBtn')")
           i.bi.bi-clipboard
-      div.small.text-muted.mt-1
-        | Please make sure you store it in your Password-Manager.
-        | Before downloading and decrypting files that were shared with you, you will be asked for this Master-Password.
+      div.small.text-warning.mt-1
+        | Please make sure you store this Master-Password in your Password-Manager or another secure location.
 
     .col-md-8.mb-3
       h4.font-weight-bold Encrypt and Save new Keys
-      hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
-      p.mt-2.text-warning.small
-        | Warning: This will override your current keys stored on the server. Files that were previously shared with you, wont be accessible anymore with the new key
-      
+      hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")      
       button.btn.btn-outline-secondary.mt-1.mb-1(type="button" onclick="encryptAndSaveKey()")
         i.bi.bi-upload.me-1
         | Encrypt and save Keys
-      div.small.text-muted
+      div.small.text-muted.mt-1
         | Your private key will be encrypted with your master-password and stored on your organizations server.
-                
-  script.
-    function copyPassword() {
-      const password = "#{password}";
-      navigator.clipboard.writeText(password);
-      const btn = document.getElementById('copyBtn');
-      btn.innerText = "Copied!";
-      setTimeout(() => { btn.innerText = "Copy to clipboard"; }, 1500);
-    }
+      if existingKeys
+        div.small.text-warning.mt-1
+          | Warning: This will override your current keys stored on the server. Files that were previously shared with you, wont be accessible anymore with the new key
 
-    function copyToClipboard(inputId, btnId) {
-      const input = document.getElementById(inputId);
-      const btn = document.getElementById(btnId);
-      navigator.clipboard.writeText(input.value);
-      btn.innerHTML = '<i class="bi bi-clipboard-check"></i>';
-      setTimeout(() => { btn.innerHTML = '<i class="bi bi-clipboard"></i>'; }, 1500);
-    }
+  script(type="module").
+    import { generatePrivateKey, generateMasterPassword, encryptAndSaveKey, copyToClipboard } from '/js/set-keys.js';
+
+

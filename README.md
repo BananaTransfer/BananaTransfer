@@ -127,7 +127,6 @@ npm run migration:run
 ```
 
 Build the frontend and copy the bootstrap and htmx files into public
-If running the app in the development stage this command doesn't need to be run, because npm run start:dev already does it.
 
 ```bash
 npm run build
