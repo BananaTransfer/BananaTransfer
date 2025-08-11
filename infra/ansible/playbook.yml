@@ -66,11 +66,16 @@
         state: present
 
     - name: Add admin user to docker group
+      register: group_add_result
       become: true
       user:
         name: admin
         groups: docker
         append: true
+
+    - name: Reset the connection to load the added group to the current user
+      when: group_add_result.changed
+      meta: reset_connection
 
     - name: Login to GitHub Container Registry (ghcr.io)
       community.docker.docker_login:
