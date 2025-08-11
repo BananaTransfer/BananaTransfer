@@ -10,6 +10,7 @@ import { LocalUser } from '@database/entities/local-user.entity';
 import { UserStatus } from '@database/entities/enums';
 import { UserPayload } from '@auth/types/user-payload.interface';
 import { PasswordService } from '@user/services/password.service';
+import { Response } from 'express';
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -98,13 +99,39 @@ describe('AuthService', () => {
     });
   });
 
-  describe('registerUser', () => {
-    // throw user exist
-    // throw email exist
-    // else create
-  });
-
   describe('authenticateUser', () => {
-    // happy path
+    test('should add jwt token as response cookie', async () => {
+      // given
+      const localUser = new LocalUser();
+      localUser.id = 1;
+      localUser.username = 'test';
+      localUser.email = 'test@example.com';
+
+      jwtService.signAsync.mockResolvedValue('jwt');
+
+      const res = {
+        cookie: jest.fn(),
+      };
+
+      // when
+      await authService.authenticateUser(localUser, res as unknown as Response);
+
+      // then
+      expect(jwtService.signAsync).toHaveBeenCalledWith({
+        id: localUser.id,
+        username: localUser.username,
+        email: localUser.email,
+      });
+
+      expect(res.cookie).toHaveBeenCalledWith(
+        'jwt',
+        'jwt',
+        expect.objectContaining({
+          httpOnly: true,
+          sameSite: 'strict',
+          secure: true,
+        }),
+      );
+    });
   });
 });
