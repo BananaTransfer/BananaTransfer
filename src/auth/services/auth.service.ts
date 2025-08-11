@@ -22,7 +22,7 @@ export class AuthService {
     return this.jwtService.verifyAsync<UserPayload>(token);
   }
 
-  async signJwt(payload: UserPayload): Promise<string> {
+  private async signJwt(payload: UserPayload): Promise<string> {
     return this.jwtService.signAsync(payload);
   }
 

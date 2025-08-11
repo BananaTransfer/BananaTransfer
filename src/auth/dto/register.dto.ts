@@ -5,7 +5,7 @@ import {
   IsLowercase,
   MaxLength,
   MinLength,
-  IsString
+  IsString,
 } from 'class-validator';
 
 export class RegisterDto {
