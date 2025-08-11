@@ -12,7 +12,7 @@ test('registering with username and password works (twice same password and defa
   transferListPage,
 }) => {
   await registerPage.register({
-    username: faker.internet.username(),
+    username: faker.person.firstName(),
     password: faker.internet.password({ length: 13 }),
   });
   await expect(page).toHaveURL(transferListPage.URL);
@@ -24,7 +24,7 @@ test('registering with username, email and password works (twice same password)'
   transferListPage,
 }) => {
   await registerPage.register({
-    username: faker.internet.username(),
+    username: faker.person.firstName(),
     email: faker.internet.email(),
     password: faker.internet.password({ length: 13 }),
   });
@@ -37,7 +37,7 @@ test('registering with username, email and password works (twice same password)'
 //   registerPage,
 // }) => {
 //   await registerPage.register({
-//     username: faker.internet.username(),
+//     username: faker.person.firstName(),
 //     password: faker.internet.password({ length: 13 }),
 //     confirmPassword: faker.internet.password({ length: 13 }),
 //   });
@@ -50,7 +50,7 @@ test('user should be redirected to transfer list if logged in', async ({
   transferListPage,
 }) => {
   const credentials = {
-    username: faker.internet.username(),
+    username: faker.person.firstName(),
     password: faker.internet.password({ length: 13 }),
   };
 
