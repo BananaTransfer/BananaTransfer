@@ -77,6 +77,7 @@ block content
 
   script(type="module").
     import { generatedKeyPair, generateKeyPair, generateMasterPassword, encryptAndSaveKey, copyToClipboard } from '/js/set-keys.js';
+    import { copyToClipboard } from '/js/common.js';
     document.getElementById('generateKeyPairBtn').addEventListener('click', generateKeyPair);
     document.getElementById('generateMasterPasswordBtn').addEventListener('click', generateMasterPassword);
     document.getElementById('encryptAndSaveBtn').addEventListener('click', encryptAndSaveKey);

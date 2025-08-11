@@ -2,11 +2,7 @@
  * @jest-environment jsdom
  */
 
-import {
-  generateKeyPair,
-  generateMasterPassword,
-  copyToClipboard,
-} from './set-keys';
+import { generateKeyPair, generateMasterPassword } from './set-keys';
 
 // Mock KeyManager and SecurityUtils dependencies
 jest.mock('./key-manager.js', () => ({
@@ -35,16 +31,7 @@ describe('set-keys.ts functions', () => {
       <div id="modalMasterPasswordError"></div>
       <input id="modalUserPasswordInput" />
       <div id="modalUserPasswordError"></div>
-      <input id="copyInput" value="test" />
-      <button id="copyBtn"></button>
     `;
-
-    // Mock clipboard if not present
-    if (!navigator.clipboard) {
-      // @ts-ignore
-      navigator.clipboard = {};
-    }
-    navigator.clipboard.writeText = jest.fn();
   });
 
   describe('generateKeyPair', () => {
@@ -59,7 +46,10 @@ describe('set-keys.ts functions', () => {
 
   describe('generateMasterPassword', () => {
     test('generateMasterPassword sets masterPasswordField', () => {
+      // when
       generateMasterPassword();
+
+      // then
       expect(
         (document.getElementById('masterPasswordField') as HTMLInputElement)
           .value,
@@ -69,44 +59,21 @@ describe('set-keys.ts functions', () => {
 
   describe('encryptAndSaveButton State', () => {
     test('buttonState updates from disabled to enabled when keys and password are generated', async () => {
-      // Initial state
+      // given + then
       expect(
         (document.getElementById('encryptAndSaveBtn') as HTMLButtonElement)
           .disabled,
       ).toBe(true);
 
-      // Fill in fields
+      // when
       await generateKeyPair();
       generateMasterPassword();
 
+      // then
       expect(
         (document.getElementById('encryptAndSaveBtn') as HTMLButtonElement)
           .disabled,
       ).toBe(false);
     });
   });
-
-  describe('copyToClipboard', () => {
-    test('copyToClipboard updates button', async () => {
-      const input = document.getElementById('copyInput') as HTMLInputElement;
-      const btn = document.getElementById('copyBtn') as HTMLButtonElement;
-      input.value = 'test content';
-      await copyToClipboard('copyInput', 'copyBtn');
-      expect(btn.innerHTML).toContain('bi-clipboard-check');
-    });
-
-    test('copyToClipboard copies value', async () => {
-      const input = document.getElementById('copyInput') as HTMLInputElement;
-      input.value = 'test content';
-
-      // Mock clipboard
-      const writeTextMock = jest.fn();
-      navigator.clipboard.writeText = writeTextMock;
-
-      await copyToClipboard('copyInput', 'copyBtn');
-      expect(writeTextMock).toHaveBeenCalledWith('test content');
-    });
-  });
-
-  // encryptAndSaveKey is hard to test without a DOM and modal mocks, so you would use integration/E2E tests for full coverage
 });
