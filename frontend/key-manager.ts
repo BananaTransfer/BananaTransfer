@@ -47,7 +47,7 @@ export class KeyManager {
     return await crypto.subtle.deriveKey(
       {
         name: 'PBKDF2',
-        salt,
+        salt: salt as BufferSource,
         iterations: SecurityUtils.PBKDF_ITERATIONS,
         hash: 'SHA-256',
       },
@@ -74,7 +74,7 @@ export class KeyManager {
     const privateKeyData = await crypto.subtle.exportKey('pkcs8', privateKey);
 
     const encryptedData: ArrayBuffer = await crypto.subtle.encrypt(
-      { name: 'AES-GCM', iv },
+      { name: 'AES-GCM', iv: iv as BufferSource },
       derivedKey,
       privateKeyData,
     );
@@ -99,9 +99,9 @@ export class KeyManager {
     );
 
     const decryptedData = await crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv: encryptedData.iv },
+      { name: 'AES-GCM', iv: encryptedData.iv as BufferSource },
       derivedKey,
-      encryptedData.encryptedData,
+      encryptedData.encryptedData as BufferSource,
     );
 
     const privateKey = await crypto.subtle.importKey(

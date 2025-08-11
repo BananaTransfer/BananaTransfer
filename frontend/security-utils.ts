@@ -17,12 +17,12 @@ export class SecurityUtils {
    * @param {number} length - Number of bytes to generate
    * @returns {Uint8Array} - Secure random bytes
    */
-  static generateSecureRandom(length: number) {
+  static generateSecureRandom(length: number): Uint8Array {
     if (!crypto || !crypto.getRandomValues) {
       throw new Error('Secure random generation not supported');
     }
 
-    const bytes = new Uint8Array(length);
+    const bytes = new Uint8Array(new ArrayBuffer(length));
     crypto.getRandomValues(bytes);
     return bytes;
   }
@@ -31,7 +31,7 @@ export class SecurityUtils {
    * @param {number} length - Salt length in bytes
    * @returns {Uint8Array} - Random salt
    */
-  static generateSalt(length: number = this.DEFAULT_SALT_LENGTH) {
+  static generateSalt(length: number = this.DEFAULT_SALT_LENGTH): Uint8Array {
     return this.generateSecureRandom(length);
   }
   /**
@@ -39,7 +39,7 @@ export class SecurityUtils {
    * @param {number} length - IV length in bytes
    * @returns {Uint8Array} - Random IV
    */
-  static generateIV(length: number = this.DEFAULT_IV_LENGTH) {
+  static generateIV(length: number = this.DEFAULT_IV_LENGTH): Uint8Array {
     return this.generateSecureRandom(length);
   }
 
