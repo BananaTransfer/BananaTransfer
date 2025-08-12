@@ -31,6 +31,7 @@ block content
           readonly,
           rows="2",
           style="word-break:break-all; overflow-wrap:anywhere;"
+          disabled
         )
         button.btn.btn-outline-secondary(type="button", id="copyPublicKeyBtn")
           i.bi.bi-clipboard
@@ -48,7 +49,7 @@ block content
         | Before downloading and decrypting files that were shared with you, you will be asked for this Master-Password.
       label.mt-3.form-label(for="masterPasswordField") Master Password
       .input-group.mb-2.mx-auto(style="max-width:100%")
-        input.form-control.form-control-sm(type="text", id="masterPasswordField", readonly)
+        input.form-control.form-control-sm(type="text", id="masterPasswordField", readonly, disabled)
         button.btn.btn-outline-secondary(type="button", id="copyMasterPasswordBtn")
           i.bi.bi-clipboard
       div.text-warning.mt-1
