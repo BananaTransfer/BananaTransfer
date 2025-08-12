@@ -112,7 +112,7 @@ export class UserController {
         throw new Error('Failed to change password');
       }
       this.logger.log(`Password changed for user ${user.username}`);
-      res.redirect('/user/settings');
+      res.redirect('/user');
     } catch (error) {
       this.logger.error('Error changing password', error);
       this.renderChangePasswordPage(req, res, {
@@ -142,7 +142,7 @@ export class UserController {
         throw new Error('Failed to set user keys');
       }
       this.logger.log(`Keys set for user ${user.username}`);
-      res.redirect('/user/settings');
+      res.redirect('/user');
     } catch (error) {
       this.logger.error('Error setting user keys', error);
       this.renderSetKeysPage(req, res, {
