@@ -128,7 +128,8 @@ export class AuthController {
 
   @Get('logout')
   logout(@Req() req: Request, @Res() res: Response) {
-    // TODO:this.authService.logout(req);
+    // clear the JWT cookie
+    res.clearCookie('jwt');
     res.redirect('/auth/login');
   }
 }
