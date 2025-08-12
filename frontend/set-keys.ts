@@ -97,20 +97,8 @@ export async function encryptAndSaveKey() {
     const csrfToken = (document.getElementById('_csrf') as HTMLInputElement)
       .value;
 
-    console.log('Exported private key:', exportedPrivateKey);
-    console.log('Public key:', exportedPublicKey);
-
-    /*const formData = new FormData();
-    formData.append('_csrf', csrfToken);
-    formData.append('password', userPassword);
-    formData.append('publicKey', exportedPublicKey);
-    formData.append('privateKeyEncrypted', exportedPrivateKey.privateKey);
-    formData.append('privateKeySalt', exportedPrivateKey.salt);
-    formData.append('privateKeyIv', exportedPrivateKey.iv);*/
-
     const response = await fetch('/user/set-keys', {
       method: 'POST',
-      // body: formData,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         _csrf: csrfToken,
