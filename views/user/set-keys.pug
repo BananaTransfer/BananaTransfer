@@ -52,14 +52,14 @@ block content
         input.form-control.form-control-sm(type="text", id="masterPasswordField", readonly, disabled)
         button.btn.btn-outline-secondary(type="button", id="copyMasterPasswordBtn")
           i.bi.bi-clipboard
-      div.text-warning.mt-1
+      div.text-danger.mt-1
         | Please make sure you store the Master-Password in your Password-Manager or another secure location.
 
     .col-md-8.mb-3
       h4.font-weight-bold Encrypt and Save new Keys
       hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
       if existingKeys
-        div.text-warning.mt-1.mb-1
+        div.text-danger.mt-1.mb-1
           | Warning: This will override your current keys stored on the server.
           | Files that were previously shared with you, wont be accessible anymore with the new key
       div.text-danger.mt-1.mb-1(id="setKeyError")
