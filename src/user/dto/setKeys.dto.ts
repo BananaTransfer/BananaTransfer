@@ -6,28 +6,27 @@ export class SetKeysDto {
   @MaxLength(256)
   password: string;
 
-  // TODO: specify the exact length for the keys, iv and salt
   @IsString()
   @IsNotEmpty()
-  @MinLength(1200)
-  @MaxLength(3189)
+  @MinLength(3188)
+  @MaxLength(3188)
   privateKeyEncrypted: string;
 
   @IsString()
   @IsNotEmpty()
-  @MinLength(40)
-  @MaxLength(100)
+  @MinLength(44)
+  @MaxLength(44)
   privateKeySalt: string;
 
   @IsString()
   @IsNotEmpty()
-  @MinLength(11)
-  @MaxLength(126)
+  @MinLength(16)
+  @MaxLength(16)
   privateKeyIv: string;
 
   @IsString()
   @IsNotEmpty()
-  @MinLength(127)
-  @MaxLength(1256)
+  @MinLength(736)
+  @MaxLength(736)
   publicKey: string;
 }
