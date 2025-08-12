@@ -25,12 +25,12 @@ export class UserController {
 
   constructor(private readonly userService: UserService) {}
 
-  private renderUserSettingsPage(
+  private async renderUserSettingsPage(
     req: AuthenticatedRequest,
     res: Response,
     options: { username?: string; error?: string } = {},
-  ): void {
-    const user = this.userService.findByUserId(req.user.id);
+  ): Promise<void> {
+    const user = await this.userService.findByUserId(req.user.id);
     res.render('user/settings', { user, ...options });
   }
 
@@ -60,11 +60,11 @@ export class UserController {
 
   // endpoint to get user settings page
   @Get('')
-  getUserSettingsPage(
+  async getUserSettingsPage(
     @Req() req: AuthenticatedRequest,
     @Res() res: Response,
-  ): void {
-    this.renderUserSettingsPage(req, res);
+  ): Promise<void> {
+    await this.renderUserSettingsPage(req, res);
   }
 
   // endpoint to get page to change password
@@ -87,12 +87,6 @@ export class UserController {
   async getPrivateKey(@Req() req: AuthenticatedRequest) {
     const privateKey = await this.userService.getUserPrivateKey(req.user.id);
     return { privateKey };
-  }
-
-  // endpoint to get public key of local or remote user
-  @Get('get/publickey')
-  getUserPublicKey(@Req() req: AuthenticatedRequest) {
-    return { publicKey: this.userService.getUserPublicKey(req.user.id) };
   }
 
   // endpoint to get public key of local or remote user

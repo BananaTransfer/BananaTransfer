@@ -95,11 +95,6 @@ export class UserService {
     };
   }
 
-  async getUserPublicKey(userId: number): Promise<string> {
-    const user = await this.getCurrentUser(userId);
-    return user.public_key || '';
-  }
-
   getPublicKey(username: string): string {
     // TODO: get public key of user from the db
     // console.log(username);
