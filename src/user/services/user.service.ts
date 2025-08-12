@@ -78,7 +78,6 @@ export class UserService {
       email,
       password_hash,
       status: UserStatus.ACTIVE,
-      last_login: new Date(),
     });
     return await this.localUserRepository.save(user);
   }
@@ -125,6 +124,7 @@ export class UserService {
       throw new UnauthorizedException('Current password is incorrect');
     }
     user.password_hash = await this.passwordService.hashPassword(newPassword);
+    user.password_created_at = new Date();
     return await this.localUserRepository.save(user);
   }
 

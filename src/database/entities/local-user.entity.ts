@@ -11,11 +11,14 @@ export class LocalUser extends User {
   @Column({ type: 'text' })
   email: string;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   last_login: Date;
 
   @Column({ type: 'text' })
   password_hash: string;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  password_created_at: Date;
 
   @Column({ type: 'text' })
   private_key_encrypted: string;
