@@ -90,6 +90,12 @@ export class UserController {
   }
 
   // endpoint to get public key of local or remote user
+  @Get('get/publickey')
+  getUserPublicKey(@Req() req: AuthenticatedRequest) {
+    return { publicKey: this.userService.getUserPublicKey(req.user.id) };
+  }
+
+  // endpoint to get public key of local or remote user
   @Get('get/publickey/:username')
   getPublicKey(@Param('username') username: string): string {
     return this.userService.getPublicKey(username);

@@ -82,9 +82,22 @@ export class UserService {
     return await this.localUserRepository.save(user);
   }
 
-  async getUserPrivateKey(userId: number): Promise<string> {
+  async getUserPrivateKey(userId: number): Promise<{
+    private_key_encrypted: string;
+    private_key_salt: string;
+    private_key_iv: string;
+  }> {
     const user = await this.getCurrentUser(userId);
-    return user.private_key_encrypted || '';
+    return {
+      private_key_encrypted: user.private_key_encrypted || '',
+      private_key_salt: user.private_key_salt || '',
+      private_key_iv: user.private_key_iv || '',
+    };
+  }
+
+  async getUserPublicKey(userId: number): Promise<string> {
+    const user = await this.getCurrentUser(userId);
+    return user.public_key || '';
   }
 
   getPublicKey(username: string): string {

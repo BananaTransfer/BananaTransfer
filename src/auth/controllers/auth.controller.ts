@@ -86,10 +86,11 @@ export class AuthController {
         loginDto.username,
         loginDto.password,
       );
+      this.logger.log(`User logged in: ${user.username}`);
       await this.authService.authenticateUser(user, res);
       return res.redirect('/transfer');
     } catch (error) {
-      this.logger.error('Error logging in user', error);
+      this.logger.warn('Error logging in user', error);
       return this.renderLoginPage(req, res, {
         username: loginDto.username,
         error: (error as { message: string }).message || 'Login failed',
@@ -111,10 +112,11 @@ export class AuthController {
         registerDto.email,
         registerDto.password,
       );
+      this.logger.log(`User registered: ${user.username}`);
       await this.authService.authenticateUser(user, res);
       return res.redirect('/transfer');
     } catch (error) {
-      this.logger.error('Error registering user', error);
+      this.logger.warn('Error registering user', error);
       return this.renderRegisterPage(req, res, {
         username: registerDto.username,
         email: registerDto.email,
