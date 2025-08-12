@@ -15,68 +15,65 @@ block content
         .alert.alert-danger.text-center= error
 
   .row.justify-content-center
-    .col-md-8.mb-3
+    input(type="hidden" id="_csrf" value=csrfToken)
+    .col-8.mb-3
       h4.font-weight-bold Generate new Private and Public Key
       hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
       button.btn.btn-secondary(type="button" id="generateKeyPairBtn")
         i.bi.bi-key.me-1
         | Generate Key-Pair
-      div.small.text-muted.mt-1
+      div.text-muted.mt-2
         | The Private and Public Key will be used to encrypt the files shared with you.        
       label.mt-3.form-label(for="publicKeyField") Public Key
       .input-group.mb-2.mx-auto(style="max-width:100%")
-        textarea.form-control.form-control-sm.small(
+        textarea.form-control.form-control-sm(
           id="publicKeyField",
           readonly,
-          rows="3",
+          rows="2",
           style="word-break:break-all; overflow-wrap:anywhere;"
-        )= publicKey
+          disabled
+        )
         button.btn.btn-outline-secondary(type="button", id="copyPublicKeyBtn")
           i.bi.bi-clipboard
-      div.small.text-muted.mb-2
+      div.text-muted.mb-2
         | This is your public key. It will be automatically shared with others so they can send you files.
 
-    .col-md-8.mb-3
+    .col-8.mb-3
       h4.font-weight-bold Generate new Master-Password
       hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
       button.btn.btn-secondary(type="button" id="generateMasterPasswordBtn")
         i.bi.bi-shield-lock.me-1
         | Generate Master-Password
-      div.small.text-muted.mt-1
+      div.text-muted.mt-2
         | The Master-Password is used to encrypt your private Key before storing it securely on your organization's server.
-      div.small.text-muted.mt-1
         | Before downloading and decrypting files that were shared with you, you will be asked for this Master-Password.
       label.mt-3.form-label(for="masterPasswordField") Master Password
       .input-group.mb-2.mx-auto(style="max-width:100%")
-        input.form-control.form-control-sm.small(
-          type="text", id="masterPasswordField",
-          value=password,
-          readonly,
-          style="min-width:300px;"
-        )
+        input.form-control.form-control-sm(type="text", id="masterPasswordField", readonly, disabled)
         button.btn.btn-outline-secondary(type="button", id="copyMasterPasswordBtn")
           i.bi.bi-clipboard
-      div.small.text-warning.mt-1
+      div.text-danger.mt-1
         | Please make sure you store the Master-Password in your Password-Manager or another secure location.
 
-    .col-md-8.mb-3
+    .col-8.mb-3
       h4.font-weight-bold Encrypt and Save new Keys
       hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
-      // if existingKeys
-      div.small.text-warning.mt-1.mb-1
-        | Warning: This will override your current keys stored on the server.
-        | Files that were previously shared with you, wont be accessible anymore with the new key
+      if existingKeys
+        div.text-danger.mt-1.mb-1
+          | Warning: This will override your current keys stored on the server.
+          | Files that were previously shared with you, wont be accessible anymore with the new key
+      div.text-danger.mt-1.mb-1(id="setKeyError")
       button.btn.btn-secondary.mt-1.mb-1(type="button", id="encryptAndSaveBtn", disabled)
         i.bi.bi-upload.me-1
         | Encrypt and save Keys
-      div.small.text-muted.mt-1
+      div.text-muted.mt-1
         | Your private key will be encrypted with your master-password and stored on your organizations server.
 
   include ../modals/master-password.pug
   include ../modals/user-password.pug
 
   script(type="module").
-    import { generatedKeyPair, generateKeyPair, generateMasterPassword, encryptAndSaveKey, copyToClipboard } from '/js/set-keys.js';
+    import { generatedKeyPair, generateKeyPair, generateMasterPassword, encryptAndSaveKey } from '/js/set-keys.js';
     import { copyToClipboard } from '/js/common.js';
     document.getElementById('generateKeyPairBtn').addEventListener('click', generateKeyPair);
     document.getElementById('generateMasterPasswordBtn').addEventListener('click', generateMasterPassword);

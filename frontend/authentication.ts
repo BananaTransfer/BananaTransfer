@@ -1,4 +1,4 @@
-import { enforceLowerCase } from './common';
+import { enforceLowerCase } from './common.js';
 
 export function validatePasswordsMatch(
   passwordInput: HTMLInputElement,

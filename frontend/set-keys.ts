@@ -2,6 +2,7 @@ import { showModal } from './common.js';
 import { KeyManager } from './key-manager.js';
 import { SecurityUtils } from './security-utils.js';
 export let generatedKeyPair: CryptoKeyPair | null = null;
+export let generatedMasterPassword: string | null = null;
 
 function updateEncryptButtonState() {
   const masterPassword = (
@@ -25,67 +26,96 @@ export async function generateKeyPair() {
 }
 
 export function generateMasterPassword() {
-  const generatedMasterPassword = SecurityUtils.generateMasterPassword();
+  generatedMasterPassword = SecurityUtils.generateMasterPassword();
   (document.getElementById('masterPasswordField') as HTMLInputElement).value =
     generatedMasterPassword;
   updateEncryptButtonState();
 }
 
-export async function encryptAndSaveKey() {
-  const masterPassword = (
-    document.getElementById('masterPasswordField') as HTMLInputElement
-  ).value;
-  if (!generatedKeyPair || !masterPassword) {
-    alert('Generate a key pair and master password first.');
-    return;
-  }
+async function showMasterPasswordModal(): Promise<string> {
+  (
+    document.getElementById('modalMasterPasswordText') as HTMLElement
+  ).textContent =
+    'Please enter your new Master-Password to confirm this action';
 
-  // show master-password modal (loop until correct master password is entered)
-  let enteredMasterPassword: string | null = null;
-  let errorMessage = '';
-  while (true) {
-    (
-      document.getElementById('modalMasterPasswordText') as HTMLElement
-    ).textContent =
-      'Please enter your new Master-Password to confirm this action';
-
-    enteredMasterPassword = await showModal(
-      'masterPasswordModal',
-      'modalMasterPasswordInput',
-      'modalMasterPasswordConfirmBtn',
-      'modalMasterPasswordError',
-      errorMessage,
+  const enteredMasterPassword = await showModal(
+    'masterPasswordModal',
+    'modalMasterPasswordInput',
+    'modalMasterPasswordConfirmBtn',
+    'modalMasterPasswordError',
+  );
+  // throw if master password entry canceled
+  if (!enteredMasterPassword)
+    throw new Error(
+      'New Master-Password must be confirmed to save the new Key-Pair',
     );
-    // return if user canceled action
-    if (!enteredMasterPassword) return;
-    // break loop if correct master password is entered
-    if (enteredMasterPassword === masterPassword) break;
-    // set error message if wrong master password is entered
-    errorMessage = 'Incorrect Master-Password';
-  }
+  return enteredMasterPassword;
+}
 
-  // show user-password modal
-  const userPassword = await showModal(
+async function showUserPasswordModal(): Promise<string> {
+  const enteredUserPassword = await showModal(
     'userPasswordModal',
     'modalUserPasswordInput',
     'modalUserPasswordConfirmBtn',
     'modalUserPasswordError',
   );
-  // return if user canceled action
-  if (!userPassword) {
-    return;
-  }
+  // throw if user password entry canceled
+  if (!enteredUserPassword)
+    throw new Error(
+      'Setting the new Key-Pair must be confirmed with User password',
+    );
+  return enteredUserPassword;
+}
 
-  // Continue with encryption and saving
-  const exportedPrivateKey = await KeyManager.exportEncryptedPrivateKey(
-    generatedKeyPair.privateKey,
-    masterPassword,
-  );
-  // TODO: send exportedPrivateKey and userPassword to server
-  console.log(
-    'exportedPrivateKey:',
-    exportedPrivateKey,
-    'userPassword:',
-    userPassword,
-  );
+export async function encryptAndSaveKey() {
+  try {
+    if (!generatedKeyPair || !generatedMasterPassword) {
+      alert('Generate a key pair and master password first.');
+      return;
+    }
+
+    // show master-password modal
+    const enteredMasterPassword = await showMasterPasswordModal();
+    // throw error if wrong master password was entered
+    if (enteredMasterPassword !== generatedMasterPassword)
+      throw new Error('The entered Master-Password is incorrect');
+
+    // show user-password modal
+    const userPassword = await showUserPasswordModal();
+
+    // Continue with encryption and saving
+    const encryptedPrivateKey = await KeyManager.encryptPrivateKey(
+      generatedKeyPair.privateKey,
+      generatedMasterPassword,
+    );
+    const exportedPrivateKey =
+      KeyManager.exportEncryptedPrivateKey(encryptedPrivateKey);
+    const exportedPublicKey = await KeyManager.exportPublicKey(
+      generatedKeyPair.publicKey,
+    );
+
+    const csrfToken = (document.getElementById('_csrf') as HTMLInputElement)
+      .value;
+
+    const response = await fetch('/user/set-keys', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        _csrf: csrfToken,
+        password: userPassword,
+        publicKey: exportedPublicKey,
+        privateKeyEncrypted: exportedPrivateKey.privateKey,
+        privateKeySalt: exportedPrivateKey.salt,
+        privateKeyIv: exportedPrivateKey.iv,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to save the new key pair');
+    }
+  } catch (error) {
+    (document.getElementById('setKeyError') as HTMLElement).textContent = (
+      error as Error
+    ).message;
+  }
 }

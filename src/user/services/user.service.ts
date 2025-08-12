@@ -82,9 +82,24 @@ export class UserService {
     return await this.localUserRepository.save(user);
   }
 
-  async getUserPrivateKey(userId: number): Promise<string> {
+  async setLastLogin(userId: number): Promise<void> {
+    await this.localUserRepository.update(
+      { id: userId },
+      { last_login: new Date() },
+    );
+  }
+
+  async getUserPrivateKey(userId: number): Promise<{
+    private_key_encrypted: string;
+    private_key_salt: string;
+    private_key_iv: string;
+  }> {
     const user = await this.getCurrentUser(userId);
-    return user.private_key_encrypted || '';
+    return {
+      private_key_encrypted: user.private_key_encrypted || '',
+      private_key_salt: user.private_key_salt || '',
+      private_key_iv: user.private_key_iv || '',
+    };
   }
 
   getPublicKey(username: string): string {
@@ -109,23 +124,27 @@ export class UserService {
       throw new UnauthorizedException('Current password is incorrect');
     }
     user.password_hash = await this.passwordService.hashPassword(newPassword);
+    user.password_created_at = new Date();
     return await this.localUserRepository.save(user);
   }
 
   async setUserKeys(
     userId: number,
     password: string,
-    privateKeyEncrypted: string,
-    privateKeyKdf: string,
     publicKey: string,
+    privateKeyEncrypted: string,
+    privateKeySalt: string,
+    privateKeyIv: string,
   ): Promise<LocalUser> {
     const user = await this.getCurrentUser(userId);
     if (!(await this.passwordService.validatePassword(user, password))) {
       throw new UnauthorizedException('Invalid password');
     }
     user.private_key_encrypted = privateKeyEncrypted;
-    user.private_key_kdf = privateKeyKdf;
+    user.private_key_salt = privateKeySalt;
+    user.private_key_iv = privateKeyIv;
     user.public_key = publicKey;
+    user.key_created_at = new Date();
     return await this.localUserRepository.save(user);
   }
 

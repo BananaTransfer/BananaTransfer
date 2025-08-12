@@ -6,22 +6,27 @@ export class SetKeysDto {
   @MaxLength(256)
   password: string;
 
-  // TODO: specify the exact length for the keys and the kdf
   @IsString()
   @IsNotEmpty()
-  @MinLength(127)
-  @MaxLength(1256)
-  private_key_encrypted: string;
+  @MinLength(3188)
+  @MaxLength(3188)
+  privateKeyEncrypted: string;
 
   @IsString()
   @IsNotEmpty()
-  @MinLength(127)
-  @MaxLength(1256)
-  private_key_kdf: string;
+  @MinLength(44)
+  @MaxLength(44)
+  privateKeySalt: string;
 
   @IsString()
   @IsNotEmpty()
-  @MinLength(127)
-  @MaxLength(1256)
-  public_key: string;
+  @MinLength(16)
+  @MaxLength(16)
+  privateKeyIv: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(736)
+  @MaxLength(736)
+  publicKey: string;
 }

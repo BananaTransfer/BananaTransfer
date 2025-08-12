@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, ForbiddenException } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { Request, Response, NextFunction, urlencoded } from 'express';
+import { Request, Response, NextFunction, urlencoded, json } from 'express';
 import { join } from 'path';
 import * as cookieParser from 'cookie-parser';
 import * as csrf from 'csrf';
@@ -27,6 +27,7 @@ async function bootstrap() {
   app.setViewEngine('pug'); // set the view engine to Pug
 
   app.use(urlencoded({ extended: true })); // parse URL-encoded bodies (as sent by HTML forms)
+  app.use(json());
   app.useGlobalPipes(new ValidationPipe({ whitelist: true })); // setup global validation pipe for inputs
 
   app.use(cookieParser()); // parse cookies from the request
@@ -52,7 +53,7 @@ async function bootstrap() {
   // Middleware to verify CSRF token on POST
   app.use((req: CsrfRequest, res: Response, next: NextFunction) => {
     if (req.method === 'POST') {
-      const token = (req.body as { _csrf: string })._csrf;
+      const token = (req.body as { _csrf: string })?._csrf;
       if (!tokens.verify(req.csrfSecret, token)) {
         throw new ForbiddenException('Invalid CSRF token');
       }

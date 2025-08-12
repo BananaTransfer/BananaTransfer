@@ -25,12 +25,12 @@ export class UserController {
 
   constructor(private readonly userService: UserService) {}
 
-  private renderUserSettingsPage(
+  private async renderUserSettingsPage(
     req: AuthenticatedRequest,
     res: Response,
     options: { username?: string; error?: string } = {},
-  ): void {
-    const user = this.userService.findByUserId(req.user.id);
+  ): Promise<void> {
+    const user = await this.userService.findByUserId(req.user.id);
     res.render('user/settings', { user, ...options });
   }
 
@@ -60,11 +60,11 @@ export class UserController {
 
   // endpoint to get user settings page
   @Get('')
-  getUserSettingsPage(
+  async getUserSettingsPage(
     @Req() req: AuthenticatedRequest,
     @Res() res: Response,
-  ): void {
-    this.renderUserSettingsPage(req, res);
+  ): Promise<void> {
+    await this.renderUserSettingsPage(req, res);
   }
 
   // endpoint to get page to change password
@@ -112,7 +112,7 @@ export class UserController {
         throw new Error('Failed to change password');
       }
       this.logger.log(`Password changed for user ${user.username}`);
-      res.redirect('/user/settings');
+      res.redirect('/user');
     } catch (error) {
       this.logger.error('Error changing password', error);
       this.renderChangePasswordPage(req, res, {
@@ -133,15 +133,16 @@ export class UserController {
       const user = await this.userService.setUserKeys(
         req.user.id,
         setKeysDto.password,
-        setKeysDto.private_key_encrypted,
-        setKeysDto.private_key_kdf,
-        setKeysDto.public_key,
+        setKeysDto.publicKey,
+        setKeysDto.privateKeyEncrypted,
+        setKeysDto.privateKeySalt,
+        setKeysDto.privateKeyIv,
       );
       if (!user) {
         throw new Error('Failed to set user keys');
       }
       this.logger.log(`Keys set for user ${user.username}`);
-      res.redirect('/user/settings');
+      res.redirect('/user');
     } catch (error) {
       this.logger.error('Error setting user keys', error);
       this.renderSetKeysPage(req, res, {
