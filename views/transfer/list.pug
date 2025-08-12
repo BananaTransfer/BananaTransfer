@@ -30,6 +30,7 @@ block content
             th Date
             th Size
             th Status
+            th.text-center Details
             th.text-center Actions
         tbody
           if transfers && transfers.length
@@ -42,10 +43,26 @@ block content
                 td= transfer.date
                 td= transfer.size
                 td= transfer.status
+                td
+                  span.rounded-circle.bg-light.border.d-inline-flex.align-items-center.justify-content-center.view-details(
+                    style="width: 24px; height: 24px; cursor: pointer;"
+                    data-id=transfer.id
+                    data-bs-toggle="tooltip"
+                    data-bs-placement="top"
+                    title="View details"
+                  )
+                    i.bi.bi-info-lg.text-primary
                 td.text-center
-                  a.btn.btn-sm.btn-primary(href=`/transfer/view/${transfer.id}`) View
-                  a.btn.btn-sm.btn-success.ms-1(href=`/transfer/download/${transfer.id}`) Download
-                  a.btn.btn-sm.btn-danger.ms-1(href=`/transfer/delete/${transfer.id}`) Delete
+                  // TODO: only show the buttons depending on the state of the transfer
+                    a.btn.btn-sm.btn-success.ms(href=`/transfer/accept/${transfer.id}`) Accept
+                  button.btn.btn-sm.btn-success.ms.accept-btn(type="button" data-id=transfer.id) Accept
+                  button.btn.btn-sm.btn-danger.ms-1.reject-btn(type="button" data-id=transfer.id) Reject
+                  button.btn.btn-sm.btn-primary.ms-1.download-btn(type="button" data-id=transfer.id) Download
+                  button.btn.btn-sm.btn-danger.ms-1.delete-btn(type="button" data-id=transfer.id) Delete
           else
             tr
               td(colspan="8" class="text-center") No transfers found.
+
+  script(type="module").
+    import { setupListPage } from '/js/transfer-list.js';
+    setupListPage();
