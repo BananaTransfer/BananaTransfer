@@ -87,6 +87,7 @@ export class AuthController {
         loginDto.password,
       );
       this.logger.log(`User logged in: ${user.username}`);
+      await this.userService.setLastLogin(user.id);
       await this.authService.authenticateUser(user, res);
       return res.redirect('/transfer');
     } catch (error) {

@@ -18,8 +18,14 @@ block content
     .col-md-8.mb-3
       h4.font-weight-bold User profile information
       hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
-      p.mt-3 username: #{user.username}
-      p.mt-2 email address for notifications: #{user.email}
+      div.text.mt-2
+       | username: #{user.username}
+       br
+       | email address for notifications: #{user.email}
+      div.text-muted.small.mt-1
+       | account created at: #{user.created_at}
+       br
+       | last login: #{user.last_login}
 
     // .col-md-8.mb-3
       h4.font-weight-bold Server information
@@ -36,7 +42,7 @@ block content
       hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
       label.form-label(for="publicKeyField") Public Key
       div.text-muted.small.mb-1
-        | created at #{user.key_created_at}
+        | key created at #{user.key_created_at}
       .input-group.mb-2.mx-auto(style="max-width:100%")
         textarea.form-control.form-control-sm(
           id="publicKeyField",

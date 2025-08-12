@@ -78,8 +78,16 @@ export class UserService {
       email,
       password_hash,
       status: UserStatus.ACTIVE,
+      last_login: new Date(),
     });
     return await this.localUserRepository.save(user);
+  }
+
+  async setLastLogin(userId: number): Promise<void> {
+    await this.localUserRepository.update(
+      { id: userId },
+      { last_login: new Date() },
+    );
   }
 
   async getUserPrivateKey(userId: number): Promise<{
