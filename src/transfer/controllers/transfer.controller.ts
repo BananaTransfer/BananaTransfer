@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 
+import { TransferStatus } from '@database/entities/enums';
 import { TransferService } from '@transfer/services/transfer.service';
 import { UserService } from '@user/services/user.service';
 import { JwtAuthGuard } from '@auth/jwt/guards/jwt-auth.guard';
@@ -27,10 +28,22 @@ export class TransferController {
   // endpoint to get transfers list page
   @Get('')
   @Render('transfer/list')
-  renderTransfersList(/*@Req() req: Request, @Res() res: Response*/): void {
+  renderTransfersList(/*@Req() req: Request, @Res() res: Response*/) {
     // const transfers = this.transferService.getTransferList(req.user.id;
     // return { transfers };
-    return;
+    return {
+      transfers: [
+        {
+          id: 54,
+          status: TransferStatus.RETRIEVED,
+          created_at: new Date(),
+          filename: 'test.txt',
+          subject: 'asdfasdfasdf',
+          recipient: 'user@example.com',
+          sender: 'sender@example.com',
+        },
+      ],
+    };
   }
 
   // endpoint to get new transfer page
