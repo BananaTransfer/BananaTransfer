@@ -7,6 +7,7 @@ export enum UserStatus {
 
 export enum TransferStatus {
   CREATED = 'CREATED',
+  IN_PROGRESS = 'IN_PROGRESS',
   SENT = 'SENT',
   RETRIEVED = 'RETRIEVED',
   DELETED = 'DELETED',
