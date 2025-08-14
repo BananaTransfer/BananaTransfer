@@ -9,24 +9,45 @@ export class AddChunkInfoAndFileTransferUpdates1755074472988
     await queryRunner.query(
       `CREATE TABLE "chunk_info" ("id" SERIAL NOT NULL, "chunkNumber" integer NOT NULL, "chunkSize" integer NOT NULL, "etag" text NOT NULL, "s3Path" text NOT NULL, "isUploaded" boolean NOT NULL DEFAULT false, "createdAt" TIMESTAMP NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP NOT NULL DEFAULT now(), "fileTransferId" integer, CONSTRAINT "PK_438d132ca6f74b7d7cc5be3c572" PRIMARY KEY ("id"))`,
     );
-    await queryRunner.query(`ALTER TABLE "user" DROP COLUMN "private_key_kdf"`);
-    await queryRunner.query(
-      `ALTER TABLE "file_transfer" ADD "totalChunks" integer`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "file_transfer" ADD "uploadedChunks" integer`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "file_transfer" ADD "chunkSize" integer`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "file_transfer" ADD "multipartUploadId" text`,
-    );
-    await queryRunner.query(
-      `ALTER TABLE "user" ADD "password_created_at" TIMESTAMP DEFAULT now()`,
-    );
-    await queryRunner.query(`ALTER TABLE "user" ADD "private_key_salt" text`);
-    await queryRunner.query(`ALTER TABLE "user" ADD "private_key_iv" text`);
+    // Only drop the column if it exists
+    const columnExists = await queryRunner.hasColumn('user', 'private_key_kdf');
+    if (columnExists) {
+      await queryRunner.query(
+        `ALTER TABLE "user" DROP COLUMN "private_key_kdf"`,
+      );
+    }
+    // Add columns only if they don't exist
+    if (!(await queryRunner.hasColumn('file_transfer', 'totalChunks'))) {
+      await queryRunner.query(
+        `ALTER TABLE "file_transfer" ADD "totalChunks" integer`,
+      );
+    }
+    if (!(await queryRunner.hasColumn('file_transfer', 'uploadedChunks'))) {
+      await queryRunner.query(
+        `ALTER TABLE "file_transfer" ADD "uploadedChunks" integer`,
+      );
+    }
+    if (!(await queryRunner.hasColumn('file_transfer', 'chunkSize'))) {
+      await queryRunner.query(
+        `ALTER TABLE "file_transfer" ADD "chunkSize" integer`,
+      );
+    }
+    if (!(await queryRunner.hasColumn('file_transfer', 'multipartUploadId'))) {
+      await queryRunner.query(
+        `ALTER TABLE "file_transfer" ADD "multipartUploadId" text`,
+      );
+    }
+    if (!(await queryRunner.hasColumn('user', 'password_created_at'))) {
+      await queryRunner.query(
+        `ALTER TABLE "user" ADD "password_created_at" TIMESTAMP DEFAULT now()`,
+      );
+    }
+    if (!(await queryRunner.hasColumn('user', 'private_key_salt'))) {
+      await queryRunner.query(`ALTER TABLE "user" ADD "private_key_salt" text`);
+    }
+    if (!(await queryRunner.hasColumn('user', 'private_key_iv'))) {
+      await queryRunner.query(`ALTER TABLE "user" ADD "private_key_iv" text`);
+    }
     await queryRunner.query(
       `ALTER TYPE "public"."file_transfer_status_enum" RENAME TO "file_transfer_status_enum_old"`,
     );

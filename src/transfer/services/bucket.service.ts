@@ -37,6 +37,26 @@ export class BucketService {
   }
 
   /**
+   * Uploads a Buffer directly to S3.
+   * Returns the key of the uploaded object.
+   */
+  async putObject(key: string, buffer: Buffer): Promise<void> {
+    try {
+      await this.s3Client.send(
+        new PutObjectCommand({
+          Bucket: this.bucket,
+          Key: key,
+          Body: buffer,
+        }),
+      );
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Failed to upload object to S3: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+    }
+  }
+
+  /**
    * Uploads a file from the given path to S3.
    * Returns the key of the uploaded object.
    */
@@ -75,7 +95,8 @@ export class BucketService {
     // to generate a file path to avoid concurrency issue if a user
     //  requests multiple times the same file at the same time
     const tmpDownloadDir = await mkdtemp(join(tmpdir(), 'download-'));
-    const tmpFile = join(tmpDownloadDir, key);
+    const fileName = key.split('/').pop() || 'temp_file';
+    const tmpFile = join(tmpDownloadDir, fileName);
 
     try {
       const result = await this.s3Client.send(

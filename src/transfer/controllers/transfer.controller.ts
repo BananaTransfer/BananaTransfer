@@ -2,19 +2,21 @@ import {
   Controller,
   Get,
   Post,
-  // Req,
+  Req,
   Res,
   Render,
   Param,
   Body,
   UseGuards,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 
 import { TransferStatus } from '@database/entities/enums';
 import { TransferService } from '@transfer/services/transfer.service';
 import { UserService } from '@user/services/user.service';
 import { JwtAuthGuard } from '@auth/jwt/guards/jwt-auth.guard';
+import { ChunkedTransferDto } from '@transfer/dto/chunked-transfer.dto';
+import { AuthenticatedRequest } from '@auth/types/authenticated-request.interface';
 
 // all routes in this controller are protected by the JwtAuthGuard and require authentication
 @UseGuards(JwtAuthGuard)
@@ -48,10 +50,16 @@ export class TransferController {
 
   // endpoint to get new transfer page
   @Get('new')
-  @Render('transfer/new')
-  renderNewTransfer(/*@Req() req: Request, @Res() res: Response*/): void {
-    // const knownRecipients = this.userService.getKnownRecipients(req.user.id);
-    //res.render('new', { knownRecipients });
+  renderNewTransfer(
+    @Req() req: AuthenticatedRequest,
+    @Res() res: Response,
+  ): void {
+    const domain = process.env.DOMAIN || 'localhost:3000';
+    res.render('transfer/new', {
+      user: req.user,
+      csrfToken: req.csrfToken(),
+      domain: domain,
+    });
   }
 
   // endpoint to fetch the data of a transfer by ID
@@ -67,9 +75,64 @@ export class TransferController {
 
   // endpoint to add a new transfer
   @Post('new')
-  newTransfer(@Body() transferData: any, @Res() res: Response): void {
-    this.transferService.newTransfer(transferData);
-    res.redirect('/transfer/list');
+  async newTransfer(
+    @Body() transferData: ChunkedTransferDto,
+    @Req() req: AuthenticatedRequest,
+    @Res() res: Response,
+  ): Promise<void> {
+    const userId = req.user.id;
+
+    // Handle chunked upload with JSON data
+    if (transferData.chunkData && transferData.chunkIndex !== undefined) {
+      // Decode base64 chunk data
+      const chunkBuffer = Buffer.from(transferData.chunkData, 'base64');
+
+      const chunkData = {
+        chunkData: chunkBuffer,
+        chunkIndex: transferData.chunkIndex,
+        isLastChunk: transferData.isLastChunk ?? false,
+        iv: transferData.iv ?? '',
+      };
+
+      // If this is the first chunk, include transfer metadata
+      const transferRequest = transferData.filename
+        ? {
+            filename: transferData.filename,
+            subject: transferData.subject ?? '',
+            recipientUsername: transferData.recipientUsername ?? '',
+            symmetricKeyEncrypted: transferData.symmetricKeyEncrypted ?? '',
+            signatureSender: transferData.signatureSender ?? '',
+            totalFileSize: transferData.totalFileSize ?? 0,
+            totalChunks: transferData.totalChunks ?? 0,
+            chunkSize: transferData.chunkSize ?? 0,
+          }
+        : null;
+
+      await this.transferService.handleChunkUpload(
+        chunkData,
+        transferRequest,
+        userId,
+      );
+      res.json({ success: true, message: 'Chunk uploaded successfully' });
+    } else {
+      // Handle single file upload
+      const fileBuffer = transferData.fileContent
+        ? Buffer.from(transferData.fileContent, 'base64')
+        : undefined;
+
+      const transferRequest = {
+        filename: transferData.filename ?? '',
+        subject: transferData.subject ?? '',
+        recipientUsername: transferData.recipientUsername ?? '',
+        symmetricKeyEncrypted: transferData.symmetricKeyEncrypted ?? '',
+        signatureSender: transferData.signatureSender ?? '',
+        fileContent: fileBuffer,
+        totalFileSize: fileBuffer?.length,
+      };
+
+      await this.transferService.newTransfer(transferRequest, userId);
+      res.redirect('/transfer');
+    }
   }
 
   // endpoint to accept a transfer by ID

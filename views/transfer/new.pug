@@ -14,6 +14,8 @@ block content
       .col-8
         .alert.alert-danger.text-center= error
 
+
+  
   // Recipient section
   .row.justify-content-center.mb-3
     .col-8
@@ -42,11 +44,12 @@ block content
   // Subject section
   .row.justify-content-center.mb-3
     .col-8
+      input(type="hidden" id="_csrf" value=csrfToken)
       h4.font-weight-bold Subject
       hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
       input.form-control(type="text" name="subject" id="subject" placeholder="Transfer Subject (Filename by default)")
 
-  // Send button
+    // Send button
   .row.justify-content-center.mb-3
     .col-8
       h4.font-weight-bold Send Transfer
@@ -54,3 +57,7 @@ block content
       button.btn.btn-dark.mb-3(type="submit" style="border-radius:15px; padding:10px 40px;") Send file(s)
       div.small.text-muted
         | Files will be encrypted and securely transferred to the recipient.
+
+  script(type="module").
+    import { setupListPage } from '/js/transfer-new.js';
+    setupListPage();
