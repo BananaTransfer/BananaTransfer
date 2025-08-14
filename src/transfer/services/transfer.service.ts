@@ -109,15 +109,15 @@ export class TransferService {
       // Upload to S3 using existing BucketService
       await this.bucketService.putObject(s3Key, transferData.fileContent);
 
-      // Update transfer with S3 path and mark as sent
+      // Update transfer with S3 path
       savedTransfer.s3_path = s3Key;
-      savedTransfer.status = TransferStatus.SENT;
+      // Status remains CREATED
       await this.fileTransferRepository.save(savedTransfer);
 
       // Log successful upload
       await this.createTransferLog(
         savedTransfer,
-        LogInfo.TRANSFER_SENT,
+        LogInfo.TRANSFER_CREATED,
         senderId,
       );
     }
@@ -165,6 +165,7 @@ export class TransferService {
       // In a real implementation, you'd use a session-based transfer ID
       const existingTransfer = await this.fileTransferRepository.findOne({
         where: { sender: { id: senderId } },
+        relations: ['sender', 'receiver'],
         order: { created_at: 'DESC' },
       });
 
@@ -235,9 +236,12 @@ export class TransferService {
     );
     await this.bucketService.putObject(finalS3Key, finalFileBuffer);
 
+    // Store sender ID before updating transfer
+    const senderId = transfer.sender?.id;
+
     // Update transfer record
     transfer.s3_path = finalS3Key;
-    transfer.status = TransferStatus.SENT;
+    // Status remains CREATED
     await this.fileTransferRepository.save(transfer);
 
     console.log(
@@ -253,12 +257,8 @@ export class TransferService {
       }
     }
 
-    // Log successful upload
-    await this.createTransferLog(
-      transfer,
-      LogInfo.TRANSFER_SENT,
-      transfer.sender.id,
-    );
+    // Log that file is ready
+    await this.createTransferLog(transfer, LogInfo.TRANSFER_CREATED, senderId);
 
     console.log(`Transfer ${transfer.id} finalized successfully`);
   }

@@ -27,9 +27,15 @@ class TransferNewPage {
       recipientInput: document.getElementById('recipient') as HTMLInputElement,
       fileInput: document.getElementById('fileInput') as HTMLInputElement,
       subjectInput: document.getElementById('subject') as HTMLInputElement,
-      sendButton: document.querySelector('button[type="submit"]') as HTMLButtonElement,
-      fileUploadArea: document.querySelector('.file-upload-area') as HTMLElement,
-      expectedHashInput: document.getElementById('expectedHash') as HTMLInputElement,
+      sendButton: document.querySelector(
+        'button[type="submit"]',
+      ) as HTMLButtonElement,
+      fileUploadArea: document.querySelector(
+        '.file-upload-area',
+      ) as HTMLElement,
+      expectedHashInput: document.getElementById(
+        'expectedHash',
+      ) as HTMLInputElement,
     };
   }
 
@@ -39,7 +45,7 @@ class TransferNewPage {
       // Generate a mock RSA key pair for testing
       const mockKeyPair = await KeyManager.generateRSAKeyPair();
       this.recipientPublicKey = mockKeyPair.publicKey;
-      
+
       console.log('Using mocked keys for testing');
     } catch (error) {
       console.error('Error initializing mocked keys:', error);
@@ -83,7 +89,7 @@ class TransferNewPage {
     this.formElements.fileUploadArea.addEventListener('drop', (event) => {
       event.preventDefault();
       this.formElements.fileUploadArea.classList.remove('drag-over');
-      
+
       const files = event.dataTransfer?.files;
       if (files && files.length > 0) {
         this.formElements.fileInput.files = files;
@@ -95,14 +101,14 @@ class TransferNewPage {
   private handleFileSelection(event: Event): void {
     const target = event.target as HTMLInputElement;
     const files = target.files;
-    
+
     if (files && files.length > 0) {
       this.selectedFile = files[0];
-      
+
       // Update file upload area to show selected file
       const fileIcon = this.formElements.fileUploadArea.querySelector('i');
       const fileText = this.formElements.fileUploadArea.querySelector('h5');
-      
+
       if (fileIcon && fileText) {
         fileIcon.className = 'bi bi-file-earmark display-4 mb-3';
         fileText.textContent = `Selected: ${this.selectedFile.name} (${this.formatFileSize(this.selectedFile.size)})`;
@@ -149,10 +155,11 @@ class TransferNewPage {
       this.formElements.sendButton.textContent = 'Encrypting and uploading...';
 
       // Step 1: Encrypt file and get encrypted chunks + wrapped key
-      const { wrappedAesKey, encryptedChunks } = await FileEncryption.encryptFile(
-        this.recipientPublicKey,
-        this.selectedFile
-      );
+      const { wrappedAesKey, encryptedChunks } =
+        await FileEncryption.encryptFile(
+          this.recipientPublicKey,
+          this.selectedFile,
+        );
 
       console.log(`File encrypted into ${encryptedChunks.length} chunks`);
 
@@ -161,12 +168,11 @@ class TransferNewPage {
         encryptedChunks,
         wrappedAesKey,
         recipientUsername,
-        subject
+        subject,
       );
 
       // Success - redirect to transfers list
       window.location.href = '/transfer';
-
     } catch (error) {
       console.error('Error creating transfer:', error);
       alert('Failed to create transfer. Please try again.');
@@ -181,11 +187,13 @@ class TransferNewPage {
     encryptedChunks: StreamChunk[],
     wrappedAesKey: ArrayBuffer,
     recipientUsername: string,
-    subject: string
+    subject: string,
   ): Promise<void> {
     // Sort chunks to ensure correct order
-    const sortedChunks = [...encryptedChunks].sort((a, b) => a.chunkIndex - b.chunkIndex);
-    
+    const sortedChunks = [...encryptedChunks].sort(
+      (a, b) => a.chunkIndex - b.chunkIndex,
+    );
+
     // Create digital signature (mocked for Step 1)
     const signatureSender = await this.createMockDigitalSignature();
 
@@ -194,35 +202,36 @@ class TransferNewPage {
       filename: this.selectedFile!.name,
       subject: subject,
       recipientUsername: recipientUsername,
-      symmetricKeyEncrypted: btoa(String.fromCharCode(...new Uint8Array(wrappedAesKey))),
+      symmetricKeyEncrypted: this.arrayBufferToBase64(wrappedAesKey),
       signatureSender: signatureSender,
       totalFileSize: this.selectedFile!.size,
       totalChunks: sortedChunks.length,
-      chunkSize: SecurityUtils.CHUNK_SIZE
+      chunkSize: SecurityUtils.CHUNK_SIZE,
     };
 
     // Send chunks sequentially to the server
     for (let i = 0; i < sortedChunks.length; i++) {
       const chunk = sortedChunks[i];
-      
+
       // Update progress
       this.formElements.sendButton.textContent = `Uploading chunk ${i + 1}/${sortedChunks.length}...`;
-      
+
       // Prepare JSON payload
       const payload: any = {
-        chunkData: btoa(String.fromCharCode(...new Uint8Array(chunk.encryptedData))),
+        chunkData: this.arrayBufferToBase64(chunk.encryptedData),
         chunkIndex: chunk.chunkIndex,
         isLastChunk: chunk.isLastChunk,
-        iv: btoa(String.fromCharCode(...chunk.iv)),
+        iv: this.arrayBufferToBase64(chunk.iv),
       };
-      
+
       // Add metadata on first chunk
       if (i === 0) {
         Object.assign(payload, transferMetadata);
       }
 
       // Get CSRF token and add to payload
-      const csrfToken = (document.getElementById('_csrf') as HTMLInputElement)?.value;
+      const csrfToken = (document.getElementById('_csrf') as HTMLInputElement)
+        ?.value;
       if (csrfToken) {
         payload._csrf = csrfToken;
       }
@@ -240,17 +249,31 @@ class TransferNewPage {
         throw new Error(`Failed to upload chunk ${i + 1}: ${errorText}`);
       }
 
-      console.log(`Chunk ${i + 1}/${sortedChunks.length} uploaded successfully`);
+      console.log(
+        `Chunk ${i + 1}/${sortedChunks.length} uploaded successfully`,
+      );
     }
 
     console.log('All chunks uploaded successfully');
   }
 
+  private arrayBufferToBase64(buffer: ArrayBuffer | Uint8Array): string {
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+  }
+
   private async createMockDigitalSignature(): Promise<string> {
     // Create a mock signature for Step 1 testing
     const mockData = `MOCK_SIGNATURE_${Date.now()}_${Math.random()}`;
-    const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(mockData));
-    return btoa(String.fromCharCode(...new Uint8Array(hashBuffer)));
+    const hashBuffer = await crypto.subtle.digest(
+      'SHA-256',
+      new TextEncoder().encode(mockData),
+    );
+    return this.arrayBufferToBase64(hashBuffer);
   }
 }
 
