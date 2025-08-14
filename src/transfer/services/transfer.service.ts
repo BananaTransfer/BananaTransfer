@@ -25,7 +25,7 @@ export class TransferService {
   ) {}
 
   // local transfer handling methods
-  async getTransferList(userId: number): Promise<FileTransfer[]> {
+  async getTransferList(userId: number): Promise<any[]> {
     // TODO: implement logic to fetch list of all incoming and outgoing transfers of a user
     return this.fileTransferRepository.find({
       where: [{ sender: { id: userId } }, { receiver: { id: userId } }],
@@ -54,9 +54,54 @@ export class TransferService {
     return [transfer, logs];
   }
 
-  fetchTransfer(id: number, userId: number): string {
-    // TODO: implement logic to fetch transfer content by ID
-    return `Transfer data for ID ${id} and user ID ${userId}`;
+  async fetchTransfer(
+    id: number,
+    userId: number,
+  ): Promise<{
+    transfer: FileTransfer;
+    chunks: Array<{ chunkIndex: number; encryptedData: string; iv: string }>;
+  }> {
+    // Find transfer where user is either sender or receiver
+    const transfer = await this.fileTransferRepository.findOne({
+      where: [
+        { id, sender: { id: userId } },
+        { id, receiver: { id: userId } },
+      ],
+      relations: ['sender', 'receiver'],
+    });
+
+    if (!transfer) {
+      throw new NotFoundException(
+        `Transfer with ID ${id} not found or access denied`,
+      );
+    }
+
+    // Get transfer chunk metadata from database
+    const chunks = await this.chunkInfoRepository.find({
+      where: { fileTransfer: { id } },
+      order: { chunkNumber: 'ASC' },
+    });
+
+    if (chunks.length === 0) {
+      throw new NotFoundException(`Transfer ${id} has no uploaded chunks`);
+    }
+
+    // Download each chunk separately and return with metadata
+    const chunkData = await Promise.all(
+      chunks.map(async (chunk) => {
+        const tempFile = await this.bucketService.getFile(chunk.s3Path);
+        const data = await readFile(tempFile);
+        await unlink(tempFile);
+
+        return {
+          chunkIndex: chunk.chunkNumber,
+          encryptedData: data.toString('base64'),
+          iv: chunk.iv || '', // Use stored IV
+        };
+      }),
+    );
+
+    return { transfer, chunks: chunkData };
   }
 
   async newTransfer(
@@ -203,69 +248,6 @@ export class TransferService {
     }
 
     return null; // Transfer not complete yet
-  }
-
-  private async finalizeChunkedTransfer(transfer: FileTransfer): Promise<void> {
-    // Get all chunks for this transfer
-    const chunks = await this.chunkInfoRepository.find({
-      where: { fileTransfer: { id: transfer.id } },
-      order: { chunkNumber: 'ASC' },
-    });
-
-    console.log(
-      `Finalizing transfer ${transfer.id} with ${chunks.length} chunks`,
-    );
-    console.log(
-      'Chunk S3 paths:',
-      chunks.map((c) => c.s3Path),
-    );
-
-    // For Step 1, we'll combine chunks in memory (simple approach)
-    const chunkBuffers: Buffer[] = [];
-    for (const chunk of chunks) {
-      // Download chunk from S3
-      const tempFilePath = await this.bucketService.getFile(chunk.s3Path);
-      const chunkData = await readFile(tempFilePath);
-      chunkBuffers.push(chunkData);
-      // Clean up temporary file
-      await unlink(tempFilePath);
-    }
-
-    // Combine all chunks into final file
-    const finalFileBuffer = Buffer.concat(chunkBuffers);
-
-    // Upload combined file to final S3 location
-    const finalS3Key = `transfers/${transfer.id}/${transfer.filename}`;
-    console.log(
-      `Uploading final combined file to S3: ${finalS3Key} (${finalFileBuffer.length} bytes)`,
-    );
-    await this.bucketService.putObject(finalS3Key, finalFileBuffer);
-
-    // Store sender ID before updating transfer
-    const senderId = transfer.sender?.id;
-
-    // Update transfer record
-    transfer.s3_path = finalS3Key;
-    // Status remains CREATED
-    await this.fileTransferRepository.save(transfer);
-
-    console.log(
-      `Transfer ${transfer.id} updated with final S3 path: ${finalS3Key}`,
-    );
-
-    // Clean up individual chunks (optional for Step 1)
-    for (const chunk of chunks) {
-      try {
-        await this.bucketService.deleteFile(chunk.s3Path);
-      } catch (error) {
-        console.warn(`Failed to delete chunk ${chunk.s3Path}:`, error);
-      }
-    }
-
-    // Log that file is ready
-    await this.createTransferLog(transfer, LogInfo.TRANSFER_CREATED, senderId);
-
-    console.log(`Transfer ${transfer.id} finalized successfully`);
   }
 
   private async createTransferLog(

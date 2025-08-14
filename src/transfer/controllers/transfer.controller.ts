@@ -64,13 +64,37 @@ export class TransferController {
 
   // endpoint to fetch the data of a transfer by ID
   @Get('fetch/:id')
-  fetchTransfer(/*
+  async fetchTransfer(
     @Param('id') id: number,
-    @Req() req: Request,
+    @Req() req: AuthenticatedRequest,
     @Res() res: Response,
-  */): void {
-    // const result = this.transferService.fetchTransfer(id, req.user.id);
-    // res.download(result);
+  ): Promise<void> {
+    try {
+      const result = await this.transferService.fetchTransfer(id, req.user.id);
+      res.json(result);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      res.status(404).json({ error: message });
+    }
+  }
+
+  // TODO: TO Delete, only for testing purposes
+  @Get('download/:id')
+  @Render('transfer/download')
+  async renderDownloadPage(
+    @Param('id') id: number,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    try {
+      const [transfer] = await this.transferService.getTransferDetails(
+        id,
+        req.user.id,
+      );
+      return { transfer };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      return { error: message };
+    }
   }
 
   // endpoint to add a new transfer

@@ -43,10 +43,20 @@ class TransferNewPage {
   private async initializeMockedKeys(): Promise<void> {
     try {
       // Generate a mock RSA key pair for testing
-      const mockKeyPair = await KeyManager.generateRSAKeyPair();
-      this.recipientPublicKey = mockKeyPair.publicKey;
+      const publicKeyData = localStorage.getItem('userPublicKey');
 
-      console.log('Using mocked keys for testing');
+      if (publicKeyData) {
+        // Use keys from localStorage
+        this.recipientPublicKey = await KeyManager.importPublicKey(publicKeyData);
+        console.log('Using keys from localStorage for testing');
+      } else {
+        // Generate new mock RSA key pair for testing
+        const mockKeyPair = await KeyManager.generateRSAKeyPair();
+        this.recipientPublicKey = mockKeyPair.publicKey;
+        console.log(
+          'Using new generated mocked keys for testing (no localStorage keys found)',
+        );
+      }
     } catch (error) {
       console.error('Error initializing mocked keys:', error);
     }
