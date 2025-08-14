@@ -180,20 +180,25 @@ export class TransferService {
     const chunkKey = `transfers/${transfer.id}/chunks/chunk_${chunkData.chunkIndex}`;
     await this.bucketService.putObject(chunkKey, chunkData.chunkData);
 
-    // Save chunk info to database
+    // Save chunk info to database 
     const chunkInfo = this.chunkInfoRepository.create({
       chunkNumber: chunkData.chunkIndex,
       chunkSize: chunkData.chunkData.length,
       etag: 'chunk_etag', // In real S3, you'd get this from the upload response
       s3Path: chunkKey,
       isUploaded: true,
+      iv: chunkData.iv, // Store base64 encoded IV
       fileTransfer: transfer,
     });
     await this.chunkInfoRepository.save(chunkInfo);
 
-    // If this is the last chunk, combine all chunks and finalize transfer
+    // If this is the last chunk, mark transfer as ready 
     if (chunkData.isLastChunk) {
-      await this.finalizeChunkedTransfer(transfer);
+      // Simply mark transfer as having all chunks ready
+      transfer.status = TransferStatus.CREATED; // Keep as CREATED since file is ready locally
+      await this.fileTransferRepository.save(transfer);
+      
+      console.log(`Transfer ${transfer.id} completed - all chunks stored`);
       return transfer;
     }
 

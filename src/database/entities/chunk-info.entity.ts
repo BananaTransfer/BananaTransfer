@@ -28,6 +28,9 @@ export class ChunkInfo {
   @Column({ type: 'boolean', default: false })
   isUploaded: boolean;
 
+  @Column({ type: 'text', nullable: true })
+  iv: string; // Base64 encoded IV for this chunk
+
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;
 
