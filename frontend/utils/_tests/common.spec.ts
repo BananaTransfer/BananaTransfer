@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 
-import { createInput, mockClipboard } from './test-helpers';
+import { createInput, mockClipboard } from '../../_tests/test-helpers';
 import { enforceLowerCase, copyToClipboard } from '../common';
 
 describe('common.ts functions', () => {

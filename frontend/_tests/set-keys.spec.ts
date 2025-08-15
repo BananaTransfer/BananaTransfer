@@ -5,7 +5,7 @@
 import { generateKeyPair, generateMasterPassword } from '../set-keys';
 
 // Mock KeyManager and SecurityUtils dependencies
-jest.mock('../key-manager', () => ({
+jest.mock('../crypto/key-manager', () => ({
   KeyManager: {
     generateRSAKeyPair: jest.fn(() => ({
       publicKey: 'mockPublicKey',
@@ -15,7 +15,7 @@ jest.mock('../key-manager', () => ({
     exportEncryptedPrivateKey: jest.fn(() => 'mockExportedEncryptedPrivateKey'),
   },
 }));
-jest.mock('../security-utils', () => ({
+jest.mock('../crypto/security-utils', () => ({
   SecurityUtils: {
     generateMasterPassword: jest.fn(() => 'mockMasterPassword'),
   },
