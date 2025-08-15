@@ -1,4 +1,4 @@
-import { showModal } from './utils/common.js';
+import { callApi, showModal } from './utils/common.js';
 import { KeyManager } from './crypto/key-manager.js';
 import { SecurityUtils } from './crypto/security-utils.js';
 export let generatedKeyPair: CryptoKeyPair | null = null;
@@ -94,27 +94,18 @@ export async function encryptAndSaveKey() {
       generatedKeyPair.publicKey,
     );
 
-    const csrfToken = (document.getElementById('_csrf') as HTMLInputElement)
-      .value;
-
-    const response = await fetch('/user/set-keys', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        _csrf: csrfToken,
+    const result: { redirect?: string } = await callApi(
+      'POST',
+      `/user/set-keys`,
+      {
         password: userPassword,
         publicKey: exportedPublicKey,
         privateKeyEncrypted: exportedPrivateKey.privateKey,
         privateKeySalt: exportedPrivateKey.salt,
         privateKeyIv: exportedPrivateKey.iv,
-      }),
-    });
+      },
+    );
 
-    if (!response.ok) {
-      throw new Error('Failed to save the new key pair');
-    }
-
-    const result = (await response.json()) as { redirect?: string };
     if (result?.redirect) {
       window.location.href = result.redirect;
     }

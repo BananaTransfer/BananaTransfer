@@ -1,5 +1,6 @@
 import { FileEncryption, StreamChunk } from './crypto/encryption.js';
 import { KeyManager } from './crypto/key-manager.js';
+import { callApi } from './utils/common';
 
 interface ChunkData {
   chunkIndex: number;
@@ -16,41 +17,20 @@ export class FileDownloader {
 
   async downloadAndDecrypt(transferId: number): Promise<Uint8Array> {
     try {
-      // Fetch transfer data and chunks from server
-      const response = await fetch(`/transfer/${transferId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'same-origin', // Include authentication cookies
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Server response:', errorText);
-        throw new Error(`Failed to fetch transfer: ${response.statusText}`);
-      }
-
-      const transfer = (await response.json()) as {
+      const transfer: {
         id: number;
         symmetric_key_encrypted: string;
         chunks: number[];
-      };
+      } = await callApi('GET', `/transfer/${transferId}`);
+
       console.log('Raw server response:', transfer);
 
       const chunks: ChunkData[] = await Promise.all(
         transfer.chunks.map((chunk) => {
-          return fetch(`/transfer/${transferId}/chunk/${chunk}`, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            credentials: 'same-origin', // Include authentication cookies
-          }).then((res) => {
-            if (!res.ok) throw new Error('could not fetch chunk');
-
-            return res.json() as Promise<ChunkData>;
-          });
+          return callApi<void, ChunkData>(
+            'GET',
+            `/transfer/${transferId}/chunk/${chunk}`,
+          );
         }),
       );
 

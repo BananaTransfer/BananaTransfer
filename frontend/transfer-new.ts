@@ -1,5 +1,6 @@
 import { FileEncryption, StreamChunk } from './crypto/encryption.js';
 import { KeyManager } from './crypto/key-manager.js';
+import { callApi } from './utils/common';
 
 interface TransferFormElements {
   recipientInput: HTMLInputElement;
@@ -203,30 +204,9 @@ class TransferNewPage {
       receiver: recipientUsername,
       symmetric_key_encrypted: this.arrayBufferToBase64(wrappedAesKey),
       signature_sender: signatureSender,
-      _csrf: '',
     };
 
-    // Get CSRF token and add to payload
-    const csrfToken = (document.getElementById('_csrf') as HTMLInputElement)
-      ?.value;
-    if (csrfToken) {
-      payload._csrf = csrfToken;
-    }
-
-    const response = await fetch('/transfer/new', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Failed to create transfer: ${errorText}`);
-    }
-
-    return (await response.json()) as Promise<{ id: number }>;
+    return callApi('POST', '/transfer/new', payload);
   }
 
   private async sendChunksToServer(
@@ -240,28 +220,9 @@ class TransferNewPage {
       chunkIndex: encryptedChunks.chunkIndex,
       isLastChunk: encryptedChunks.isLastChunk,
       iv: this.arrayBufferToBase64(encryptedChunks.iv),
-      _csrf: '',
     };
 
-    // Get CSRF token and add to payload
-    const csrfToken = (document.getElementById('_csrf') as HTMLInputElement)
-      ?.value;
-    if (csrfToken) {
-      payload._csrf = csrfToken;
-    }
-
-    const response = await fetch(`/transfer/${transferId}/chunk`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Failed to upload chunk: ${errorText}`);
-    }
+    return callApi('POST', `/transfer/${transferId}/chunk`, payload);
   }
 
   private arrayBufferToBase64(buffer: ArrayBuffer | Uint8Array): string {

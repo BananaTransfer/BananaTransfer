@@ -79,4 +79,11 @@ export class SecurityUtils {
 
     bytes.fill(0);
   }
+
+  /**
+   * Method to use the current user's private key
+   */
+  static useUserPrivateKey(): void {
+    return;
+  }
 }
