@@ -13,7 +13,7 @@ import { UserStatus } from '@database/entities/enums';
 import { User } from '@database/entities/user.entity';
 import { LocalUser } from '@database/entities/local-user.entity';
 import { RemoteUser } from '@database/entities/remote-user.entity';
-import { TrustedRecipient } from '@database/entities/trusted-recipient.entity';
+import RecipientParsingService from '@user/services/recipientParsing.service';
 
 @Injectable()
 export class UserService {
@@ -22,13 +22,12 @@ export class UserService {
   constructor(
     private readonly configService: ConfigService,
     private readonly passwordService: PasswordService,
+    private readonly recipientParsingService: RecipientParsingService,
     @InjectRepository(User) private userRepository: Repository<User>,
     @InjectRepository(LocalUser)
     private localUserRepository: Repository<LocalUser>,
     @InjectRepository(RemoteUser)
     private remoteUserRepository: Repository<RemoteUser>,
-    @InjectRepository(TrustedRecipient)
-    private trustedRecipientRepository: Repository<TrustedRecipient>,
   ) {
     const envDomain = this.configService.get<string>('DOMAIN');
     if (!envDomain) {
@@ -102,18 +101,6 @@ export class UserService {
     };
   }
 
-  getPublicKey(username: string): string {
-    // TODO: get public key of user from the db
-    // console.log(username);
-    const user = undefined; // TODO: fetch user from db
-    if (!user) {
-      // this will automatically return a 404 in the controller
-      throw new NotFoundException('User not found');
-    }
-    return username;
-    // return user.publicKey;
-  }
-
   async changeUserPassword(
     userId: number,
     currentPassword: string,
@@ -150,8 +137,7 @@ export class UserService {
 
   async getUser(username: string): Promise<User> {
     // TODO: get local or remote user from db
-    const parsedUser: { user: string; domain: string; isLocal: boolean } =
-      this.parseUsername(username);
+    const parsedUser = this.recipientParsingService.parseRecipient(username);
     if (parsedUser.isLocal) {
       return await this.getLocalUser(username);
     } else {
@@ -159,7 +145,7 @@ export class UserService {
     }
   }
 
-  private async getLocalUser(username: string): Promise<LocalUser> {
+  async getLocalUser(username: string): Promise<LocalUser> {
     // get local user from db
     const user = await this.localUserRepository.findOneBy({ username });
     if (!user) {
@@ -200,26 +186,5 @@ export class UserService {
   createRemoteUser(): void {
     // TODO: implement logic to create a remote user in the DB
     // used when sending/receiving a transfer to/from a remote user
-  }
-
-  private parseUsername(username: string): {
-    user: string;
-    domain: string;
-    isLocal: boolean;
-  } {
-    const regex = /^([^@]+)@([^@]+)$/;
-    let user: string;
-    let domain: string;
-
-    if (regex.test(username)) {
-      [user, domain] = username.split('@');
-    } else {
-      user = username;
-      domain = this.envDomain;
-    }
-
-    const isLocal = domain === this.envDomain;
-
-    return { user, domain, isLocal };
   }
 }
