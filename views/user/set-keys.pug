@@ -17,7 +17,7 @@ block content
   .row.justify-content-center
     input(type="hidden" id="_csrf" value=csrfToken)
     .col-8.mb-3
-      h4.font-weight-bold Generate new Private and Public Key
+      h4.font-weight-bold 1. Generate new Private and Public Key
       hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
       button.btn.btn-secondary(type="button" id="generateKeyPairBtn")
         i.bi.bi-key.me-1
@@ -39,7 +39,7 @@ block content
         | This is your public key. It will be automatically shared with others so they can send you files.
 
     .col-8.mb-3
-      h4.font-weight-bold Generate new Master-Password
+      h4.font-weight-bold 2. Generate new Master-Password
       hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
       button.btn.btn-secondary(type="button" id="generateMasterPasswordBtn")
         i.bi.bi-shield-lock.me-1
@@ -56,9 +56,9 @@ block content
         | Please make sure you store the Master-Password in your Password-Manager or another secure location.
 
     .col-8.mb-3
-      h4.font-weight-bold Encrypt and Save new Keys
+      h4.font-weight-bold 3. Encrypt and Save new Keys
       hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
-      if existingKeys
+      if user.public_key
         div.text-danger.mt-1.mb-1
           | Warning: This will override your current keys stored on the server.
           | Files that were previously shared with you, wont be accessible anymore with the new key
