@@ -1,0 +1,81 @@
+extends ../layout
+
+block content
+  .row.justify-content-center.mb-3
+    .col-8.text-center
+      h2.mt-3.mb-0 Download Transfer
+    
+  if error
+    .row.justify-content-center.mb-3
+      .col-8
+        .alert.alert-danger.text-center= error
+  else if transfer
+    .row.justify-content-center
+      .col-8
+        .card
+          .card-header
+            h5.mb-0 Transfer Details
+          .card-body
+            p
+              strong ID: 
+              span= transfer.id
+            p
+              strong Filename: 
+              span= transfer.filename
+            p
+              strong Subject: 
+              span= transfer.subject
+            p
+              strong Status: 
+              span= transfer.status
+            p
+              strong Created: 
+              span= transfer.created_at
+            hr
+            button.btn.btn-primary.download-btn(type="button" data-id=transfer.id data-filename=transfer.filename) Download & Decrypt File
+            div#download-status.mt-3
+
+  script(type="module").
+    import { FileDownloader } from '/js/file-downloader.js';
+    import { KeyManager } from '/js/key-manager.js';
+
+    document.addEventListener('click', async (event) => {
+      if (event.target.classList.contains('download-btn')) {
+        const button = event.target;
+        const transferId = parseInt(button.dataset.id);
+        const filename = button.dataset.filename;
+        const statusDiv = document.getElementById('download-status');
+        
+        // Update status
+        const originalText = button.textContent;
+        button.disabled = true;
+        button.textContent = 'Downloading...';
+        statusDiv.innerHTML = '<div class="alert alert-info">Starting download...</div>';
+        
+        try {
+          // Get user's private key from localStorage
+          const privateKeyData = localStorage.getItem('userPrivateKey');
+          if (!privateKeyData) {
+            throw new Error('User private key not found. Please generate keys first.');
+          }
+
+          statusDiv.innerHTML = '<div class="alert alert-info">Loading encryption keys...</div>';
+          const userPrivateKey = await KeyManager.importPrivateKey(privateKeyData);
+          const downloader = await FileDownloader.createDownloader(userPrivateKey);
+          
+          statusDiv.innerHTML = '<div class="alert alert-info">Downloading and decrypting file...</div>';
+          await downloader.downloadFile(transferId, filename);
+          
+          statusDiv.innerHTML = '<div class="alert alert-success">✓ File downloaded and decrypted successfully!</div>';
+          console.log(`Successfully downloaded ${filename}`);
+          
+        } catch (error) {
+          console.error(`Download failed for transfer ${transferId}:`, error);
+          statusDiv.innerHTML = `<div class="alert alert-danger">✗ Download failed: ${error.message}</div>`;
+        } finally {
+          // Re-enable button
+          button.disabled = false;
+          button.textContent = originalText;
+        }
+      }
+    });

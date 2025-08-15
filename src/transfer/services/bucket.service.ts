@@ -6,6 +6,7 @@ import {
   GetObjectCommand,
   DeleteObjectCommand,
   ListBucketsCommand,
+  ListObjectsV2Command,
 } from '@aws-sdk/client-s3';
 import { S3ClientConfig } from '@aws-sdk/client-s3/dist-types/S3Client';
 import { createReadStream, createWriteStream } from 'fs';
@@ -34,6 +35,53 @@ export class BucketService {
     } as S3ClientConfig);
 
     this.bucket = this.configService.get<string>('S3_BUCKET') as string;
+  }
+
+  /**
+   * Uploads a Buffer directly to S3.
+   * Returns the key of the uploaded object.
+   */
+  async putObject(key: string, buffer: Buffer): Promise<void> {
+    try {
+      await this.s3Client.send(
+        new PutObjectCommand({
+          Bucket: this.bucket,
+          Key: key,
+          Body: buffer,
+        }),
+      );
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Failed to upload object to S3: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+    }
+  }
+
+  async listFiles(prefix: string): Promise<string[]> {
+    try {
+      const command = new ListObjectsV2Command({
+        Bucket: this.bucket,
+        Prefix: prefix,
+      });
+
+      const result = await this.s3Client.send(command);
+
+      if (result.Contents == undefined) {
+        return [];
+      }
+
+      // Map to just keys; handle case when no objects exist
+      return result.Contents.map((object) => object.Key).filter(
+        (key) => key != null,
+      );
+    } catch (error) {
+      const message = (error as { message?: string })?.message;
+
+      throw new InternalServerErrorException(
+        'Failed to list files from S3',
+        message,
+      );
+    }
   }
 
   /**
@@ -75,7 +123,7 @@ export class BucketService {
     // to generate a file path to avoid concurrency issue if a user
     //  requests multiple times the same file at the same time
     const tmpDownloadDir = await mkdtemp(join(tmpdir(), 'download-'));
-    const tmpFile = join(tmpDownloadDir, key);
+    const tmpFile = join(tmpDownloadDir, btoa(key));
 
     try {
       const result = await this.s3Client.send(

@@ -5,6 +5,7 @@ import { UserService } from '@user/services/user.service';
 import { GetPubKeyDto } from '@user/dto/getPubKey.dto';
 import { Recipient } from '@user/types/recipient.type';
 import { MalformedRecipientException } from '@user/types/malformed-recipient-exception.type';
+import { User } from '@database/entities/user.entity';
 
 @Injectable()
 export class RecipientService {
@@ -67,6 +68,19 @@ export class RecipientService {
         publicKey: remoteUserPublicKey.publicKey,
         isTrustedRecipient: false,
       };
+    }
+  }
+
+  async getUser(recipient: string): Promise<User> {
+    const parsed = this.parseRecipient(recipient);
+
+    if (parsed.isLocal) {
+      return await this.userService.getLocalUser(parsed.username);
+    } else {
+      return await this.userService.getRemoteUser(
+        parsed.username,
+        parsed.username,
+      );
     }
   }
 }

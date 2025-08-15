@@ -17,7 +17,9 @@ function rejectTransfer(id: string) {
 }
 
 function downloadTransfer(id: string) {
-  // TODO:
+  // TODO: real implementation
+  window.location.href = `/transfer/download/${id}`;
+
   console.log(`Downloaded transfer with ID: ${id}`);
 }
 
