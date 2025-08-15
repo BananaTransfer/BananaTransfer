@@ -102,8 +102,9 @@ export class TransferController {
   getChunk(
     @Param('transferId') transferId: number,
     @Param('chunkId') chunkId: number,
-  ): Promise<ChunkDto> {
-    throw new NotImplementedException(transferId + chunkId);
+    @Req() req: AuthenticatedRequest,
+  ): Promise<Omit<ChunkDto, 'isLastChunk'>> {
+    return this.transferService.getChunk(transferId, chunkId, req.user.id);
   }
 
   // TODO: TO Delete, only for testing purposes

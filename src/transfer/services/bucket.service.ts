@@ -6,6 +6,7 @@ import {
   GetObjectCommand,
   DeleteObjectCommand,
   ListBucketsCommand,
+  ListObjectsV2Command,
 } from '@aws-sdk/client-s3';
 import { S3ClientConfig } from '@aws-sdk/client-s3/dist-types/S3Client';
 import { createReadStream, createWriteStream } from 'fs';
@@ -52,6 +53,33 @@ export class BucketService {
     } catch (error) {
       throw new InternalServerErrorException(
         `Failed to upload object to S3: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+    }
+  }
+
+  async listFiles(prefix: string): Promise<string[]> {
+    try {
+      const command = new ListObjectsV2Command({
+        Bucket: this.bucket,
+        Prefix: prefix,
+      });
+
+      const result = await this.s3Client.send(command);
+
+      if (result.Contents == undefined) {
+        return [];
+      }
+
+      // Map to just keys; handle case when no objects exist
+      return result.Contents.map((object) => object.Key).filter(
+        (key) => key != null,
+      );
+    } catch (error) {
+      const message = (error as { message?: string })?.message;
+
+      throw new InternalServerErrorException(
+        'Failed to list files from S3',
+        message,
       );
     }
   }

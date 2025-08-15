@@ -17,18 +17,15 @@ import CreateTransferDto from '@transfer/dto/create-transfer.dto';
 import { UserService } from '@user/services/user.service';
 import { v4 as uuidv4 } from 'uuid';
 import ChunkDto from '@transfer/dto/chunk.dto';
+import * as fs from 'node:fs/promises';
 
-interface ChunkData {
-  chunkIndex: number;
-  encryptedData: string;
+interface BucketChunkData {
+  data: string;
   iv: string;
 }
 
 @Injectable()
 export class TransferService {
-  // Temporary storage for chunks during upload
-  private pendingTransfers = new Map<number, ChunkData[]>();
-
   constructor(
     private readonly bucketService: BucketService,
     @InjectRepository(FileTransfer)
@@ -46,7 +43,9 @@ export class TransferService {
       relations: ['sender', 'receiver'],
     });
 
-    return list.map((fileTransfer) => this.toDTO(fileTransfer));
+    return await Promise.all(
+      list.map((fileTransfer) => this.toDTO(fileTransfer)),
+    );
   }
 
   private async getTransfer(transferId: number, userId: number) {
@@ -76,7 +75,9 @@ export class TransferService {
     return [transfer, logs];
   }
 
-  private toDTO(transfer: FileTransfer): TransferDto {
+  private async toDTO(transfer: FileTransfer): Promise<TransferDto> {
+    const keys = await this.bucketService.listFiles(transfer.s3_path);
+
     return {
       id: transfer.id,
       symmetric_key_encrypted: transfer.symmetric_key_encrypted,
@@ -85,7 +86,7 @@ export class TransferService {
       created_at: transfer.created_at,
       filename: transfer.filename,
       subject: transfer.subject,
-      chunks: [], // TODO fetch from S3 bucket
+      chunks: keys.map((key) => Number(key.split('/')[1])),
     };
   }
 
@@ -115,7 +116,6 @@ export class TransferService {
     transfer = await this.fileTransferRepository.save(transfer);
 
     // Log transfer creation
-    // TODO why ??
     await this.createTransferLog(transfer, LogInfo.TRANSFER_CREATED, senderId);
 
     return this.toDTO(transfer);
@@ -134,20 +134,45 @@ export class TransferService {
       throw new BadRequestException('Chunk upload already completed');
     }
 
+    const bucketData: BucketChunkData = {
+      data: chunkData.encryptedData,
+      iv: chunkData.iv,
+    };
+
     await this.bucketService.putObject(
       transfer.s3_path + '/' + chunkData.chunkIndex,
-      Buffer.from(
-        JSON.stringify({
-          data: chunkData.encryptedData,
-          iv: chunkData.iv,
-        }),
-      ),
+      Buffer.from(JSON.stringify(bucketData)),
     );
 
     if (chunkData.isLastChunk) {
       transfer.status = TransferStatus.UPLOADED;
       await this.fileTransferRepository.save(transfer);
       await this.createTransferLog(transfer, LogInfo.TRANSFER_UPLOADED, userId);
+    }
+  }
+
+  async getChunk(
+    transferId: number,
+    chunkId: number,
+    userId: number,
+  ): Promise<Omit<ChunkDto, 'isLastChunk'>> {
+    const transfer = await this.getTransfer(transferId, userId);
+
+    const path = await this.bucketService.getFile(
+      transfer.s3_path + '/' + chunkId,
+    );
+
+    try {
+      const data = await fs.readFile(path, 'utf8');
+      const bucketData = JSON.parse(data) as BucketChunkData;
+
+      return {
+        chunkIndex: chunkId,
+        encryptedData: bucketData.data,
+        iv: bucketData.iv,
+      };
+    } finally {
+      await fs.unlink(path);
     }
   }
 
