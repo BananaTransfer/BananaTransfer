@@ -1,8 +1,8 @@
 /**
  * Security utilities for cryptographic operations
  */
-import { callApi, showModal } from '../utils/common';
-import { KeyManager } from './key-manager';
+import { callApi, showModal } from '../utils/common.js';
+import { KeyManager } from './key-manager.js';
 
 export class SecurityUtils {
   public static readonly PBKDF_ITERATIONS: number = 100000;
@@ -106,7 +106,7 @@ export class SecurityUtils {
       private_key_encrypted: string;
       private_key_salt: string;
       private_key_iv: string;
-    } = await callApi('GET', 'get/privatekey');
+    } = await callApi('GET', '/user/get/privatekey');
 
     const importedPrivateKey = KeyManager.importEncryptedPrivateKey(
       privateKeyData.private_key_encrypted,
@@ -129,11 +129,32 @@ export class SecurityUtils {
     recipient: string,
   ): Promise<{ key: CryptoKey; isTrusted: boolean }> {
     const pubKeyData: { publicKey: string; isTrustedRecipient: boolean } =
-      await callApi('GET', `/publickey/${recipient}`);
+      await callApi('GET', `/user/publickey/${recipient}`);
 
     return {
       key: await KeyManager.importPublicKey(pubKeyData.publicKey),
       isTrusted: pubKeyData.isTrustedRecipient,
     };
+  }
+
+  static async hash(value: string): Promise<string> {
+    const textEncode = new TextEncoder().encode(value);
+    return this.hex(await window.crypto.subtle.digest('SHA-256', textEncode));
+  }
+
+  private static hex(buffer: ArrayBuffer): string {
+    // credits to https://gist.github.com/GaspardP/fffdd54f563f67be8944
+    let digest = '';
+    const view = new DataView(buffer);
+
+    for (let i = 0; i < view.byteLength; i += 4) {
+      const value = view.getUint32(i);
+      const stringValue = value.toString(16);
+      const padding = '00000000';
+      const paddedValue = (padding + stringValue).slice(-padding.length);
+      digest += paddedValue;
+    }
+
+    return digest;
   }
 }

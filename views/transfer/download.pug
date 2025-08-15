@@ -35,9 +35,12 @@ block content
             button.btn.btn-primary.download-btn(type="button" data-id=transfer.id data-filename=transfer.filename) Download & Decrypt File
             div#download-status.mt-3
 
+    include ../modals/master-password.pug
+
   script(type="module").
     import { FileDownloader } from '/js/file-downloader.js';
     import { KeyManager } from '/js/crypto/key-manager.js';
+    import { SecurityUtils } from '/js/crypto/security-utils.js';
 
     document.addEventListener('click', async (event) => {
       if (event.target.classList.contains('download-btn')) {
@@ -53,14 +56,8 @@ block content
         statusDiv.innerHTML = '<div class="alert alert-info">Starting download...</div>';
         
         try {
-          // Get user's private key from localStorage
-          const privateKeyData = localStorage.getItem('userPrivateKey');
-          if (!privateKeyData) {
-            throw new Error('User private key not found. Please generate keys first.');
-          }
-
           statusDiv.innerHTML = '<div class="alert alert-info">Loading encryption keys...</div>';
-          const userPrivateKey = await KeyManager.importPrivateKey(privateKeyData);
+          const userPrivateKey = await SecurityUtils.useUserPrivateKey();
           const downloader = await FileDownloader.createDownloader(userPrivateKey);
           
           statusDiv.innerHTML = '<div class="alert alert-info">Downloading and decrypting file...</div>';

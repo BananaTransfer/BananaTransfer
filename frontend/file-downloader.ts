@@ -1,6 +1,6 @@
 import { FileEncryption, StreamChunk } from './crypto/encryption.js';
 import { KeyManager } from './crypto/key-manager.js';
-import { callApi } from './utils/common';
+import { callApi } from './utils/common.js';
 
 interface ChunkData {
   chunkIndex: number;

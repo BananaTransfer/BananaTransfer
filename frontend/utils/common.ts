@@ -109,5 +109,9 @@ export async function callApi<R, T>(
     throw new Error(response.statusText);
   }
 
-  return (await response.json()) as T;
+  try {
+    return (await response.json()) as T;
+  } catch {
+    return {} as T;
+  }
 }
