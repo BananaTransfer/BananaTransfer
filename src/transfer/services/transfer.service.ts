@@ -1,13 +1,22 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { readFile, unlink } from 'fs/promises';
 
-import { TransferStatus, LogInfo } from '@database/entities/enums';
+import { LogInfo, TransferStatus } from '@database/entities/enums';
 import { User } from '@database/entities/user.entity';
 import { FileTransfer } from '@database/entities/file-transfer.entity';
 import { TransferLog } from '@database/entities/transfer-log.entity';
 import { BucketService } from '@transfer/services/bucket.service';
+import TransferDto from '@transfer/dto/transfer.dto';
+import CreateTransferDto from '@transfer/dto/create-transfer.dto';
+import { UserService } from '@user/services/user.service';
+import { v4 as uuidv4 } from 'uuid';
+import ChunkDto from '@transfer/dto/chunk.dto';
 
 interface ChunkData {
   chunkIndex: number;
@@ -26,8 +35,7 @@ export class TransferService {
     private fileTransferRepository: Repository<FileTransfer>,
     @InjectRepository(TransferLog)
     private transferLogRepository: Repository<TransferLog>,
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
+    private userService: UserService,
   ) {}
 
   // local transfer handling methods
@@ -39,11 +47,7 @@ export class TransferService {
     });
   }
 
-  async getTransferDetails(
-    transferId: number,
-    userId: number,
-  ): Promise<[FileTransfer, TransferLog[]]> {
-    // TODO: Get transfer details including logs
+  private async getTransfer(transferId: number, userId: number) {
     const transfer = await this.fileTransferRepository.findOne({
       where: [
         { id: transferId, sender: { id: userId } },
@@ -51,229 +55,98 @@ export class TransferService {
       ],
       relations: ['sender', 'receiver'],
     });
+
     if (!transfer) {
       throw new NotFoundException(`Transfer with ID ${transferId} not found`);
     }
+    return transfer;
+  }
+
+  async getTransferDetails(
+    transferId: number,
+    userId: number,
+  ): Promise<[FileTransfer, TransferLog[]]> {
+    const transfer = await this.getTransfer(transferId, userId);
+
     const logs = await this.transferLogRepository.find({
       where: { fileTransfer: { id: transferId } },
     });
     return [transfer, logs];
   }
 
-  async fetchTransfer(
-    id: number,
-    userId: number,
-  ): Promise<{
-    transfer: FileTransfer;
-    chunks: Array<{ chunkIndex: number; encryptedData: string; iv: string }>;
-  }> {
-    // Find transfer where user is either sender or receiver
-    const transfer = await this.fileTransferRepository.findOne({
-      where: [
-        { id, sender: { id: userId } },
-        { id, receiver: { id: userId } },
-      ],
-      relations: ['sender', 'receiver'],
-    });
-
-    if (!transfer) {
-      throw new NotFoundException(
-        `Transfer with ID ${id} not found or access denied`,
-      );
-    }
-
-    if (!transfer.s3_path) {
-      throw new NotFoundException(`Transfer ${id} has no uploaded file`);
-    }
-
-    // Download single json file from S3
-    const tempFile = await this.bucketService.getFile(transfer.s3_path);
-    const jsonData = await readFile(tempFile, 'utf8');
-    await unlink(tempFile);
-
-    const transferData = JSON.parse(jsonData) as {
-      chunks: ChunkData[];
+  private toDTO(transfer: FileTransfer): TransferDto {
+    return {
+      id: transfer.id,
+      symmetric_key_encrypted: transfer.symmetric_key_encrypted,
+      signature_sender: transfer.signature_sender,
+      status: transfer.status,
+      created_at: transfer.created_at,
+      filename: transfer.filename,
+      subject: transfer.subject,
+      chunks: [], // TODO fetch from S3 bucket
     };
+  }
 
-    // Mark transfer as retrieved after successful fetch
-    if (transfer.status !== TransferStatus.RETRIEVED) {
-      transfer.status = TransferStatus.RETRIEVED;
-      await this.fileTransferRepository.save(transfer);
-
-      await this.createTransferLog(
-        transfer,
-        LogInfo.TRANSFER_RETRIEVED,
-        userId,
-      );
-    }
-
-    return { transfer, chunks: transferData.chunks };
+  async getTransferInfo(id: number, userId: number): Promise<TransferDto> {
+    return this.toDTO(await this.getTransfer(id, userId));
   }
 
   async newTransfer(
-    transferData: {
-      filename: string;
-      subject: string;
-      recipientUsername: string;
-      symmetricKeyEncrypted: string;
-      signatureSender: string;
-      fileContent?: Buffer;
-      totalFileSize?: number;
-    },
+    transferData: CreateTransferDto,
     senderId: number,
-  ): Promise<FileTransfer> {
-    const sender = await this.userRepository.findOne({
-      where: { id: senderId },
-    });
-    if (!sender) {
-      throw new NotFoundException('Sender not found');
-    }
-
-    // TODO: Implement dns user lookup and put id here
-    const recipient =
-      (await this.userRepository.findOne({ where: { id: 2 } })) || sender;
+  ): Promise<TransferDto> {
+    const sender = await this.userService.getCurrentUser(senderId);
+    const receiver = await this.userService.getUser(transferData.receiver);
 
     // Create transfer record
-    const transfer = this.fileTransferRepository.create({
+    let transfer = this.fileTransferRepository.create({
+      symmetric_key_encrypted: transferData.symmetric_key_encrypted,
+      signature_sender: transferData.signature_sender,
+      status: TransferStatus.CREATED,
       filename: transferData.filename,
       subject: transferData.subject,
-      symmetric_key_encrypted: transferData.symmetricKeyEncrypted,
-      signature_sender: transferData.signatureSender,
-      sender,
-      receiver: recipient,
-      status: TransferStatus.CREATED,
+      s3_path: uuidv4().toString(),
+      sender: sender,
+      receiver: receiver,
     });
 
-    const savedTransfer = await this.fileTransferRepository.save(transfer);
+    transfer = await this.fileTransferRepository.save(transfer);
 
     // Log transfer creation
-    await this.createTransferLog(
-      savedTransfer,
-      LogInfo.TRANSFER_CREATED,
-      senderId,
-    );
+    // TODO why ??
+    await this.createTransferLog(transfer, LogInfo.TRANSFER_CREATED, senderId);
 
-    // Handle file upload if provided
-    if (transferData.fileContent && transferData.fileContent.length > 0) {
-      const s3Key = `transfers/${savedTransfer.id}/${transferData.filename}`;
-
-      // Upload to S3 using existing BucketService
-      await this.bucketService.putObject(s3Key, transferData.fileContent);
-
-      // Update transfer with S3 path
-      savedTransfer.s3_path = s3Key;
-      await this.fileTransferRepository.save(savedTransfer);
-
-      // Log successful upload
-      await this.createTransferLog(
-        savedTransfer,
-        LogInfo.TRANSFER_CREATED,
-        senderId,
-      );
-    }
-
-    return savedTransfer;
+    return this.toDTO(transfer);
   }
 
-  // Simplified chunk handling - collect in memory, save as single JSON
-  async handleChunkUpload(
-    chunkData: {
-      chunkData: Buffer;
-      chunkIndex: number;
-      isLastChunk: boolean;
-      iv: string;
-    },
-    transferMetadata: {
-      filename: string;
-      subject: string;
-      recipientUsername: string;
-      symmetricKeyEncrypted: string;
-      signatureSender: string;
-      totalFileSize: number;
-      totalChunks: number;
-      chunkSize: number;
-    } | null,
-    senderId: number,
-  ): Promise<FileTransfer | null> {
-    let transfer: FileTransfer;
+  async uploadChunk(
+    transferId: number,
+    chunkData: ChunkDto,
+    userId: number,
+  ): Promise<void> {
+    const transfer = await this.getTransfer(transferId, userId);
 
-    // On first chunk, create transfer and initialize chunk collection
-    if (transferMetadata && chunkData.chunkIndex === 0) {
-      transfer = await this.newTransfer(
-        {
-          filename: transferMetadata.filename,
-          subject: transferMetadata.subject,
-          recipientUsername: transferMetadata.recipientUsername,
-          symmetricKeyEncrypted: transferMetadata.symmetricKeyEncrypted,
-          signatureSender: transferMetadata.signatureSender,
-          totalFileSize: transferMetadata.totalFileSize,
-        },
-        senderId,
-      );
-
-      // Initialize chunk collection for this transfer
-      this.pendingTransfers.set(transfer.id, []);
-    } else {
-      // Find existing transfer
-      const existingTransfer = await this.fileTransferRepository.findOne({
-        where: { sender: { id: senderId } },
-        relations: ['sender', 'receiver'],
-        order: { created_at: 'DESC' },
-      });
-
-      if (!existingTransfer) {
-        throw new NotFoundException('Transfer not found for chunk upload');
-      }
-
-      transfer = existingTransfer;
+    if (transfer.sender.id !== userId) {
+      throw new UnauthorizedException(`User is not sender`);
+    } else if (transfer.status != TransferStatus.CREATED) {
+      throw new BadRequestException('Chunk upload already completed');
     }
 
-    // Store chunk in memory
-    const chunks = this.pendingTransfers.get(transfer.id) || [];
-    chunks.push({
-      chunkIndex: chunkData.chunkIndex,
-      encryptedData: chunkData.chunkData.toString('base64'),
-      iv: chunkData.iv,
-    });
+    await this.bucketService.putObject(
+      transfer.s3_path + '/' + chunkData.chunkIndex,
+      Buffer.from(
+        JSON.stringify({
+          data: chunkData.encryptedData,
+          iv: chunkData.iv,
+        }),
+      ),
+    );
 
-    // If last chunk, save everything as single JSON
     if (chunkData.isLastChunk) {
-      // Sort chunks by index
-      chunks.sort((a, b) => a.chunkIndex - b.chunkIndex);
-
-      // Create transfer JSON
-      const transferJson = {
-        transfer: {
-          filename: transfer.filename,
-          totalSize: chunks.reduce(
-            (total, chunk) => total + chunk.encryptedData.length,
-            0,
-          ),
-          symmetricKeyEncrypted: transfer.symmetric_key_encrypted,
-          signatureSender: transfer.signature_sender,
-        },
-        chunks: chunks,
-      };
-
-      // Save to S3
-      const jsonKey = `transfers/${transfer.id}/transfer.json`;
-      await this.bucketService.putObject(
-        jsonKey,
-        Buffer.from(JSON.stringify(transferJson)),
-      );
-
-      // Update transfer
-      transfer.s3_path = jsonKey;
-      transfer.status = TransferStatus.CREATED;
+      transfer.status = TransferStatus.UPLOADED;
       await this.fileTransferRepository.save(transfer);
-
-      // Cleanup memory
-      this.pendingTransfers.delete(transfer.id);
-
-      return transfer;
+      await this.createTransferLog(transfer, LogInfo.TRANSFER_UPLOADED, userId);
     }
-
-    return null; // Transfer not complete yet
   }
 
   private async createTransferLog(

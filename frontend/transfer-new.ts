@@ -1,6 +1,5 @@
 import { FileEncryption, StreamChunk } from './encryption.js';
 import { KeyManager } from './key-manager.js';
-import { SecurityUtils } from './security-utils.js';
 
 interface TransferFormElements {
   recipientInput: HTMLInputElement;
@@ -158,22 +157,25 @@ class TransferNewPage {
       this.formElements.sendButton.disabled = true;
       this.formElements.sendButton.textContent = 'Encrypting and uploading...';
 
-      // Step 1: Encrypt file and get encrypted chunks + wrapped key
-      const { wrappedAesKey, encryptedChunks } =
-        await FileEncryption.encryptFile(
-          this.recipientPublicKey,
-          this.selectedFile,
-        );
+      // Step 1: Create the transfer
+      const aesKey = await FileEncryption.generateAESKey();
+      const wrappedAesKey = await FileEncryption.wrapAESKey(
+        aesKey,
+        this.recipientPublicKey,
+      );
 
-      console.log(`File encrypted into ${encryptedChunks.length} chunks`);
-
-      // Step 2: Send chunks directly to server
-      await this.sendChunksToServer(
-        encryptedChunks,
+      const transfer = await this.createTransfer(
         wrappedAesKey,
         recipientUsername,
         subject,
       );
+
+      // Step 2: Encrypt file and upload chunks to server
+      await FileEncryption.encryptFile(aesKey, this.selectedFile, (chunk) => {
+        return this.sendChunksToServer(chunk, transfer.id);
+      });
+
+      console.log(`File encryption completed`);
 
       // Redirect to transfers list on success
       window.location.href = '/transfer';
@@ -187,78 +189,79 @@ class TransferNewPage {
     }
   }
 
-  private async sendChunksToServer(
-    encryptedChunks: StreamChunk[],
+  private async createTransfer(
     wrappedAesKey: ArrayBuffer,
     recipientUsername: string,
     subject: string,
-  ): Promise<void> {
-    // Sort chunks to ensure correct order
-    const sortedChunks = [...encryptedChunks].sort(
-      (a, b) => a.chunkIndex - b.chunkIndex,
-    );
-
+  ): Promise<{ id: number }> {
     // Create digital signature
     const signatureSender = await this.createMockDigitalSignature();
 
-    // Prepare transfer metadata
-    const transferMetadata = {
+    const payload = {
       filename: this.selectedFile!.name,
       subject: subject,
-      recipientUsername: recipientUsername,
-      symmetricKeyEncrypted: this.arrayBufferToBase64(wrappedAesKey),
-      signatureSender: signatureSender,
-      totalFileSize: this.selectedFile!.size,
-      totalChunks: sortedChunks.length,
-      chunkSize: SecurityUtils.CHUNK_SIZE,
+      receiver: recipientUsername,
+      symmetric_key_encrypted: this.arrayBufferToBase64(wrappedAesKey),
+      signature_sender: signatureSender,
+      _csrf: '',
     };
 
-    // Send chunks sequentially to the server
-    for (let i = 0; i < sortedChunks.length; i++) {
-      const chunk = sortedChunks[i];
-
-      // Update progress
-      this.formElements.sendButton.textContent = `Uploading chunk ${i + 1}/${sortedChunks.length}...`;
-
-      // Prepare JSON payload
-      const payload: any = {
-        chunkData: this.arrayBufferToBase64(chunk.encryptedData),
-        chunkIndex: chunk.chunkIndex,
-        isLastChunk: chunk.isLastChunk,
-        iv: this.arrayBufferToBase64(chunk.iv),
-      };
-
-      // Add metadata on first chunk
-      if (i === 0) {
-        Object.assign(payload, transferMetadata);
-      }
-
-      // Get CSRF token and add to payload
-      const csrfToken = (document.getElementById('_csrf') as HTMLInputElement)
-        ?.value;
-      if (csrfToken) {
-        payload._csrf = csrfToken;
-      }
-
-      const response = await fetch('/transfer/new', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Failed to upload chunk ${i + 1}: ${errorText}`);
-      }
-
-      console.log(
-        `Chunk ${i + 1}/${sortedChunks.length} uploaded successfully`,
-      );
+    // Get CSRF token and add to payload
+    const csrfToken = (document.getElementById('_csrf') as HTMLInputElement)
+      ?.value;
+    if (csrfToken) {
+      payload._csrf = csrfToken;
     }
 
-    console.log('All chunks uploaded successfully');
+    const response = await fetch('/transfer/new', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to create transfer: ${errorText}`);
+    }
+
+    return (await response.json()) as Promise<{ id: number }>;
+  }
+
+  private async sendChunksToServer(
+    encryptedChunks: StreamChunk,
+    transferId: number,
+  ): Promise<void> {
+    this.formElements.sendButton.textContent = `Uploading chunk ${encryptedChunks.chunkIndex}...`;
+
+    const payload = {
+      encryptedData: this.arrayBufferToBase64(encryptedChunks.encryptedData),
+      chunkIndex: encryptedChunks.chunkIndex,
+      isLastChunk: encryptedChunks.isLastChunk,
+      iv: this.arrayBufferToBase64(encryptedChunks.iv),
+      _csrf: '',
+    };
+
+    // Get CSRF token and add to payload
+    const csrfToken = (document.getElementById('_csrf') as HTMLInputElement)
+      ?.value;
+    if (csrfToken) {
+      payload._csrf = csrfToken;
+    }
+
+    const response = await fetch(`/transfer/${transferId}/chunk`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to upload chunk: ${errorText}`);
+    }
   }
 
   private arrayBufferToBase64(buffer: ArrayBuffer | Uint8Array): string {

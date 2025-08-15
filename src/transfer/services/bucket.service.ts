@@ -95,8 +95,7 @@ export class BucketService {
     // to generate a file path to avoid concurrency issue if a user
     //  requests multiple times the same file at the same time
     const tmpDownloadDir = await mkdtemp(join(tmpdir(), 'download-'));
-    const fileName = key.split('/').pop() || 'temp_file';
-    const tmpFile = join(tmpDownloadDir, fileName);
+    const tmpFile = join(tmpDownloadDir, btoa(key));
 
     try {
       const result = await this.s3Client.send(

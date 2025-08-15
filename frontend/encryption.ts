@@ -32,23 +32,28 @@ export class FileEncryption {
   }
 
   /**
-   * Main encryption method used to returned the encrypted file with its associated wrapped key
+   * Wrap the provided AWS key with the provided publicKey
+   * @param aesKey
    * @param publicKey
+   */
+  static async wrapAESKey(
+    aesKey: CryptoKey,
+    publicKey: CryptoKey,
+  ): Promise<ArrayBuffer> {
+    return KeyManager.wrapAESKey(aesKey, publicKey);
+  }
+
+  /**
+   * Main encryption method used to encrypt a file in a chunked way
+   * @param aesKey
    * @param file
    */
   static async encryptFile(
-    publicKey: CryptoKey,
+    aesKey: CryptoKey,
     file: File,
-  ): Promise<{ wrappedAesKey: ArrayBuffer; encryptedChunks: StreamChunk[] }> {
-    const aesKey: CryptoKey = await this.generateAESKey();
+    chunkHandler: (chunk: StreamChunk) => Promise<void>,
+  ): Promise<void> {
     const encryptor = FileEncryption.createStreamingEncryptor(aesKey);
-
-    const wrappedAesKey: ArrayBuffer = await KeyManager.wrapAESKey(
-      aesKey,
-      publicKey,
-    );
-
-    const encryptedChunks: StreamChunk[] = [];
 
     const reader = file.stream().getReader();
 
@@ -60,8 +65,9 @@ export class FileEncryption {
           value || new Uint8Array(0),
           done,
         );
+
         if (result) {
-          encryptedChunks.push(result);
+          await chunkHandler(result);
         }
 
         if (done) break;
@@ -69,7 +75,6 @@ export class FileEncryption {
     } finally {
       reader.releaseLock();
     }
-    return { wrappedAesKey, encryptedChunks };
   }
 
   // TODO - Interface for decrypting with parameters: encryptedPrivateKey, password (When are we asking it), wrappedAesKey, encryptedChunks

@@ -8,6 +8,7 @@ import {
   Param,
   Body,
   UseGuards,
+  NotImplementedException,
 } from '@nestjs/common';
 import { Response } from 'express';
 
@@ -15,8 +16,9 @@ import { TransferStatus } from '@database/entities/enums';
 import { TransferService } from '@transfer/services/transfer.service';
 import { UserService } from '@user/services/user.service';
 import { JwtAuthGuard } from '@auth/jwt/guards/jwt-auth.guard';
-import { ChunkedTransferDto } from '@transfer/dto/chunked-transfer.dto';
 import { AuthenticatedRequest } from '@auth/types/authenticated-request.interface';
+import CreateTransferDto from '@transfer/dto/create-transfer.dto';
+import ChunkDto from '@transfer/dto/chunk.dto';
 
 // all routes in this controller are protected by the JwtAuthGuard and require authentication
 @UseGuards(JwtAuthGuard)
@@ -54,7 +56,7 @@ export class TransferController {
     @Req() req: AuthenticatedRequest,
     @Res() res: Response,
   ): void {
-    const domain = process.env.DOMAIN || 'localhost:3000';
+    const domain = this.userService.getDomain();
     res.render('transfer/new', {
       user: req.user,
       csrfToken: req.csrfToken(),
@@ -63,19 +65,53 @@ export class TransferController {
   }
 
   // endpoint to fetch the data of a transfer by ID
-  @Get('fetch/:id')
-  async fetchTransfer(
+  @Get('/:id')
+  async getTransferInfo(
     @Param('id') id: number,
     @Req() req: AuthenticatedRequest,
     @Res() res: Response,
   ): Promise<void> {
     try {
-      const result = await this.transferService.fetchTransfer(id, req.user.id);
+      const result = await this.transferService.getTransferInfo(
+        id,
+        req.user.id,
+      );
       res.json(result);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       res.status(404).json({ error: message });
     }
+  }
+
+  // endpoint to add a new transfer
+  @Post('/new')
+  async newTransfer(
+    @Body() transferData: CreateTransferDto,
+    @Req() req: AuthenticatedRequest,
+    @Res() res: Response,
+  ): Promise<void> {
+    const userId = req.user.id;
+    res.json(await this.transferService.newTransfer(transferData, userId));
+  }
+
+  @Post('/:id/chunk')
+  async uploadChunk(
+    @Param('id') transferId: number,
+    @Body() chunkData: ChunkDto,
+    @Req() req: AuthenticatedRequest,
+    @Res() res: Response,
+  ) {
+    const userId = req.user.id;
+    await this.transferService.uploadChunk(transferId, chunkData, userId);
+    res.status(200).send();
+  }
+
+  @Get('/:transferId/chunk/:chunkId')
+  getChunk(
+    @Param('transferId') transferId: number,
+    @Param('chunkId') chunkId: number,
+  ): Promise<ChunkDto> {
+    throw new NotImplementedException(transferId + chunkId);
   }
 
   // TODO: TO Delete, only for testing purposes
@@ -94,68 +130,6 @@ export class TransferController {
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       return { error: message };
-    }
-  }
-
-  // endpoint to add a new transfer
-  @Post('new')
-  async newTransfer(
-    @Body() transferData: ChunkedTransferDto,
-    @Req() req: AuthenticatedRequest,
-    @Res() res: Response,
-  ): Promise<void> {
-    const userId = req.user.id;
-
-    // Handle chunked upload with JSON data
-    if (transferData.chunkData && transferData.chunkIndex !== undefined) {
-      // Decode base64 chunk data
-      const chunkBuffer = Buffer.from(transferData.chunkData, 'base64');
-
-      const chunkData = {
-        chunkData: chunkBuffer,
-        chunkIndex: transferData.chunkIndex,
-        isLastChunk: transferData.isLastChunk ?? false,
-        iv: transferData.iv ?? '',
-      };
-
-      // If this is the first chunk, include transfer metadata
-      const transferRequest = transferData.filename
-        ? {
-            filename: transferData.filename,
-            subject: transferData.subject ?? '',
-            recipientUsername: transferData.recipientUsername ?? '',
-            symmetricKeyEncrypted: transferData.symmetricKeyEncrypted ?? '',
-            signatureSender: transferData.signatureSender ?? '',
-            totalFileSize: transferData.totalFileSize ?? 0,
-            totalChunks: transferData.totalChunks ?? 0,
-            chunkSize: transferData.chunkSize ?? 0,
-          }
-        : null;
-
-      await this.transferService.handleChunkUpload(
-        chunkData,
-        transferRequest,
-        userId,
-      );
-      res.json({ success: true, message: 'Chunk uploaded successfully' });
-    } else {
-      // Handle single file upload
-      const fileBuffer = transferData.fileContent
-        ? Buffer.from(transferData.fileContent, 'base64')
-        : undefined;
-
-      const transferRequest = {
-        filename: transferData.filename ?? '',
-        subject: transferData.subject ?? '',
-        recipientUsername: transferData.recipientUsername ?? '',
-        symmetricKeyEncrypted: transferData.symmetricKeyEncrypted ?? '',
-        signatureSender: transferData.signatureSender ?? '',
-        fileContent: fileBuffer,
-        totalFileSize: fileBuffer?.length,
-      };
-
-      await this.transferService.newTransfer(transferRequest, userId);
-      res.redirect('/transfer');
     }
   }
 
