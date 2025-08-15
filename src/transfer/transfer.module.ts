@@ -11,8 +11,6 @@ import { BucketService } from '@transfer/services/bucket.service';
 
 import { FileTransfer } from '@database/entities/file-transfer.entity';
 import { TransferLog } from '@database/entities/transfer-log.entity';
-import { Resolver } from 'dns/promises';
-import { RemoteModule } from '@remote/remote.module';
 
 // This module handles all file sharing related operations that are done by the authenticated users
 
@@ -21,17 +19,9 @@ import { RemoteModule } from '@remote/remote.module';
     JwtCoreModule,
     UserModule,
     TypeOrmModule.forFeature([FileTransfer, TransferLog]),
-    RemoteModule,
   ],
   controllers: [TransferController],
-  providers: [
-    {
-      provide: Resolver,
-      useFactory: () => new Resolver(),
-    },
-    BucketService,
-    TransferService,
-  ],
+  providers: [BucketService, TransferService],
   exports: [TransferService],
 })
 export class TransferModule {}

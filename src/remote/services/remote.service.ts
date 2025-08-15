@@ -2,7 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import { validateOrReject } from 'class-validator';
 
 import { DnsService } from '@remote/services/dns.service';
-import { RecipientService } from '@user/services/recipient.service';
 import { Recipient } from '@user/types/recipient.type';
 import { PublicKeyDto } from '@user/dto/public-key.dto';
 
@@ -10,10 +9,7 @@ import { PublicKeyDto } from '@user/dto/public-key.dto';
 export class RemoteService {
   private readonly logger: Logger;
 
-  constructor(
-    private readonly dnsService: DnsService,
-    private readonly recipientService: RecipientService,
-  ) {
+  constructor(private readonly dnsService: DnsService) {
     this.logger = new Logger(RemoteService.name);
   }
 
