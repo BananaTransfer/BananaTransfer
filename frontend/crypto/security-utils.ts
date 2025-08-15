@@ -1,6 +1,8 @@
 /**
  * Security utilities for cryptographic operations
  */
+import { callApi, showModal } from '../utils/common';
+import { KeyManager } from './key-manager';
 
 export class SecurityUtils {
   public static readonly PBKDF_ITERATIONS: number = 100000;
@@ -80,10 +82,58 @@ export class SecurityUtils {
     bytes.fill(0);
   }
 
+  static async askUserMasterPassword(): Promise<string> {
+    (
+      document.getElementById('modalMasterPasswordText') as HTMLElement
+    ).textContent = 'To execute this action we need your master password';
+
+    const enteredMasterPassword = await showModal(
+      'masterPasswordModal',
+      'modalMasterPasswordInput',
+      'modalMasterPasswordConfirmBtn',
+      'modalMasterPasswordError',
+    );
+    // throw if master password entry canceled
+    if (!enteredMasterPassword) throw new Error('The password is required.');
+    return enteredMasterPassword;
+  }
+
   /**
    * Method to use the current user's private key
    */
-  static useUserPrivateKey(): void {
-    return;
+  static async useUserPrivateKey(): Promise<CryptoKey> {
+    const privateKeyData: {
+      private_key_encrypted: string;
+      private_key_salt: string;
+      private_key_iv: string;
+    } = await callApi('GET', 'get/privatekey');
+
+    const importedPrivateKey = KeyManager.importEncryptedPrivateKey(
+      privateKeyData.private_key_encrypted,
+      privateKeyData.private_key_salt,
+      privateKeyData.private_key_iv,
+    );
+
+    const masterPassword = await this.askUserMasterPassword();
+
+    return await KeyManager.decryptPrivateKey(
+      importedPrivateKey,
+      masterPassword,
+    );
+  }
+
+  /**
+   * Method to get the pub key associated with a user
+   */
+  static async useUserPublicKey(
+    recipient: string,
+  ): Promise<{ key: CryptoKey; isTrusted: boolean }> {
+    const pubKeyData: { publicKey: string; isTrustedRecipient: boolean } =
+      await callApi('GET', `/publickey/${recipient}`);
+
+    return {
+      key: await KeyManager.importPublicKey(pubKeyData.publicKey),
+      isTrusted: pubKeyData.isTrustedRecipient,
+    };
   }
 }

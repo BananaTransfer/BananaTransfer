@@ -181,6 +181,27 @@ export class KeyManager {
     );
   }
 
+  static base64ToUint8Array(base64: string): Uint8Array {
+    const binaryString = atob(base64);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes;
+  }
+
+  static importEncryptedPrivateKey(
+    privateKey: string,
+    salt: string,
+    iv: string,
+  ): EncryptedPrivateKey {
+    return {
+      encryptedData: this.base64ToUint8Array(privateKey).buffer as ArrayBuffer,
+      salt: this.base64ToUint8Array(salt),
+      iv: this.base64ToUint8Array(iv),
+    };
+  }
+
   // TODO: TO DELETE, FOR TESTING PURPOSES ONLY
   static async exportPrivateKey(privateKey: CryptoKey): Promise<string> {
     const exported = await crypto.subtle.exportKey('pkcs8', privateKey);
