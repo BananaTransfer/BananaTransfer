@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RemoteService } from '@remote/services/remote.service';
 import { UserService } from '@user/services/user.service';
+import { RemoteUserService } from '@user/services/remoteUser.service';
 import { GetPubKeyDto } from '@user/dto/getPubKey.dto';
 import { Recipient } from '@user/types/recipient.type';
 import { MalformedRecipientException } from '@user/types/malformed-recipient-exception.type';
@@ -15,6 +16,7 @@ export class RecipientService {
     private readonly configService: ConfigService,
     private readonly remoteService: RemoteService,
     private readonly userService: UserService,
+    private readonly remoteUserService: RemoteUserService,
   ) {
     this.envDomain = this.configService.getOrThrow<string>('DOMAIN');
   }
@@ -77,10 +79,23 @@ export class RecipientService {
     if (parsed.isLocal) {
       return await this.userService.getLocalUser(parsed.username);
     } else {
-      return await this.userService.getRemoteUser(
+      return await this.remoteUserService.getRemoteUser(
         parsed.username,
         parsed.username,
       );
     }
+  }
+
+  trustPublicKey(/*username: string, recipient: string, publicKey: string*/): void {
+    // TODO: implement logic to trust and save the hash of the public key in the DB
+    // console.debug(`Trusting public key for user ${username}:`);
+    // console.debug(`Recipient: ${recipient}`);
+    // console.debug(`Public Key: ${publicKey}`);
+  }
+
+  getKnownRecipients(/*userId: number*/): string[] {
+    // TODO: get known recipients of current user from the db
+    // console.debug(`Fetching known recipients for user ID: ${userId}`);
+    return ['recipient1', 'recipient2', 'recipient3'];
   }
 }

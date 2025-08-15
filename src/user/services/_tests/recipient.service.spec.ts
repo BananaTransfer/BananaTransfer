@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { RecipientService } from '@user/services/recipient.service';
 import { RemoteService } from '@remote/services/remote.service';
 import { UserService } from '@user/services/user.service';
+import { RemoteUserService } from '@user/services/remoteUser.service';
 import { MalformedRecipientException } from '@user/types/malformed-recipient-exception.type';
 
 describe('RecipientService', () => {
@@ -25,6 +26,13 @@ describe('RecipientService', () => {
         },
         {
           provide: UserService,
+          useValue: {
+            // mock methods as needed
+            someMethod: jest.fn(),
+          },
+        },
+        {
+          provide: RemoteUserService,
           useValue: {
             // mock methods as needed
             someMethod: jest.fn(),

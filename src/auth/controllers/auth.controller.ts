@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Req, Res, Body, Logger } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { ConfigService } from '@nestjs/config';
 
 import { AuthService } from '@auth/services/auth.service';
 import { UserService } from '@user/services/user.service';
@@ -9,21 +10,24 @@ import { RegisterDto } from '@auth/dto/register.dto';
 
 @Controller('auth')
 export class AuthController {
+  private readonly envDomain: string;
   private readonly logger = new Logger(AuthController.name);
 
   constructor(
+    private readonly configService: ConfigService,
     private readonly authService: AuthService,
     private readonly userService: UserService,
-  ) {}
+  ) {
+    this.envDomain = this.configService.getOrThrow<string>('DOMAIN');
+  }
 
   private renderLoginPage(
     req: CsrfRequest,
     res: Response,
     options: { username?: string; error?: string } = {},
   ) {
-    const domain = this.userService.getDomain();
     return res.render('auth/login', {
-      domain,
+      domain: this.envDomain,
       csrfToken: req.csrfToken(),
       username: options.username,
       error: options.error,
@@ -35,7 +39,7 @@ export class AuthController {
     res: Response,
     options: { username?: string; email?: string; error?: string } = {},
   ) {
-    const domain = this.userService.getDomain();
+    const domain = this.envDomain;
     return res.render('auth/register', {
       domain,
       csrfToken: req.csrfToken(),

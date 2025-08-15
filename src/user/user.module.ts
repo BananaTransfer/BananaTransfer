@@ -5,6 +5,7 @@ import { Resolver } from 'dns/promises';
 
 import { UserController } from '@user/controllers/user.controller';
 import { UserService } from '@user/services/user.service';
+import { RemoteUserService } from '@user/services/remoteUser.service';
 import { PasswordService } from '@user/services/password.service';
 
 import { User } from '@database/entities/user.entity';
@@ -25,6 +26,7 @@ import { DnsService } from '@remote/services/dns.service';
   controllers: [UserController],
   providers: [
     UserService,
+    RemoteUserService,
     PasswordService,
     RecipientService,
     RemoteService,
