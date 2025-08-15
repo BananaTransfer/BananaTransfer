@@ -9,23 +9,24 @@ rectangle "BananaTransfer Server" as srv {
               rectangle "jwt core module \n(jwt creation and validation)" as jwt
             }
             rectangle "database module \n(access to db)" as db_mod
-            rectangle "transfer module \n(create and access transfers)" as transfer
-            '{
-              'rectangle "transfer controller \n(authenticated endpoints to \ncreate and access transfer)" as transfercontroller
-              'rectangle "remote controller \n(transfer api for other servers)" as remotecontroller
-            '}
+            rectangle "transfer module \n(create and access transfers for users)" as transfer
+            rectangle "remote controller \n(api for communication with other servers)" as remote
             rectangle "user module \n(manage user account / keys)" as usr
         }
     }
     rectangle "Database \nPostgreSQL" as db
     rectangle "Bucket \nS3 / MinIO" as s3
 }
-
-db_mod -down-> db: "query/save"
-transfer -down-> s3: "fetch/save"
+rectangle "Other Server" as srv2
+remote <--> transfer
+remote <--> usr
 transfer --> db_mod
 transfer --> usr
-usr --> db_mod
 auth --> usr
+remote <-right->srv2
+usr --> db_mod
+db_mod -down-> db: "query/save"
+transfer -down-> s3: "fetch/save"
+
 
 @enduml
