@@ -9,19 +9,13 @@ describe('RecipientService', () => {
   let service: RecipientService;
   const localDomain = 'localDomain';
 
-  beforeEach(() => {
+  beforeEach(async () => {
     process.env.DOMAIN = localDomain;
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         RecipientService,
-        {
-          provide: ConfigService,
-          useValue: {
-            // mock methods as needed
-            someMethod: jest.fn(),
-          },
-        },
+        ConfigService,
         {
           provide: RemoteService,
           useValue: {
