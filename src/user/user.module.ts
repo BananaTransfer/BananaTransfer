@@ -11,7 +11,6 @@ import { LocalUser } from '@database/entities/local-user.entity';
 import { RemoteUser } from '@database/entities/remote-user.entity';
 import { TrustedRecipient } from '@database/entities/trusted-recipient.entity';
 import { RecipientService } from '@user/services/recipient.service';
-import RecipientParsingService from '@user/services/recipientParsing.service';
 
 // This module handles all user related operations that are done by the authenticated users
 
@@ -21,12 +20,7 @@ import RecipientParsingService from '@user/services/recipientParsing.service';
     TypeOrmModule.forFeature([User, LocalUser, RemoteUser, TrustedRecipient]),
   ],
   controllers: [UserController],
-  providers: [
-    UserService,
-    PasswordService,
-    RecipientParsingService,
-    RecipientService,
-  ],
+  providers: [UserService, PasswordService, RecipientService],
   exports: [UserService, PasswordService, RecipientService],
 })
 export class UserModule {}

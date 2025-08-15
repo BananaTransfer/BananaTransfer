@@ -1,6 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { validateOrReject } from 'class-validator';
+
 import { DnsService } from '@remote/services/dns.service';
 import { RecipientService } from '@user/services/recipient.service';
+import { Recipient } from '@user/types/recipient.type';
+import { PublicKeyDto } from '@user/dto/public-key.dto';
 
 @Injectable()
 export class RemoteService {
@@ -13,9 +17,20 @@ export class RemoteService {
     this.logger = new Logger(RemoteService.name);
   }
 
-  getRemotePublicKey(recipient: string): string {
-    // TODO: implement logic to get remote public key
-    return `remote-public-key ${recipient}`;
+  async getRemoteUserPublicKey(recipient: Recipient): Promise<PublicKeyDto> {
+    const serverAddress = await this.dnsService.getServerAddress(
+      recipient.domain,
+    );
+    const url = `http://${serverAddress}/remote/get/publickey/${recipient.username}`;
+    const res = await fetch(url);
+
+    if (!res.ok) {
+      throw new Error(`Request failed with status ${res.status}`);
+    }
+    const data = (await res.json()) as PublicKeyDto;
+    await validateOrReject(data);
+
+    return data;
   }
 
   // remote transfer handling methods

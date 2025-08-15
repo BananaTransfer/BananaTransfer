@@ -13,6 +13,7 @@ import { RemoteRequest } from '@remote/types/remote-request.type';
 import { RemoteService } from '@remote/services/remote.service';
 import { RecipientService } from '@user/services/recipient.service';
 import { UserService } from '@user/services/user.service';
+import { PublicKeyDto } from '@user/dto/public-key.dto';
 
 // RemoteController is responsible for handling transfer-related requests from and to other remote servers
 
@@ -34,7 +35,9 @@ export class RemoteController {
 
   // endpoint to get the public key of a user
   @Get('get/publickey/:username')
-  async getPublicKey(@Param('username') username: string): Promise<string> {
+  async getPublicKey(
+    @Param('username') username: string,
+  ): Promise<PublicKeyDto> {
     return await this.userService.getLocalUserPublicKey(username);
   }
 
