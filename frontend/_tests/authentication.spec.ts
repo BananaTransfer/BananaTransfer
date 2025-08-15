@@ -45,11 +45,11 @@ describe('authentication.ts functions', () => {
   describe('validatePasswordsDoNotMatch', () => {
     test('should set custom validity if passwords are the same', () => {
       // given
-      const current = createInput('currentPassword', 'abc');
-      const password = createInput('password', 'abc');
+      const currentPassword = createInput('currentPassword', 'abc');
+      const password = createInput('newPassword', 'abc');
 
       // when
-      validatePasswordsDoNotMatch(current, password);
+      validatePasswordsDoNotMatch(currentPassword, password);
 
       // then
       expect(password.validationMessage).toBe(

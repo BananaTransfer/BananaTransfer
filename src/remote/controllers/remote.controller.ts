@@ -1,7 +1,8 @@
 import { Controller, Get, Post, Param, Body } from '@nestjs/common';
 
 import { TransferService } from '@transfer/services/transfer.service';
-import { UserService } from '@user/services/user.service';
+import { RecipientService } from '@user/services/recipient.service';
+import { GetPubKeyDto } from '@user/dto/getPubKey.dto';
 
 // RemoteController is responsible for handling transfer-related requests from other remote servers
 
@@ -11,7 +12,7 @@ import { UserService } from '@user/services/user.service';
 export class RemoteController {
   constructor(
     private readonly transferService: TransferService,
-    private readonly userService: UserService,
+    private readonly recipientService: RecipientService,
   ) {}
 
   // endpoint to get server information
@@ -23,8 +24,8 @@ export class RemoteController {
 
   // endpoint to get the public key of a user
   @Get('get/publickey/:username')
-  getPublicKey(@Param('username') username: string): string {
-    return this.userService.getPublicKey(username);
+  getPublicKey(@Param('username') username: string): Promise<GetPubKeyDto> {
+    return this.recipientService.getPublicKey(username);
   }
 
   // endpoint to notify server about a new transfer

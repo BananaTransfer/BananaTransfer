@@ -4,10 +4,10 @@ import { NOTFOUND, SERVFAIL, Resolver } from 'dns/promises';
 import {
   DnsService,
   InvalidDomainException,
-} from '@transfer/services/dns.service';
+} from '@remote/services/dns.service';
 import { InternalServerErrorException } from '@nestjs/common';
 
-describe('AuthService', () => {
+describe('DnsService', () => {
   let authService: DnsService;
   let resolver: Mocked<Resolver>;
 

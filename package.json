@@ -126,7 +126,8 @@
       "^@user/(.*)$": "<rootDir>/user/$1",
       "^@public/(.*)$": "<rootDir>/public/$1",
       "^@views/(.*)$": "<rootDir>/../views/$1",
-      "^@test/(.*)$": "<rootDir>/../test/$1"
+      "^@test/(.*)$": "<rootDir>/../test/$1",
+      "^@remote/(.*)$": "<rootDir>/remote/$1"
     }
   }
 }
