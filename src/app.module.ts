@@ -10,6 +10,7 @@ import { TransferModule } from '@transfer/transfer.module';
 import { UserModule } from '@user/user.module';
 
 import { AppController } from './app.controller';
+import { RemoteModule } from './remote/remote.module';
 
 // The root module that organizes your NestJS application. It imports other modules, controllers, and providers (services).
 
@@ -24,6 +25,7 @@ import { AppController } from './app.controller';
     JwtCoreModule,
     TransferModule,
     UserModule,
+    RemoteModule,
   ],
   controllers: [AppController],
   providers: [],

@@ -18,7 +18,8 @@
       "@user/*": ["src/user/*"],
       "@public/*": ["src/public/*"],
       "@views/*": ["views/*"],
-      "@test/*": ["test/*"]
+      "@test/*": ["test/*"],
+      "@remote/*": ["src/remote/*"]
     },
     "incremental": true,
     "skipLibCheck": true,

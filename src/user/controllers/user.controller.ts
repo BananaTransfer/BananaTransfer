@@ -16,6 +16,8 @@ import { JwtAuthGuard } from '@auth/jwt/guards/jwt-auth.guard';
 import { AuthenticatedRequest } from '@auth/types/authenticated-request.interface';
 import { ChangePasswordDto } from '@user/dto/changePassword.dto';
 import { SetKeysDto } from '@user/dto/setKeys.dto';
+import { GetPubKeyDto } from '@user/dto/getPubKey.dto';
+import { RecipientService } from '@user/services/recipient.service';
 
 // all routes in this controller are protected by the JwtAuthGuard and require authentication
 @UseGuards(JwtAuthGuard)
@@ -23,7 +25,10 @@ import { SetKeysDto } from '@user/dto/setKeys.dto';
 export class UserController {
   private readonly logger = new Logger(UserController.name);
 
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly recipientService: RecipientService,
+  ) {}
 
   private async renderUserSettingsPage(
     req: AuthenticatedRequest,
@@ -90,9 +95,9 @@ export class UserController {
   }
 
   // endpoint to get public key of local or remote user
-  @Get('get/publickey/:username')
-  getPublicKey(@Param('username') username: string): string {
-    return this.userService.getPublicKey(username);
+  @Get('/publickey/:recipient')
+  getPublicKey(@Param('recipient') username: string): Promise<GetPubKeyDto> {
+    return this.recipientService.getPublicKey(username);
   }
 
   // endpoint to change password of user
