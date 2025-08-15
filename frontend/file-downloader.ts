@@ -1,12 +1,6 @@
 import { FileEncryption, StreamChunk } from './encryption.js';
 import { KeyManager } from './key-manager.js';
 
-interface DownloadableTransfer {
-  id: number;
-  filename: string;
-  symmetric_key_encrypted: string;
-}
-
 interface ChunkData {
   chunkIndex: number;
   encryptedData: string;
@@ -23,7 +17,7 @@ export class FileDownloader {
   async downloadAndDecrypt(transferId: number): Promise<Uint8Array> {
     try {
       // Fetch transfer data and chunks from server
-      const response = await fetch(`/transfer/fetch/${transferId}`, {
+      const response = await fetch(`/transfer/${transferId}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -37,25 +31,41 @@ export class FileDownloader {
         throw new Error(`Failed to fetch transfer: ${response.statusText}`);
       }
 
-      const responseText = await response.text();
-      console.log('Raw server response:', responseText);
-      
-      let data;
-      try {
-        data = JSON.parse(responseText);
-      } catch (parseError) {
-        console.error('Failed to parse JSON response:', responseText);
-        const errorMessage = parseError instanceof Error ? parseError.message : 'Unknown parse error';
-        throw new Error(`Invalid JSON response from server: ${errorMessage}`);
-      }
-      const transfer: DownloadableTransfer = data.transfer;
-      const chunks: ChunkData[] = data.chunks;
+      const transfer = (await response.json()) as {
+        id: number;
+        symmetric_key_encrypted: string;
+        chunks: number[];
+      };
+      console.log('Raw server response:', transfer);
 
-      console.log(`Fetched transfer ${transferId} with ${chunks.length} chunks`);
+      const chunks: ChunkData[] = await Promise.all(
+        transfer.chunks.map((chunk) => {
+          return fetch(`/transfer/${transferId}/chunk/${chunk}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin', // Include authentication cookies
+          }).then((res) => {
+            if (!res.ok) throw new Error('could not fetch chunk');
 
-      // Unwrap AES key with user's private key  
-      const wrappedAESKey = this.base64ToArrayBuffer(transfer.symmetric_key_encrypted);
-      const unwrappedAESKey = await KeyManager.unwrapAESKey(wrappedAESKey, this.userPrivateKey);
+            return res.json() as Promise<ChunkData>;
+          });
+        }),
+      );
+
+      console.log(
+        `Fetched transfer ${transferId} with ${chunks.length} chunks`,
+      );
+
+      // Unwrap AES key with user's private key
+      const wrappedAESKey = this.base64ToArrayBuffer(
+        transfer.symmetric_key_encrypted,
+      );
+      const unwrappedAESKey = await KeyManager.unwrapAESKey(
+        wrappedAESKey,
+        this.userPrivateKey,
+      );
       console.log('AES key unwrapped successfully');
 
       // Convert chunks to the format expected by FileEncryption.decryptChunks
@@ -63,18 +73,20 @@ export class FileDownloader {
         chunkIndex: chunk.chunkIndex,
         encryptedData: this.base64ToArrayBuffer(chunk.encryptedData),
         iv: this.base64ToUint8Array(chunk.iv),
-        isLastChunk: index === chunks.length - 1
+        isLastChunk: index === chunks.length - 1,
       }));
 
       // Sort chunks by index to ensure proper order
       streamChunks.sort((a, b) => a.chunkIndex - b.chunkIndex);
 
       // Decrypt chunks using existing FileEncryption method
-      const decryptedData = await FileEncryption.decryptChunks(streamChunks, unwrappedAESKey);
+      const decryptedData = await FileEncryption.decryptChunks(
+        streamChunks,
+        unwrappedAESKey,
+      );
       console.log(`Decryption completed successfully`);
 
       return decryptedData;
-
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       console.error(`Download and decryption failed: ${message}`);
@@ -121,7 +133,9 @@ export class FileDownloader {
     return bytes;
   }
 
-  static async createDownloader(userPrivateKey: CryptoKey): Promise<FileDownloader> {
+  static async createDownloader(
+    userPrivateKey: CryptoKey,
+  ): Promise<FileDownloader> {
     return new FileDownloader(userPrivateKey);
   }
 }

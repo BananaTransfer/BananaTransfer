@@ -8,11 +8,9 @@ import {
   Param,
   Body,
   UseGuards,
-  NotImplementedException,
 } from '@nestjs/common';
 import { Response } from 'express';
 
-import { TransferStatus } from '@database/entities/enums';
 import { TransferService } from '@transfer/services/transfer.service';
 import { UserService } from '@user/services/user.service';
 import { JwtAuthGuard } from '@auth/jwt/guards/jwt-auth.guard';
@@ -32,7 +30,7 @@ export class TransferController {
   // endpoint to get transfers list page
   @Get('')
   @Render('transfer/list')
-  async renderTransfersList(@Req() req: AuthenticatedRequest,) {
+  async renderTransfersList(@Req() req: AuthenticatedRequest) {
     const userId = req.user.id;
 
     const transfers = await this.transferService.getTransferList(userId);

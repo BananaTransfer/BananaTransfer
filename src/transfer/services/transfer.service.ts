@@ -167,7 +167,7 @@ export class TransferService {
       const bucketData = JSON.parse(data) as BucketChunkData;
 
       return {
-        chunkIndex: chunkId,
+        chunkIndex: Number(chunkId),
         encryptedData: bucketData.data,
         iv: bucketData.iv,
       };
