@@ -101,6 +101,18 @@ export class TransferService {
       }),
     );
 
+    // Mark transfer as retrieved after successful fetch
+    if (transfer.status !== TransferStatus.RETRIEVED) {
+      transfer.status = TransferStatus.RETRIEVED;
+      await this.fileTransferRepository.save(transfer);
+      
+      await this.createTransferLog(
+        transfer,
+        LogInfo.TRANSFER_RETRIEVED,
+        userId,
+      );
+    }
+
     return { transfer, chunks: chunkData };
   }
 
@@ -123,7 +135,7 @@ export class TransferService {
       throw new NotFoundException('Sender not found');
     }
 
-    // For now, create a mock recipient (later integrate with UserService)
+    // TODO: Implement dns user lookup and put id here
     const recipient =
       (await this.userRepository.findOne({ where: { id: 2 } })) || sender;
 
@@ -156,7 +168,6 @@ export class TransferService {
 
       // Update transfer with S3 path
       savedTransfer.s3_path = s3Key;
-      // Status remains CREATED
       await this.fileTransferRepository.save(savedTransfer);
 
       // Log successful upload
@@ -207,7 +218,6 @@ export class TransferService {
       );
     } else {
       // Find existing transfer by looking for recent transfers from this user
-      // In a real implementation, you'd use a session-based transfer ID
       const existingTransfer = await this.fileTransferRepository.findOne({
         where: { sender: { id: senderId } },
         relations: ['sender', 'receiver'],
@@ -229,18 +239,17 @@ export class TransferService {
     const chunkInfo = this.chunkInfoRepository.create({
       chunkNumber: chunkData.chunkIndex,
       chunkSize: chunkData.chunkData.length,
-      etag: 'chunk_etag', // In real S3, you'd get this from the upload response
+      etag: 'chunk_etag',
       s3Path: chunkKey,
       isUploaded: true,
-      iv: chunkData.iv, // Store base64 encoded IV
+      iv: chunkData.iv,
       fileTransfer: transfer,
     });
     await this.chunkInfoRepository.save(chunkInfo);
 
     // If this is the last chunk, mark transfer as ready
     if (chunkData.isLastChunk) {
-      // Simply mark transfer as having all chunks ready
-      transfer.status = TransferStatus.CREATED; // Keep as CREATED since file is ready locally
+      transfer.status = TransferStatus.CREATED;
       await this.fileTransferRepository.save(transfer);
 
       console.log(`Transfer ${transfer.id} completed - all chunks stored`);

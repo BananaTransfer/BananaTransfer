@@ -47,7 +47,8 @@ class TransferNewPage {
 
       if (publicKeyData) {
         // Use keys from localStorage
-        this.recipientPublicKey = await KeyManager.importPublicKey(publicKeyData);
+        this.recipientPublicKey =
+          await KeyManager.importPublicKey(publicKeyData);
         console.log('Using keys from localStorage for testing');
       } else {
         // Generate new mock RSA key pair for testing
@@ -71,13 +72,6 @@ class TransferNewPage {
     // File selection handler
     this.formElements.fileInput.addEventListener('change', (event) => {
       this.handleFileSelection(event);
-    });
-
-    // Recipient input handler (auto-fill with mock for testing)
-    this.formElements.recipientInput.addEventListener('focus', () => {
-      if (!this.formElements.recipientInput.value) {
-        this.formElements.recipientInput.value = 'testuser';
-      }
     });
 
     // Send button handler
@@ -181,7 +175,7 @@ class TransferNewPage {
         subject,
       );
 
-      // Success - redirect to transfers list
+      // Redirect to transfers list on success
       window.location.href = '/transfer';
     } catch (error) {
       console.error('Error creating transfer:', error);
@@ -204,7 +198,7 @@ class TransferNewPage {
       (a, b) => a.chunkIndex - b.chunkIndex,
     );
 
-    // Create digital signature (mocked for Step 1)
+    // Create digital signature
     const signatureSender = await this.createMockDigitalSignature();
 
     // Prepare transfer metadata
@@ -277,7 +271,7 @@ class TransferNewPage {
   }
 
   private async createMockDigitalSignature(): Promise<string> {
-    // Create a mock signature for Step 1 testing
+    // TODO: TO DELETE and replace with real sender signature with recipient verification on server to server transfer
     const mockData = `MOCK_SIGNATURE_${Date.now()}_${Math.random()}`;
     const hashBuffer = await crypto.subtle.digest(
       'SHA-256',
@@ -288,7 +282,7 @@ class TransferNewPage {
 }
 
 // Setup function called from the Pug template
-export function setupListPage(): void {
+export function setupNewTransfer(): void {
   document.addEventListener('DOMContentLoaded', () => {
     new TransferNewPage();
   });
