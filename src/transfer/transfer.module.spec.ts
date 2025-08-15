@@ -15,7 +15,6 @@ import { RemoteUser } from '@database/entities/remote-user.entity';
 import { TrustedRecipient } from '@database/entities/trusted-recipient.entity';
 import { FileTransfer } from '@database/entities/file-transfer.entity';
 import { TransferLog } from '@database/entities/transfer-log.entity';
-import { ChunkInfo } from '@database/entities/chunk-info.entity';
 import { BucketService } from '@transfer/services/bucket.service';
 
 describe('TransferModule', () => {
@@ -64,7 +63,6 @@ describe('TransferModule', () => {
         },
         { provide: getRepositoryToken(FileTransfer), useValue: mockRepository },
         { provide: getRepositoryToken(TransferLog), useValue: mockRepository },
-        { provide: getRepositoryToken(ChunkInfo), useValue: mockRepository },
       ],
     }).compile();
   });

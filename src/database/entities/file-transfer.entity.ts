@@ -9,7 +9,6 @@ import {
 import { User } from './user.entity';
 import { TransferStatus } from './enums';
 import { TransferLog } from './transfer-log.entity';
-import { ChunkInfo } from './chunk-info.entity';
 
 @Entity()
 export class FileTransfer {
@@ -37,18 +36,6 @@ export class FileTransfer {
   @Column({ type: 'text', nullable: true })
   s3_path: string;
 
-  @Column({ type: 'int', nullable: true })
-  totalChunks: number;
-
-  @Column({ type: 'int', nullable: true })
-  uploadedChunks: number;
-
-  @Column({ type: 'int', nullable: true })
-  chunkSize: number;
-
-  @Column({ type: 'text', nullable: true })
-  multipartUploadId: string;
-
   @ManyToOne(() => User, (user) => user.sentTransfers)
   sender: User;
 
@@ -57,7 +44,4 @@ export class FileTransfer {
 
   @OneToMany(() => TransferLog, (log) => log.fileTransfer)
   logs: TransferLog[];
-
-  @OneToMany(() => ChunkInfo, (chunk) => chunk.fileTransfer)
-  chunks: ChunkInfo[];
 }

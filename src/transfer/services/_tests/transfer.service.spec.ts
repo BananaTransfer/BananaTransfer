@@ -13,7 +13,6 @@ import { TransferService } from '@transfer/services/transfer.service';
 import { BucketService } from '@transfer/services/bucket.service';
 import { FileTransfer } from '@database/entities/file-transfer.entity';
 import { TransferLog } from '@database/entities/transfer-log.entity';
-import { ChunkInfo } from '@database/entities/chunk-info.entity';
 import { User } from '@database/entities/user.entity';
 import { TransferStatus, LogInfo } from '@database/entities/enums';
 
@@ -88,19 +87,11 @@ describe('TransferService', () => {
       findOne: jest.fn(),
     };
 
-    const mockChunkInfoRepository = {
-      create: jest.fn(),
-      save: jest.fn(),
-      find: jest.fn(),
-      findOne: jest.fn(),
-    };
-
     transferService = new TransferService(
       bucketService,
       mockFileTransferRepository as unknown as Repository<FileTransfer>,
       mockTransferLogRepository as unknown as Repository<TransferLog>,
       mockUserRepository as unknown as Repository<User>,
-      mockChunkInfoRepository as unknown as Repository<ChunkInfo>,
     );
 
     fileTransferRepository = mockFileTransferRepository as Mocked<
@@ -150,12 +141,7 @@ describe('TransferService', () => {
         created_at: new Date(),
         sender: mockSender,
         receiver: mockRecipient,
-        totalChunks: 0,
-        uploadedChunks: 0,
-        chunkSize: 0,
-        multipartUploadId: '',
         logs: [],
-        chunks: [],
       } as FileTransfer;
       const mockLog = { id: 1, info: LogInfo.TRANSFER_CREATED } as TransferLog;
 
@@ -217,12 +203,7 @@ describe('TransferService', () => {
         sender: mockSender,
         receiver: mockRecipient,
         s3_path: '',
-        totalChunks: 0,
-        uploadedChunks: 0,
-        chunkSize: 0,
-        multipartUploadId: '',
         logs: [],
-        chunks: [],
       } as FileTransfer;
       const mockLog = { id: 1, info: LogInfo.TRANSFER_CREATED } as TransferLog;
 

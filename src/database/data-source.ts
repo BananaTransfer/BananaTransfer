@@ -6,7 +6,6 @@ import { RemoteUser } from './entities/remote-user.entity';
 import { TrustedRecipient } from './entities/trusted-recipient.entity';
 import { FileTransfer } from './entities/file-transfer.entity';
 import { TransferLog } from './entities/transfer-log.entity';
-import { ChunkInfo } from './entities/chunk-info.entity';
 
 export default new DataSource({
   type: 'postgres',
@@ -22,7 +21,6 @@ export default new DataSource({
     TrustedRecipient,
     FileTransfer,
     TransferLog,
-    ChunkInfo,
   ],
   migrations: [process.env.DB_MIGRATION_PATH || 'src/database/migrations/*.ts'],
 });

@@ -11,7 +11,6 @@ import { BucketService } from '@transfer/services/bucket.service';
 
 import { FileTransfer } from '@database/entities/file-transfer.entity';
 import { TransferLog } from '@database/entities/transfer-log.entity';
-import { ChunkInfo } from '@database/entities/chunk-info.entity';
 import { User } from '@database/entities/user.entity';
 import { DnsService } from '@transfer/services/dns.service';
 import { Resolver } from 'dns/promises';
@@ -23,7 +22,7 @@ import { RemoteController } from '@transfer/controllers/remote.controller';
   imports: [
     JwtCoreModule,
     UserModule,
-    TypeOrmModule.forFeature([FileTransfer, TransferLog, ChunkInfo, User]),
+    TypeOrmModule.forFeature([FileTransfer, TransferLog, User]),
   ],
   controllers: [TransferController, RemoteController],
   providers: [

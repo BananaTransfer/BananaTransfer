@@ -8,7 +8,6 @@ import { RemoteUser } from './entities/remote-user.entity';
 import { TrustedRecipient } from './entities/trusted-recipient.entity';
 import { FileTransfer } from './entities/file-transfer.entity';
 import { TransferLog } from './entities/transfer-log.entity';
-import { ChunkInfo } from './entities/chunk-info.entity';
 
 @Module({
   imports: [
@@ -29,7 +28,6 @@ import { ChunkInfo } from './entities/chunk-info.entity';
           TrustedRecipient,
           FileTransfer,
           TransferLog,
-          ChunkInfo,
         ],
         synchronize: false,
       }),

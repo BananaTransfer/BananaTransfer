@@ -7,11 +7,19 @@ import { TransferStatus, LogInfo } from '@database/entities/enums';
 import { User } from '@database/entities/user.entity';
 import { FileTransfer } from '@database/entities/file-transfer.entity';
 import { TransferLog } from '@database/entities/transfer-log.entity';
-import { ChunkInfo } from '@database/entities/chunk-info.entity';
 import { BucketService } from '@transfer/services/bucket.service';
+
+interface ChunkData {
+  chunkIndex: number;
+  encryptedData: string;
+  iv: string;
+}
 
 @Injectable()
 export class TransferService {
+  // Temporary storage for chunks during upload
+  private pendingTransfers = new Map<number, ChunkData[]>();
+
   constructor(
     private readonly bucketService: BucketService,
     @InjectRepository(FileTransfer)
@@ -20,8 +28,6 @@ export class TransferService {
     private transferLogRepository: Repository<TransferLog>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
-    @InjectRepository(ChunkInfo)
-    private chunkInfoRepository: Repository<ChunkInfo>,
   ) {}
 
   // local transfer handling methods
@@ -76,36 +82,24 @@ export class TransferService {
       );
     }
 
-    // Get transfer chunk metadata from database
-    const chunks = await this.chunkInfoRepository.find({
-      where: { fileTransfer: { id } },
-      order: { chunkNumber: 'ASC' },
-    });
-
-    if (chunks.length === 0) {
-      throw new NotFoundException(`Transfer ${id} has no uploaded chunks`);
+    if (!transfer.s3_path) {
+      throw new NotFoundException(`Transfer ${id} has no uploaded file`);
     }
 
-    // Download each chunk separately and return with metadata
-    const chunkData = await Promise.all(
-      chunks.map(async (chunk) => {
-        const tempFile = await this.bucketService.getFile(chunk.s3Path);
-        const data = await readFile(tempFile);
-        await unlink(tempFile);
+    // Download single json file from S3
+    const tempFile = await this.bucketService.getFile(transfer.s3_path);
+    const jsonData = await readFile(tempFile, 'utf8');
+    await unlink(tempFile);
 
-        return {
-          chunkIndex: chunk.chunkNumber,
-          encryptedData: data.toString('base64'),
-          iv: chunk.iv || '', // Use stored IV
-        };
-      }),
-    );
+    const transferData = JSON.parse(jsonData) as {
+      chunks: ChunkData[];
+    };
 
     // Mark transfer as retrieved after successful fetch
     if (transfer.status !== TransferStatus.RETRIEVED) {
       transfer.status = TransferStatus.RETRIEVED;
       await this.fileTransferRepository.save(transfer);
-      
+
       await this.createTransferLog(
         transfer,
         LogInfo.TRANSFER_RETRIEVED,
@@ -113,7 +107,7 @@ export class TransferService {
       );
     }
 
-    return { transfer, chunks: chunkData };
+    return { transfer, chunks: transferData.chunks };
   }
 
   async newTransfer(
@@ -181,7 +175,7 @@ export class TransferService {
     return savedTransfer;
   }
 
-  // Chunked transfer handling chunks
+  // Simplified chunk handling - collect in memory, save as single JSON
   async handleChunkUpload(
     chunkData: {
       chunkData: Buffer;
@@ -203,7 +197,7 @@ export class TransferService {
   ): Promise<FileTransfer | null> {
     let transfer: FileTransfer;
 
-    // On first chunk, create the transfer record
+    // On first chunk, create transfer and initialize chunk collection
     if (transferMetadata && chunkData.chunkIndex === 0) {
       transfer = await this.newTransfer(
         {
@@ -216,8 +210,11 @@ export class TransferService {
         },
         senderId,
       );
+
+      // Initialize chunk collection for this transfer
+      this.pendingTransfers.set(transfer.id, []);
     } else {
-      // Find existing transfer by looking for recent transfers from this user
+      // Find existing transfer
       const existingTransfer = await this.fileTransferRepository.findOne({
         where: { sender: { id: senderId } },
         relations: ['sender', 'receiver'],
@@ -231,28 +228,48 @@ export class TransferService {
       transfer = existingTransfer;
     }
 
-    // Upload chunk to S3
-    const chunkKey = `transfers/${transfer.id}/chunks/chunk_${chunkData.chunkIndex}`;
-    await this.bucketService.putObject(chunkKey, chunkData.chunkData);
-
-    // Save chunk info to database
-    const chunkInfo = this.chunkInfoRepository.create({
-      chunkNumber: chunkData.chunkIndex,
-      chunkSize: chunkData.chunkData.length,
-      etag: 'chunk_etag',
-      s3Path: chunkKey,
-      isUploaded: true,
+    // Store chunk in memory
+    const chunks = this.pendingTransfers.get(transfer.id) || [];
+    chunks.push({
+      chunkIndex: chunkData.chunkIndex,
+      encryptedData: chunkData.chunkData.toString('base64'),
       iv: chunkData.iv,
-      fileTransfer: transfer,
     });
-    await this.chunkInfoRepository.save(chunkInfo);
 
-    // If this is the last chunk, mark transfer as ready
+    // If last chunk, save everything as single JSON
     if (chunkData.isLastChunk) {
+      // Sort chunks by index
+      chunks.sort((a, b) => a.chunkIndex - b.chunkIndex);
+
+      // Create transfer JSON
+      const transferJson = {
+        transfer: {
+          filename: transfer.filename,
+          totalSize: chunks.reduce(
+            (total, chunk) => total + chunk.encryptedData.length,
+            0,
+          ),
+          symmetricKeyEncrypted: transfer.symmetric_key_encrypted,
+          signatureSender: transfer.signature_sender,
+        },
+        chunks: chunks,
+      };
+
+      // Save to S3
+      const jsonKey = `transfers/${transfer.id}/transfer.json`;
+      await this.bucketService.putObject(
+        jsonKey,
+        Buffer.from(JSON.stringify(transferJson)),
+      );
+
+      // Update transfer
+      transfer.s3_path = jsonKey;
       transfer.status = TransferStatus.CREATED;
       await this.fileTransferRepository.save(transfer);
 
-      console.log(`Transfer ${transfer.id} completed - all chunks stored`);
+      // Cleanup memory
+      this.pendingTransfers.delete(transfer.id);
+
       return transfer;
     }
 
