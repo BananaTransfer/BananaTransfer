@@ -66,8 +66,11 @@ export class UserService {
     return user;
   }
 
-  private async getRemoteUser(username: string): Promise<RemoteUser> {
-    const user = await this.remoteUserRepository.findOneBy({ username });
+  async getRemoteUser(username: string, domain: string): Promise<RemoteUser> {
+    const user = await this.remoteUserRepository.findOneBy({
+      username,
+      domain,
+    });
     if (!user) {
       throw new NotFoundException('Remote user not found');
     }

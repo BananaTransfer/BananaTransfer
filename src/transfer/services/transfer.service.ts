@@ -18,6 +18,7 @@ import { UserService } from '@user/services/user.service';
 import { v4 as uuidv4 } from 'uuid';
 import ChunkDto from '@transfer/dto/chunk.dto';
 import * as fs from 'node:fs/promises';
+import { RecipientService } from '@user/services/recipient.service';
 
 interface BucketChunkData {
   data: string;
@@ -33,6 +34,7 @@ export class TransferService {
     @InjectRepository(TransferLog)
     private transferLogRepository: Repository<TransferLog>,
     private userService: UserService,
+    private recipientService: RecipientService,
   ) {}
 
   // local transfer handling methods
@@ -99,7 +101,7 @@ export class TransferService {
     senderId: number,
   ): Promise<TransferDto> {
     const sender = await this.userService.getCurrentUser(senderId);
-    const receiver = await this.userService.getUser(transferData.receiver);
+    const receiver = await this.recipientService.getUser(transferData.receiver);
 
     // Create transfer record
     let transfer = this.fileTransferRepository.create({
