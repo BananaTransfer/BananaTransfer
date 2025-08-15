@@ -32,21 +32,13 @@ export class TransferController {
   // endpoint to get transfers list page
   @Get('')
   @Render('transfer/list')
-  renderTransfersList(/*@Req() req: Request, @Res() res: Response*/) {
-    // const transfers = this.transferService.getTransferList(req.user.id;
-    // return { transfers };
+  async renderTransfersList(@Req() req: AuthenticatedRequest,) {
+    const userId = req.user.id;
+
+    const transfers = await this.transferService.getTransferList(userId);
+
     return {
-      transfers: [
-        {
-          id: 54,
-          status: TransferStatus.RETRIEVED,
-          created_at: new Date(),
-          filename: 'test.txt',
-          subject: 'asdfasdfasdf',
-          recipient: 'user@example.com',
-          sender: 'sender@example.com',
-        },
-      ],
+      transfers: transfers,
     };
   }
 

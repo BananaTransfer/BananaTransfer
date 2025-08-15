@@ -39,12 +39,14 @@ export class TransferService {
   ) {}
 
   // local transfer handling methods
-  async getTransferList(userId: number): Promise<any[]> {
+  async getTransferList(userId: number): Promise<TransferDto[]> {
     // TODO: implement logic to fetch list of all incoming and outgoing transfers of a user
-    return this.fileTransferRepository.find({
+    const list = await this.fileTransferRepository.find({
       where: [{ sender: { id: userId } }, { receiver: { id: userId } }],
       relations: ['sender', 'receiver'],
     });
+
+    return list.map((fileTransfer) => this.toDTO(fileTransfer));
   }
 
   private async getTransfer(transferId: number, userId: number) {
