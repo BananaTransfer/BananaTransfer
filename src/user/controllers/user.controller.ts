@@ -122,7 +122,7 @@ export class UserController {
       const user = await this.userService.changeUserPassword(
         req.user.id,
         changePasswordDto.currentPassword,
-        changePasswordDto.newPassword,
+        changePasswordDto.password,
       );
       if (!user) {
         throw new Error('Failed to change password');

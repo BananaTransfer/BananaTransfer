@@ -88,7 +88,7 @@ export function setupPasswordDoNotMatchCheck() {
     'currentPassword',
   ) as HTMLInputElement | null;
   const passwordInput = document.getElementById(
-    'newPassword',
+    'password',
   ) as HTMLInputElement | null;
   if (!currentPasswordInput || !passwordInput) return;
 
