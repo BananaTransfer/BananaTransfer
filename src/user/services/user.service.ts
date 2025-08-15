@@ -13,7 +13,6 @@ import { UserStatus } from '@database/entities/enums';
 import { User } from '@database/entities/user.entity';
 import { LocalUser } from '@database/entities/local-user.entity';
 import { RemoteUser } from '@database/entities/remote-user.entity';
-import RecipientParsingService from '@user/services/recipientParsing.service';
 
 @Injectable()
 export class UserService {
@@ -22,7 +21,6 @@ export class UserService {
   constructor(
     private readonly configService: ConfigService,
     private readonly passwordService: PasswordService,
-    private readonly recipientParsingService: RecipientParsingService,
     @InjectRepository(User) private userRepository: Repository<User>,
     @InjectRepository(LocalUser)
     private localUserRepository: Repository<LocalUser>,
@@ -60,6 +58,22 @@ export class UserService {
     return user;
   }
 
+  async getLocalUser(username: string): Promise<LocalUser> {
+    const user = await this.findByUsername(username);
+    if (!user) {
+      throw new NotFoundException('Local user not found');
+    }
+    return user;
+  }
+
+  private async getRemoteUser(username: string): Promise<RemoteUser> {
+    const user = await this.remoteUserRepository.findOneBy({ username });
+    if (!user) {
+      throw new NotFoundException('Remote user not found');
+    }
+    return user;
+  }
+
   async createUser(
     username: string,
     email: string,
@@ -88,7 +102,7 @@ export class UserService {
     );
   }
 
-  async getUserPrivateKey(userId: number): Promise<{
+  async getCurrentUserPrivateKey(userId: number): Promise<{
     private_key_encrypted: string;
     private_key_salt: string;
     private_key_iv: string;
@@ -99,6 +113,11 @@ export class UserService {
       private_key_salt: user.private_key_salt || '',
       private_key_iv: user.private_key_iv || '',
     };
+  }
+
+  async getLocalUserPublicKey(username: string): Promise<string> {
+    const user = await this.getLocalUser(username);
+    return user.public_key;
   }
 
   async changeUserPassword(
@@ -135,36 +154,6 @@ export class UserService {
     return await this.localUserRepository.save(user);
   }
 
-  async getUser(username: string): Promise<User> {
-    // TODO: get local or remote user from db
-    const parsedUser = this.recipientParsingService.parseRecipient(username);
-    if (parsedUser.isLocal) {
-      return await this.getLocalUser(username);
-    } else {
-      return await this.getRemoteUser(username);
-    }
-  }
-
-  async getLocalUser(username: string): Promise<LocalUser> {
-    // get local user from db
-    const user = await this.localUserRepository.findOneBy({ username });
-    if (!user) {
-      // this will automatically return a 404 in the controller if user is not found
-      throw new NotFoundException('Local user not found');
-    }
-    return user;
-  }
-
-  private async getRemoteUser(username: string): Promise<RemoteUser> {
-    // TODO: get remote user from db
-    const user = await this.remoteUserRepository.findOneBy({ username });
-    if (!user) {
-      // this will automatically return a 404 in the controller
-      throw new NotFoundException('Remote user not found');
-    }
-    return user;
-  }
-
   trustPublicKey(/*username: string, recipient: string, publicKey: string*/): void {
     // TODO: implement logic to trust and save the hash of the public key in the DB
     // console.debug(`Trusting public key for user ${username}:`);
@@ -176,11 +165,6 @@ export class UserService {
     // TODO: get known recipients of current user from the db
     // console.debug(`Fetching known recipients for user ID: ${userId}`);
     return ['recipient1', 'recipient2', 'recipient3'];
-  }
-
-  createLocalUser(): void {
-    // TODO: implement logic to create a local user in the DB
-    // used when someone signs up
   }
 
   createRemoteUser(): void {

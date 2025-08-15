@@ -5,8 +5,10 @@ import {
   ForbiddenException,
   Logger,
 } from '@nestjs/common';
-import { Request } from 'express';
+import { RemoteRequest } from '@remote/types/remote-request.type';
 import { DnsService } from '@remote/services/dns.service';
+
+// TODO: check mTLS of sender server or check signature of request
 
 @Injectable()
 export class RemoteGuard implements CanActivate {
@@ -19,7 +21,7 @@ export class RemoteGuard implements CanActivate {
    * Validate if the IP address of the request matches the resolved IPs of the server of the domain
    */
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const req: Request = context.switchToHttp().getRequest();
+    const req = context.switchToHttp().getRequest<RemoteRequest>();
     const remoteDomain = req.headers['x-bananatransfer-domain'];
     if (!remoteDomain || typeof remoteDomain !== 'string') {
       this.logger.error('Missing or invalid BananaTransfer-domain in header');
@@ -63,6 +65,7 @@ export class RemoteGuard implements CanActivate {
       );
     }
 
+    req.domain = remoteDomain;
     return true;
   }
 }

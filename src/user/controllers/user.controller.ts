@@ -106,7 +106,9 @@ export class UserController {
   // endpoint to get encrypted private key from user in the frontend
   @Get('get/privatekey')
   async getPrivateKey(@Req() req: AuthenticatedRequest) {
-    const privateKey = await this.userService.getUserPrivateKey(req.user.id);
+    const privateKey = await this.userService.getCurrentUserPrivateKey(
+      req.user.id,
+    );
     return { privateKey };
   }
 
