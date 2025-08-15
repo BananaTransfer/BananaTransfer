@@ -49,11 +49,11 @@ export class RecipientService {
     const parsedRecipient = this.parseRecipient(recipient);
 
     if (parsedRecipient.isLocal) {
-      const localUserPublicKey = await this.userService.getLocalUserPublicKey(
+      const localUser = await this.userService.getLocalUser(
         parsedRecipient.username,
       );
       return {
-        publicKey: localUserPublicKey.publicKey,
+        publicKey: localUser.public_key,
         isTrustedRecipient: true, // local user are trusted by default
       };
     } else {

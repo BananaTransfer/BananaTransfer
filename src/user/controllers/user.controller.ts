@@ -20,6 +20,7 @@ import { ChangePasswordDto } from '@user/dto/changePassword.dto';
 import { SetKeysDto } from '@user/dto/setKeys.dto';
 import { GetPubKeyDto } from '@user/dto/getPubKey.dto';
 import { RecipientService } from '@user/services/recipient.service';
+import { PrivateKeyDto } from '@user/dto/privateKey.dto';
 
 // all routes in this controller are protected by the JwtAuthGuard and require authentication
 @UseGuards(JwtAuthGuard)
@@ -105,11 +106,15 @@ export class UserController {
 
   // endpoint to get encrypted private key from user in the frontend
   @Get('get/privatekey')
-  async getPrivateKey(@Req() req: AuthenticatedRequest) {
-    const privateKey = await this.userService.getCurrentUserPrivateKey(
-      req.user.id,
-    );
-    return { privateKey };
+  async getPrivateKey(
+    @Req() req: AuthenticatedRequest,
+  ): Promise<PrivateKeyDto> {
+    const currentUser = await this.userService.getCurrentUser(req.user.id);
+    return {
+      private_key_encrypted: currentUser.private_key_encrypted,
+      private_key_salt: currentUser.private_key_salt,
+      private_key_iv: currentUser.private_key_iv,
+    };
   }
 
   // endpoint to get public key of local or remote user

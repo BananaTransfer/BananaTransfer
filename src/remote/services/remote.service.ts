@@ -3,7 +3,7 @@ import { validateOrReject } from 'class-validator';
 
 import { DnsService } from '@remote/services/dns.service';
 import { Recipient } from '@user/types/recipient.type';
-import { PublicKeyDto } from '@user/dto/public-key.dto';
+import { PublicKeyDto } from '@user/dto/publicKey.dto';
 
 @Injectable()
 export class RemoteService {

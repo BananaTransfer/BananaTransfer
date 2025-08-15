@@ -9,7 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { PasswordService } from '@user/services/password.service';
-import { PublicKeyDto } from '@user/dto/public-key.dto';
+import { PublicKeyDto } from '@user/dto/publicKey.dto';
 import { UserStatus } from '@database/entities/enums';
 import { User } from '@database/entities/user.entity';
 import { LocalUser } from '@database/entities/local-user.entity';
@@ -101,24 +101,6 @@ export class UserService {
       { id: userId },
       { last_login: new Date() },
     );
-  }
-
-  async getCurrentUserPrivateKey(userId: number): Promise<{
-    private_key_encrypted: string;
-    private_key_salt: string;
-    private_key_iv: string;
-  }> {
-    const user = await this.getCurrentUser(userId);
-    return {
-      private_key_encrypted: user.private_key_encrypted || '',
-      private_key_salt: user.private_key_salt || '',
-      private_key_iv: user.private_key_iv || '',
-    };
-  }
-
-  async getLocalUserPublicKey(username: string): Promise<PublicKeyDto> {
-    const user = await this.getLocalUser(username);
-    return { publicKey: user.public_key };
   }
 
   async changeUserPassword(
