@@ -1,5 +1,5 @@
-import { FileEncryption, StreamChunk } from './encryption.js';
-import { KeyManager } from './key-manager.js';
+import { FileEncryption, StreamChunk } from './crypto/encryption.js';
+import { KeyManager } from './crypto/key-manager.js';
 
 interface TransferFormElements {
   recipientInput: HTMLInputElement;

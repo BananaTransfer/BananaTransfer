@@ -1,6 +1,6 @@
-import { showModal } from './common.js';
-import { KeyManager } from './key-manager.js';
-import { SecurityUtils } from './security-utils.js';
+import { showModal } from './utils/common.js';
+import { KeyManager } from './crypto/key-manager.js';
+import { SecurityUtils } from './crypto/security-utils.js';
 export let generatedKeyPair: CryptoKeyPair | null = null;
 export let generatedMasterPassword: string | null = null;
 
