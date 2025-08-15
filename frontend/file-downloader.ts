@@ -68,6 +68,9 @@ export class FileDownloader {
       );
       console.log('AES key unwrapped successfully');
 
+      // Sort chunks by index to ensure proper order
+      chunks.sort((a, b) => a.chunkIndex - b.chunkIndex);
+
       // Convert chunks to the format expected by FileEncryption.decryptChunks
       const streamChunks: StreamChunk[] = chunks.map((chunk, index) => ({
         chunkIndex: chunk.chunkIndex,
@@ -75,9 +78,6 @@ export class FileDownloader {
         iv: this.base64ToUint8Array(chunk.iv),
         isLastChunk: index === chunks.length - 1,
       }));
-
-      // Sort chunks by index to ensure proper order
-      streamChunks.sort((a, b) => a.chunkIndex - b.chunkIndex);
 
       // Decrypt chunks using existing FileEncryption method
       const decryptedData = await FileEncryption.decryptChunks(
