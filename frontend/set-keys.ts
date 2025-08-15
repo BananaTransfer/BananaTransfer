@@ -113,6 +113,11 @@ export async function encryptAndSaveKey() {
     if (!response.ok) {
       throw new Error('Failed to save the new key pair');
     }
+
+    const result = (await response.json()) as { redirect?: string };
+    if (result?.redirect) {
+      window.location.href = result.redirect;
+    }
   } catch (error) {
     (document.getElementById('setKeyError') as HTMLElement).textContent = (
       error as Error

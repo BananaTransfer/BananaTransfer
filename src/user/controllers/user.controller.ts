@@ -4,10 +4,12 @@ import {
   Post,
   Req,
   Res,
+  Query,
   Param,
   Body,
   UseGuards,
   Logger,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { Response } from 'express';
 
@@ -28,7 +30,12 @@ export class UserController {
   private async renderUserSettingsPage(
     req: AuthenticatedRequest,
     res: Response,
-    options: { username?: string; error?: string } = {},
+    options: {
+      username?: string;
+      error?: string;
+      setKeysSuccess?: boolean;
+      changePasswordSuccess?: boolean;
+    } = {},
   ): Promise<void> {
     const user = await this.userService.findByUserId(req.user.id);
     res.render('user/settings', { user, ...options });
@@ -46,13 +53,14 @@ export class UserController {
     });
   }
 
-  private renderSetKeysPage(
+  private async renderSetKeysPage(
     req: AuthenticatedRequest,
     res: Response,
     options: { error?: string } = {},
-  ): void {
+  ): Promise<void> {
+    const user = await this.userService.findByUserId(req.user.id);
     res.render('user/set-keys', {
-      user: req.user,
+      user,
       csrfToken: req.csrfToken(),
       ...options,
     });
@@ -63,8 +71,13 @@ export class UserController {
   async getUserSettingsPage(
     @Req() req: AuthenticatedRequest,
     @Res() res: Response,
+    @Query()
+    query: {
+      setKeysSuccess?: boolean;
+      changePasswordSuccess?: boolean;
+    },
   ): Promise<void> {
-    await this.renderUserSettingsPage(req, res);
+    await this.renderUserSettingsPage(req, res, query);
   }
 
   // endpoint to get page to change password
@@ -78,8 +91,11 @@ export class UserController {
 
   // endpoint to get page to create/update private key
   @Get('set-keys')
-  getSetKeysPage(@Req() req: AuthenticatedRequest, @Res() res: Response): void {
-    this.renderSetKeysPage(req, res);
+  async getSetKeysPage(
+    @Req() req: AuthenticatedRequest,
+    @Res() res: Response,
+  ): Promise<void> {
+    await this.renderSetKeysPage(req, res);
   }
 
   // endpoint to get encrypted private key from user in the frontend
@@ -112,7 +128,7 @@ export class UserController {
         throw new Error('Failed to change password');
       }
       this.logger.log(`Password changed for user ${user.username}`);
-      res.redirect('/user');
+      res.redirect('/user?changePasswordSuccess=true');
     } catch (error) {
       this.logger.error('Error changing password', error);
       this.renderChangePasswordPage(req, res, {
@@ -128,7 +144,7 @@ export class UserController {
     @Req() req: AuthenticatedRequest,
     @Res() res: Response,
     @Body() setKeysDto: SetKeysDto,
-  ): Promise<void> {
+  ) {
     try {
       const user = await this.userService.setUserKeys(
         req.user.id,
@@ -142,12 +158,12 @@ export class UserController {
         throw new Error('Failed to set user keys');
       }
       this.logger.log(`Keys set for user ${user.username}`);
-      res.redirect('/user');
+      return res.json({
+        redirect: '/user?setKeysSuccess=true',
+      });
     } catch (error) {
       this.logger.error('Error setting user keys', error);
-      this.renderSetKeysPage(req, res, {
-        error: (error as { message: string }).message || 'Failed to set keys',
-      });
+      throw new InternalServerErrorException('Failed to set keys');
     }
   }
 

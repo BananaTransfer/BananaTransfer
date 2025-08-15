@@ -8,7 +8,17 @@ block content
     .col-6.text-center
       h2 Settings
     .col-1
-  
+
+  if setKeysSuccess
+    .row.justify-content-center.mb-3
+      .col-8
+        .alert.alert-success.text-center Keys set successfully
+
+  if changePasswordSuccess
+    .row.justify-content-center.mb-3
+      .col-8
+        .alert.alert-success.text-center Password changed successfully
+
   if error
     .row.justify-content-center.mb-3
       .col-8
@@ -58,7 +68,8 @@ block content
       div.text-muted.mb-2
         | This is your public key. It will be automatically shared with others so they can send you files.
       a.btn.btn-dark.mt-2(href="/user/set-keys" style="border-radius:15px; padding:10px 30px;") Change Key-Pair and Master-Password
-      p.mt-2.text-danger(style="font-size:0.95em;") Warning: previously received files will become irretrievable upon changing your Key-Pair
+      if user.public_key
+        p.mt-2.text-danger.small Warning: previously received files will become irretrievable upon changing your Key-Pair
 
   script(type="module").
     import { copyToClipboard } from '/js/common.js';
