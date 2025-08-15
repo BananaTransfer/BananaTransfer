@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { validateOrReject } from 'class-validator';
+import { ConfigService } from '@nestjs/config';
 
 import { DnsService } from '@remote/services/dns.service';
 import { Recipient } from '@user/types/recipient.type';
@@ -7,10 +8,15 @@ import { PublicKeyDto } from '@user/dto/publicKey.dto';
 
 @Injectable()
 export class RemoteService {
+  private readonly envDomain: string;
   private readonly logger: Logger;
 
-  constructor(private readonly dnsService: DnsService) {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly dnsService: DnsService,
+  ) {
     this.logger = new Logger(RemoteService.name);
+    this.envDomain = this.configService.getOrThrow<string>('DOMAIN');
   }
 
   async getRemoteUserPublicKey(recipient: Recipient): Promise<PublicKeyDto> {
@@ -18,7 +24,12 @@ export class RemoteService {
       recipient.domain,
     );
     const url = `http://${serverAddress}/remote/get/publickey/${recipient.username}`;
-    const res = await fetch(url);
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'x-bananatransfer-domain': this.envDomain,
+      },
+    });
 
     if (!res.ok) {
       throw new Error(`Request failed with status ${res.status}`);

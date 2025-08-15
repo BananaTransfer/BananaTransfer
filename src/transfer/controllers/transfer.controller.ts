@@ -10,6 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
+import { ConfigService } from '@nestjs/config';
 
 import { TransferService } from '@transfer/services/transfer.service';
 import { UserService } from '@user/services/user.service';
@@ -22,7 +23,10 @@ import ChunkDto from '@transfer/dto/chunk.dto';
 @UseGuards(JwtAuthGuard)
 @Controller('transfer')
 export class TransferController {
+  private readonly envDomain: string;
+
   constructor(
+    private readonly configService: ConfigService,
     private readonly transferService: TransferService,
     private readonly userService: UserService,
   ) {}
@@ -46,11 +50,10 @@ export class TransferController {
     @Req() req: AuthenticatedRequest,
     @Res() res: Response,
   ): void {
-    const domain = this.userService.getDomain();
     res.render('transfer/new', {
       user: req.user,
       csrfToken: req.csrfToken(),
-      domain: domain,
+      domain: this.envDomain,
     });
   }
 

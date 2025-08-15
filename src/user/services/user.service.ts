@@ -4,39 +4,20 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { PasswordService } from '@user/services/password.service';
 import { UserStatus } from '@database/entities/enums';
-import { User } from '@database/entities/user.entity';
 import { LocalUser } from '@database/entities/local-user.entity';
-import { RemoteUser } from '@database/entities/remote-user.entity';
 
 @Injectable()
 export class UserService {
-  private readonly envDomain: string;
-
   constructor(
-    private readonly configService: ConfigService,
     private readonly passwordService: PasswordService,
-    @InjectRepository(User) private userRepository: Repository<User>,
     @InjectRepository(LocalUser)
     private localUserRepository: Repository<LocalUser>,
-    @InjectRepository(RemoteUser)
-    private remoteUserRepository: Repository<RemoteUser>,
-  ) {
-    const envDomain = this.configService.get<string>('DOMAIN');
-    if (!envDomain) {
-      throw new Error('Domain is not set in environment variables');
-    }
-    this.envDomain = envDomain;
-  }
-
-  getDomain(): string {
-    return this.envDomain;
-  }
+  ) {}
 
   async findByUserId(userId: number): Promise<LocalUser | null> {
     return await this.localUserRepository.findOneBy({ id: userId });
@@ -62,17 +43,6 @@ export class UserService {
     const user = await this.findByUsername(username);
     if (!user) {
       throw new NotFoundException('Local user not found');
-    }
-    return user;
-  }
-
-  async getRemoteUser(username: string, domain: string): Promise<RemoteUser> {
-    const user = await this.remoteUserRepository.findOneBy({
-      username,
-      domain,
-    });
-    if (!user) {
-      throw new NotFoundException('Remote user not found');
     }
     return user;
   }
@@ -137,23 +107,5 @@ export class UserService {
     user.public_key = publicKey;
     user.key_created_at = new Date();
     return await this.localUserRepository.save(user);
-  }
-
-  trustPublicKey(/*username: string, recipient: string, publicKey: string*/): void {
-    // TODO: implement logic to trust and save the hash of the public key in the DB
-    // console.debug(`Trusting public key for user ${username}:`);
-    // console.debug(`Recipient: ${recipient}`);
-    // console.debug(`Public Key: ${publicKey}`);
-  }
-
-  getKnownRecipients(/*userId: number*/): string[] {
-    // TODO: get known recipients of current user from the db
-    // console.debug(`Fetching known recipients for user ID: ${userId}`);
-    return ['recipient1', 'recipient2', 'recipient3'];
-  }
-
-  createRemoteUser(): void {
-    // TODO: implement logic to create a remote user in the DB
-    // used when sending/receiving a transfer to/from a remote user
   }
 }
