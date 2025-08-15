@@ -202,27 +202,6 @@ export class KeyManager {
     };
   }
 
-  // TODO: TO DELETE, FOR TESTING PURPOSES ONLY
-  static async exportPrivateKey(privateKey: CryptoKey): Promise<string> {
-    const exported = await crypto.subtle.exportKey('pkcs8', privateKey);
-    return btoa(String.fromCharCode(...new Uint8Array(exported)));
-  }
-
-  static async importPrivateKey(base64Key: string): Promise<CryptoKey> {
-    const keyData = new Uint8Array(
-      atob(base64Key)
-        .split('')
-        .map((c) => c.charCodeAt(0)),
-    );
-    return await crypto.subtle.importKey(
-      'pkcs8',
-      keyData,
-      { name: 'RSA-OAEP', hash: 'SHA-256' },
-      true,
-      ['unwrapKey'],
-    );
-  }
-
   static async importPublicKey(base64Key: string): Promise<CryptoKey> {
     const keyData = new Uint8Array(
       atob(base64Key)
