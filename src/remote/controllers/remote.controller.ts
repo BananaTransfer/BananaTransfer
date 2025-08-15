@@ -1,13 +1,15 @@
-import { Controller, Get, Post, Param, Body } from '@nestjs/common';
+import { UseGuards, Controller, Get, Post, Param, Body } from '@nestjs/common';
 
+import { RemoteGuard } from '@remote/guards/remote.guard';
 import { TransferService } from '@transfer/services/transfer.service';
 import { RecipientService } from '@user/services/recipient.service';
 import { GetPubKeyDto } from '@user/dto/getPubKey.dto';
 
-// RemoteController is responsible for handling transfer-related requests from other remote servers
+// RemoteController is responsible for handling transfer-related requests from and to other remote servers
 
 // TODO: create middleware that checks each request from other servers: check DNS of domain and the servers TLS certificate
 
+@UseGuards(RemoteGuard)
 @Controller('remote')
 export class RemoteController {
   constructor(

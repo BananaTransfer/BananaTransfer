@@ -65,11 +65,25 @@ export class DnsService {
       !this.isFQDN(result[0][0])
     ) {
       throw new InvalidDomainException(
-        `the provided domain is miss configured`,
+        `The provided domain ${domain} is misconfigured`,
       );
     }
 
     return result[0][0];
+  }
+
+  public async getServerIpAddresses(domain: string): Promise<string[]> {
+    this.logger.debug(
+      `Resolving BananaTransfer server IP addresses for domain ${domain}`,
+    );
+    const hostname = await this.getServerAddress(domain);
+    const addresses = await this.resolver.resolve4(hostname);
+    if (addresses.length === 0) {
+      throw new InvalidDomainException(
+        `No IP addresses found for hostname ${hostname}`,
+      );
+    }
+    return addresses;
   }
 }
 
