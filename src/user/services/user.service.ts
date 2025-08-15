@@ -9,7 +9,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { PasswordService } from '@user/services/password.service';
-import { PublicKeyDto } from '@user/dto/publicKey.dto';
 import { UserStatus } from '@database/entities/enums';
 import { User } from '@database/entities/user.entity';
 import { LocalUser } from '@database/entities/local-user.entity';

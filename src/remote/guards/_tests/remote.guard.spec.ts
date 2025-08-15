@@ -1,5 +1,6 @@
 import { RemoteGuard } from '../remote.guard';
 import { ForbiddenException, ExecutionContext } from '@nestjs/common';
+import { DnsService } from '@remote/services/dns.service';
 
 describe('RemoteGuard', () => {
   let guard: RemoteGuard;
@@ -9,7 +10,7 @@ describe('RemoteGuard', () => {
     dnsService = {
       getServerIpAddresses: jest.fn(),
     };
-    guard = new RemoteGuard(dnsService as any);
+    guard = new RemoteGuard(dnsService as any as DnsService);
   });
 
   function mockContext(
