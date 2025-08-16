@@ -41,6 +41,7 @@ export class TransferController {
 
     return {
       transfers: transfers,
+      currentUser: req.user,
     };
   }
 
