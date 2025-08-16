@@ -89,6 +89,8 @@ export class TransferService {
       filename: transfer.filename,
       subject: transfer.subject,
       chunks: keys.map((key) => Number(key.split('/')[1])),
+      senderId: transfer.sender.id,
+      receiverId: transfer.receiver.id,
     };
   }
 

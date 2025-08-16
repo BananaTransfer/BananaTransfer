@@ -9,4 +9,6 @@ export default class TransferDto {
   filename: string;
   subject: string;
   chunks: number[];
+  senderId: number;
+  receiverId: number;
 }
