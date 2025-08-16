@@ -59,21 +59,37 @@ export class BucketService {
 
   async listFiles(prefix: string): Promise<string[]> {
     try {
-      const command = new ListObjectsV2Command({
-        Bucket: this.bucket,
-        Prefix: prefix,
-      });
+      const keys: string[] = [];
+      let continuationToken: string | undefined;
 
-      const result = await this.s3Client.send(command);
+      while (true) {
+        const command = new ListObjectsV2Command({
+          Bucket: this.bucket,
+          Prefix: prefix,
+          ContinuationToken: continuationToken,
+        });
 
-      if (result.Contents == undefined) {
-        return [];
+        const result = await this.s3Client.send(command);
+
+        if (result.Contents == undefined) {
+          return [];
+        }
+
+        const newKeys = result.Contents.map((object) => object.Key).filter(
+          (key) => key != null,
+        );
+
+        keys.push(...newKeys);
+
+        if (!result.IsTruncated) {
+          // all matching files returned
+          break;
+        }
+
+        continuationToken = result.NextContinuationToken;
       }
 
-      // Map to just keys; handle case when no objects exist
-      return result.Contents.map((object) => object.Key).filter(
-        (key) => key != null,
-      );
+      return keys;
     } catch (error) {
       const message = (error as { message?: string })?.message;
 
