@@ -2,16 +2,17 @@ extends ../layout
 
 block content
   .row.justify-content-center.mb-3
-    .col-8.text-center
-      h2.mt-3.mb-0 Download Transfer
+    .col-12.col-md-10.col-lg-8.text-center
+      h2.mt-1 Download Transfer
     
   if error
     .row.justify-content-center.mb-3
-      .col-8
+      .col-12.col-md-10.col-lg-8
         .alert.alert-danger.text-center= error
+
   else if transfer
     .row.justify-content-center
-      .col-8
+      .col-12.col-md-10.col-lg-8
         .card
           .card-header
             h5.mb-0 Transfer Details

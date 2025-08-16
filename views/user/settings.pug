@@ -5,27 +5,27 @@ block content
     .col-1
       a.btn.btn-outline-secondary(href="/transfer" style="border-radius:12px;")
         i.bi.bi-arrow-left.align-middle
-    .col-6.text-center
-      h2 Settings
+    .col-10.col-md-8.col-lg-6.text-center
+      h2.mt-1 Settings
     .col-1
 
   if setKeysSuccess
     .row.justify-content-center.mb-3
-      .col-8
+      .col-12.col-md-10.col-lg-8
         .alert.alert-success.text-center Keys set successfully
 
   if changePasswordSuccess
     .row.justify-content-center.mb-3
-      .col-8
+      .col-12.col-md-10.col-lg-8
         .alert.alert-success.text-center Password changed successfully
 
   if error
     .row.justify-content-center.mb-3
-      .col-8
+      .col-12.col-md-10.col-lg-8
         .alert.alert-danger.text-center= error
 
   .row.justify-content-center.mb-3
-    .col-8.mb-3
+    .col-12.col-md-10.col-lg-8.mb-3
       h4.font-weight-bold User profile information
       hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
       div.text.mt-2
@@ -37,19 +37,19 @@ block content
        br
        | last login at: #{user.last_login}
 
-    // .col-8.mb-3
+    // .col-12.col-md-10.col-lg-8.mb-3
       h4.font-weight-bold Server information
       hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
       p.mt-3 [message configured by the server admin]
 
-    .col-8.mb-3
+    .col-12.col-md-10.col-lg-8.mb-3
       h4.font-weight-bold Password management
       hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
       div.text-muted.small.mb-1
         | password set at: #{user.password_created_at}
       a.btn.btn-dark.mb-3(href="/user/change-password" style="border-radius:15px; padding:10px 40px;") Change password
 
-    .col-8.mb-3
+    .col-12.col-md-10.col-lg-8.mb-3
       h4.font-weight-bold Key management
       hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
       label.form-label(for="publicKeyField") Public Key
