@@ -85,3 +85,33 @@ export function showModal(
     inputEl.focus();
   });
 }
+
+export async function callApi<R, T>(
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE',
+  path: string,
+  body?: R,
+): Promise<T> {
+  const token = (document.getElementById('_csrf') as HTMLInputElement | null)
+    ?.value;
+
+  const request = {
+    method: method,
+    headers: { 'Content-Type': 'application/json' },
+  };
+
+  if (body) {
+    request['body'] = JSON.stringify({ _csrf: token, ...body });
+  }
+
+  const response = await fetch(path, request);
+
+  if (!response.ok) {
+    throw new Error(response.statusText);
+  }
+
+  try {
+    return (await response.json()) as T;
+  } catch {
+    return {} as T;
+  }
+}

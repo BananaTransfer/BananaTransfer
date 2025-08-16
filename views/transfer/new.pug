@@ -26,8 +26,8 @@ block content
         span.input-group-text @#{domain}
       
       // Verification section
-      input.form-control.small(type="text" id="expectedHash"  style="font-size: 0.9em;")
-      button.btn.btn-outline-secondary(type="button" onclick="/")
+      input.form-control.small(type="text" id="expectedHash"  style="font-size: 0.9em;" disabled=true placeholder='Recipient key')
+      button.btn.btn-outline-secondary(type="button" onclick="/" id="recipient-btn")
         i.me-1
         | Verify Public Key Hash
 

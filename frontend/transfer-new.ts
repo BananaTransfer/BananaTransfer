@@ -1,8 +1,11 @@
 import { FileEncryption, StreamChunk } from './crypto/encryption.js';
+import { callApi } from './utils/common.js';
+import { SecurityUtils } from './crypto/security-utils.js';
 import { KeyManager } from './crypto/key-manager.js';
 
 interface TransferFormElements {
   recipientInput: HTMLInputElement;
+  recipientBtn: HTMLButtonElement;
   fileInput: HTMLInputElement;
   subjectInput: HTMLInputElement;
   sendButton: HTMLButtonElement;
@@ -13,17 +16,18 @@ interface TransferFormElements {
 class TransferNewPage {
   private formElements!: TransferFormElements;
   private selectedFile: File | null = null;
-  private recipientPublicKey: CryptoKey | null = null;
 
   constructor() {
     this.initializeElements();
     this.attachEventListeners();
-    void this.initializeMockedKeys();
   }
 
   private initializeElements(): void {
     this.formElements = {
       recipientInput: document.getElementById('recipient') as HTMLInputElement,
+      recipientBtn: document.getElementById(
+        'recipient-btn',
+      ) as HTMLButtonElement,
       fileInput: document.getElementById('fileInput') as HTMLInputElement,
       subjectInput: document.getElementById('subject') as HTMLInputElement,
       sendButton: document.querySelector(
@@ -38,34 +42,15 @@ class TransferNewPage {
     };
   }
 
-  // TODO: Those are Mock keys for testing replace by using real key
-  private async initializeMockedKeys(): Promise<void> {
-    try {
-      // Generate a mock RSA key pair for testing
-      const publicKeyData = localStorage.getItem('userPublicKey');
-
-      if (publicKeyData) {
-        // Use keys from localStorage
-        this.recipientPublicKey =
-          await KeyManager.importPublicKey(publicKeyData);
-        console.log('Using keys from localStorage for testing');
-      } else {
-        // Generate new mock RSA key pair for testing
-        const mockKeyPair = await KeyManager.generateRSAKeyPair();
-        this.recipientPublicKey = mockKeyPair.publicKey;
-        console.log(
-          'Using new generated mocked keys for testing (no localStorage keys found)',
-        );
-      }
-    } catch (error) {
-      console.error('Error initializing mocked keys:', error);
-    }
-  }
-
   private attachEventListeners(): void {
     // File upload area click handler
     this.formElements.fileUploadArea.addEventListener('click', () => {
       this.formElements.fileInput.click();
+    });
+
+    // recipient btn
+    this.formElements.recipientBtn.addEventListener('click', () => {
+      this.handleRecipientPubKeyFetch();
     });
 
     // File selection handler
@@ -99,6 +84,23 @@ class TransferNewPage {
         this.handleFileSelection({ target: { files } } as any);
       }
     });
+  }
+
+  private async handleRecipientPubKeyFetch() {
+    try {
+      this.formElements.expectedHashInput.value = '';
+
+      const keyData = await SecurityUtils.useUserPublicKey(
+        this.formElements.recipientInput.value,
+      );
+
+      const exportedPubKey = await KeyManager.exportPublicKey(keyData.key);
+
+      this.formElements.expectedHashInput.value =
+        await SecurityUtils.hash(exportedPubKey);
+    } catch {
+      alert('Could not fetch recipient public key');
+    }
   }
 
   private handleFileSelection(event: Event): void {
@@ -139,12 +141,17 @@ class TransferNewPage {
       return;
     }
 
-    if (!this.recipientPublicKey) {
-      alert('Mock public key not initialized. Please refresh the page.');
+    const recipientUsername = this.formElements.recipientInput.value.trim();
+
+    let pubKey: CryptoKey | undefined;
+
+    try {
+      pubKey = (await SecurityUtils.useUserPublicKey(recipientUsername)).key;
+    } catch {
+      alert('Could not fetch recipient public key');
       return;
     }
 
-    const recipientUsername = this.formElements.recipientInput.value.trim();
     const subject = this.formElements.subjectInput.value.trim();
 
     if (!recipientUsername || !subject) {
@@ -159,10 +166,7 @@ class TransferNewPage {
 
       // Step 1: Create the transfer
       const aesKey = await FileEncryption.generateAESKey();
-      const wrappedAesKey = await FileEncryption.wrapAESKey(
-        aesKey,
-        this.recipientPublicKey,
-      );
+      const wrappedAesKey = await FileEncryption.wrapAESKey(aesKey, pubKey);
 
       const transfer = await this.createTransfer(
         wrappedAesKey,
@@ -203,30 +207,9 @@ class TransferNewPage {
       receiver: recipientUsername,
       symmetric_key_encrypted: this.arrayBufferToBase64(wrappedAesKey),
       signature_sender: signatureSender,
-      _csrf: '',
     };
 
-    // Get CSRF token and add to payload
-    const csrfToken = (document.getElementById('_csrf') as HTMLInputElement)
-      ?.value;
-    if (csrfToken) {
-      payload._csrf = csrfToken;
-    }
-
-    const response = await fetch('/transfer/new', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Failed to create transfer: ${errorText}`);
-    }
-
-    return (await response.json()) as Promise<{ id: number }>;
+    return callApi('POST', '/transfer/new', payload);
   }
 
   private async sendChunksToServer(
@@ -240,28 +223,9 @@ class TransferNewPage {
       chunkIndex: encryptedChunks.chunkIndex,
       isLastChunk: encryptedChunks.isLastChunk,
       iv: this.arrayBufferToBase64(encryptedChunks.iv),
-      _csrf: '',
     };
 
-    // Get CSRF token and add to payload
-    const csrfToken = (document.getElementById('_csrf') as HTMLInputElement)
-      ?.value;
-    if (csrfToken) {
-      payload._csrf = csrfToken;
-    }
-
-    const response = await fetch(`/transfer/${transferId}/chunk`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Failed to upload chunk: ${errorText}`);
-    }
+    return callApi('POST', `/transfer/${transferId}/chunk`, payload);
   }
 
   private arrayBufferToBase64(buffer: ArrayBuffer | Uint8Array): string {
