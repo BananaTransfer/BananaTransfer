@@ -1,49 +1,102 @@
 extends ../layout
 
 block content
-  .row.justify-content-center.mb-3
-    .col-2
-    .col-6.text-center
-      h2.mt-3.mb-0 Transfers
-    .col-2.d-flex.align-items-center
-      a.btn.btn-success.mt-3.ms-1(href="/transfer/new" style="border-radius:12px;" title="New Transfer")
+  .row.justify-content-center.mb-3.mt-3
+    .col-0.col-md-4
+    .col-8.col-md-4.col-xl-2.text-center
+      h2.mt-1.text-start.text-md-center Transfers
+    .col-4.d-flex.align-items-center.justify-content-end
+      a.btn.btn-success.ms-1(href="/transfer/new" style="border-radius:12px;" title="New Transfer")
         i.bi.bi-plus-lg.align-middle
-      a.btn.btn-outline-secondary.mt-3.ms-1(href="/user" style="border-radius:12px;" title="User Settings")
+      a.btn.btn-outline-secondary.ms-1(href="/user" style="border-radius:12px;" title="User Settings")
         i.bi.bi-gear.align-middle
-      a.btn.btn-outline-danger.mt-3.ms-1(href="/auth/logout" style="border-radius:12px;" title="Logout")
+      a.btn.btn-outline-danger.ms-1(href="/auth/logout" style="border-radius:12px;" title="Logout")
         i.bi.bi-box-arrow-right.align-middle
     
   if error
     .row.justify-content-center.mb-3
-      .col-8
+      .col-12.col-xl-10
         .alert.alert-danger.text-center= error
 
   .row.justify-content-center
-    .col-10
-      table.table.table-striped.table-hover.mt-4
-        thead
-          tr
-            th Sender
-            th Recipient
-            th Filename
-            th Subject
-            th Date
-            th Size
-            th Status
-            th.text-center Details
-            th.text-center Actions
-        tbody
-          if transfers && transfers.length
-            each transfer in transfers
+    .col-12.col-xl-10
+
+      // Table for desktop/tablet
+      .d-none.d-md-block
+        table.table.table-striped.table-hover.mt-4
+          thead
+            tr
+              th Sender
+              th Recipient
+              th Filename
+              th Subject
+              th Date
+              th Size
+              th Status
+              th.text-center Details
+              th.text-center Actions
+          tbody
+            if transfers && transfers.length
+              each transfer in transfers
+                tr
+                  td= transfer.sender
+                  td= transfer.recipient
+                  td= transfer.filename
+                  td= transfer.subject
+                  td= transfer.date
+                  td= transfer.size
+                  td= transfer.status
+                  td
+                    span.rounded-circle.bg-light.border.d-inline-flex.align-items-center.justify-content-center.view-details(
+                      style="width: 24px; height: 24px; cursor: pointer;"
+                      data-id=transfer.id
+                      data-bs-toggle="tooltip"
+                      data-bs-placement="top"
+                      title="View details"
+                    )
+                      i.bi.bi-info-lg.text-primary
+                  td.text-center
+                    // TODO: only show the buttons depending on the state of the transfer
+                      a.btn.btn-sm.btn-success.ms(href=`/transfer/accept/${transfer.id}`) Accept
+                    if transfer.status == "UPLOADED" && transfer.receiverId === currentUser.id
+                        button.btn.btn-sm.btn-success.ms.accept-btn(type="button" data-id=transfer.id) Accept
+                        button.btn.btn-sm.btn-danger.ms-1.reject-btn(type="button" data-id=transfer.id) Reject
+                    // TODO fix once real status are implemented
+                    if transfer.status != "CREATED" && transfer.receiverId === currentUser.id
+                      button.btn.btn-sm.btn-primary.ms-1.download-btn(type="button" data-id=transfer.id) Download
+                    button.btn.btn-sm.btn-danger.ms-1.delete-btn(type="button" data-id=transfer.id) Delete
+            else
               tr
-                td= transfer.sender
-                td= transfer.recipient
-                td= transfer.filename
-                td= transfer.subject
-                td= transfer.date
-                td= transfer.size
-                td= transfer.status
-                td
+                td(colspan="8" class="text-center") No transfers found.
+      // List for mobile
+      //- List for mobile
+      .d-block.d-md-none
+        each transfer in transfers
+          .card.mb-2
+            .card-body
+              .row
+                .col-6.font-weight-bold Sender:
+                .col-6= transfer.sender
+              .row
+                .col-6.font-weight-bold Recipient:
+                .col-6= transfer.recipient
+              .row
+                .col-6.font-weight-bold Filename:
+                .col-6= transfer.filename
+              .row
+                .col-6.font-weight-bold Subject:
+                .col-6= transfer.subject
+              .row
+                .col-6.font-weight-bold Date:
+                .col-6= transfer.date
+              .row
+                .col-6.font-weight-bold Size:
+                .col-6= transfer.size
+              .row
+                .col-6.font-weight-bold Status:
+                .col-6= transfer.status
+              .row
+                .col-3.text-center.mt-2
                   span.rounded-circle.bg-light.border.d-inline-flex.align-items-center.justify-content-center.view-details(
                     style="width: 24px; height: 24px; cursor: pointer;"
                     data-id=transfer.id
@@ -52,7 +105,7 @@ block content
                     title="View details"
                   )
                     i.bi.bi-info-lg.text-primary
-                td.text-center
+                .col-9.text-center.mt-2
                   // TODO: only show the buttons depending on the state of the transfer
                     a.btn.btn-sm.btn-success.ms(href=`/transfer/accept/${transfer.id}`) Accept
                   if transfer.status == "UPLOADED" && transfer.receiverId === currentUser.id
@@ -62,9 +115,10 @@ block content
                   if transfer.status != "CREATED" && transfer.receiverId === currentUser.id
                     button.btn.btn-sm.btn-primary.ms-1.download-btn(type="button" data-id=transfer.id) Download
                   button.btn.btn-sm.btn-danger.ms-1.delete-btn(type="button" data-id=transfer.id) Delete
-          else
-            tr
-              td(colspan="8" class="text-center") No transfers found.
+
+
+                  
+
 
   script(type="module").
     import { setupListPage } from '/js/transfer-list.js';

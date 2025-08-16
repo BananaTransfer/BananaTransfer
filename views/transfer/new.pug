@@ -5,20 +5,20 @@ block content
     .col-1.d-flex.align-items-center
       a.btn.btn-outline-secondary(href="/transfer" style="border-radius:12px;")
         i.bi.bi-arrow-left.align-middle
-    .col-6.text-center
-      h2 Send files
+    .col-10.col-md-8.col-lg-6.text-center
+      h2.mt-1 Send files
     .col-1
   
   if error
     .row.justify-content-center.mb-3
-      .col-8
+      .col-12.col-md-10.col-lg-8
         .alert.alert-danger.text-center= error
 
 
   
   // Recipient section
   .row.justify-content-center.mb-3
-    .col-8
+    .col-12.col-md-10.col-lg-8
       h4.font-weight-bold Recipient
       hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
       .input-group.mb-2
@@ -33,7 +33,7 @@ block content
 
   // File upload section
   .row.justify-content-center.mb-3
-    .col-8
+    .col-12.col-md-10.col-lg-8
       h4.font-weight-bold Files
       hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
       .file-upload-area.p-5.text-center.rounded(style="background-color: #f9d71c; border: 2px dashed #333; cursor: pointer;" onclick="/")
@@ -43,7 +43,7 @@ block content
       
   // Subject section
   .row.justify-content-center.mb-3
-    .col-8
+    .col-12.col-md-10.col-lg-8
       input(type="hidden" id="_csrf" value=csrfToken)
       h4.font-weight-bold Subject
       hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
@@ -51,7 +51,7 @@ block content
 
     // Send button
   .row.justify-content-center.mb-3
-    .col-8
+    .col-12.col-md-10.col-lg-8
       h4.font-weight-bold Send Transfer
       hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
       button.btn.btn-dark.mb-3(type="submit" style="border-radius:15px; padding:10px 40px;") Send file(s)
