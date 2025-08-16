@@ -198,8 +198,31 @@ export class TransferService {
     return `Transfer with ID ${id} accepted`;
   }
 
-  refuseTransfer(id: number): string {
-    // TODO: implement logic to refuse a transfer by ID
+  async refuseTransfer(id: number): Promise<string> {
+    const transfer = await this.fileTransferRepository.findOne({
+      where: { id },
+      relations: ['receiver'],
+    });
+    if (!transfer) {
+      throw new NotFoundException(`Transfer with ID ${id} not found`);
+    }
+
+    if (transfer.status != TransferStatus.UPLOADED) {
+      throw new BadRequestException(
+        'Transfer is not pending acceptance or refusal',
+      );
+    }
+
+    // Set the status to REFUSED
+    transfer.status = TransferStatus.REFUSED;
+    await this.fileTransferRepository.save(transfer);
+
+    await this.createTransferLog(
+      transfer,
+      LogInfo.TRANSFER_REFUSED,
+      transfer.receiver.id,
+    );
+
     return `Transfer with ID ${id} refused`;
   }
 

@@ -4,16 +4,27 @@ function viewTransferDetails(id: string) {
 }
 
 function acceptTransfer(id: string) {
-  // TODO:
-  // fetch(`/transfer/accept/${id}`, { method: 'POST' }).then(() =>
-  // location.reload(),
-  // );
-  console.log(`Accepted transfer with ID: ${id}`);
+  fetch(`/transfer/accept/${id}`, { method: 'POST' })
+    .then(() => {
+      console.log(`Accepted transfer with ID: ${id}`);
+      location.reload();
+    })
+    .catch((err) => {
+      console.error(`Error accepting transfer with ID: ${id}`, err);
+      alert('Failed to accept transfer.');
+    });
 }
 
 function rejectTransfer(id: string) {
-  // TODO:
-  console.log(`Rejected transfer with ID: ${id}`);
+  fetch(`/transfer/refuse/${id}`, { method: 'POST' })
+    .then(() => {
+      console.log(`Rejected transfer with ID: ${id}`);
+      location.reload()
+    })
+    .catch((err) => {
+      console.error(`Error refusing transfer with ID: ${id}`, err);
+      alert('Failed to refuse transfer.');
+    });
 }
 
 function downloadTransfer(id: string) {
