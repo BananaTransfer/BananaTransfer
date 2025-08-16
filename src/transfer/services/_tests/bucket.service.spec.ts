@@ -10,6 +10,7 @@ import {
 import { join } from 'path';
 import { tmpdir } from 'os';
 import validator from 'validator';
+import { v4 as uuidv4 } from 'uuid';
 
 describe('BucketService (with Testcontainers MinIO)', () => {
   jest.setTimeout(60000);
@@ -66,6 +67,42 @@ describe('BucketService (with Testcontainers MinIO)', () => {
     await rm(downloadedPath);
 
     expect(data).toBe('banana!');
+  });
+
+  it('put an object and be able to download it', async () => {
+    // Write a temp file
+    const payload = Buffer.from('hello world');
+    const key = 'key_123';
+
+    await service.putObject(key, payload);
+
+    // Get file back from S3
+    const downloadedPath = await service.getFile(key);
+    const data = await readFile(downloadedPath, 'utf-8');
+    await rm(downloadedPath);
+
+    expect(data).toBe('hello world');
+  });
+
+  it('should list files with prefix', async () => {
+    // create 1_005 files (bucket limit 1k per list request)
+    const expectedList: string[] = [];
+    const baseKey = uuidv4().toString();
+    for (let i = 0; i < 1_005; ++i) {
+      const key = `${baseKey}-${i}`;
+
+      await service.putObject(key, Buffer.from(key));
+      expectedList.push(key);
+    }
+
+    // list files
+    const list = await service.listFiles(baseKey);
+
+    expectedList.sort();
+    list.sort();
+
+    expect(list.length).toBe(expectedList.length);
+    expect(list).toEqual(expectedList);
   });
 
   it('should delete a file', async () => {
