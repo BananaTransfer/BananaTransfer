@@ -1,4 +1,6 @@
 export declare class GetPubKeyDto {
   publicKey: string;
-  isTrustedRecipient: boolean;
+  publicKeyHash: string;
+  isKnownRecipient: boolean;
+  isTrustedRecipientKey: boolean;
 }

@@ -126,8 +126,12 @@ export class UserController {
 
   // endpoint to get public key of local or remote user
   @Get('/publickey/:recipient')
-  getPublicKey(@Param('recipient') username: string): Promise<GetPubKeyDto> {
-    return this.recipientService.getPublicKey(username);
+  async getPublicKey(
+    @Req() req: AuthenticatedRequest,
+    @Param('recipient') recipient: string,
+  ): Promise<GetPubKeyDto> {
+    const currentUser = await this.userService.getCurrentUser(req.user.id);
+    return this.recipientService.getPublicKey(currentUser, recipient);
   }
 
   // endpoint to change password of user
@@ -185,14 +189,4 @@ export class UserController {
       throw new InternalServerErrorException('Failed to set keys');
     }
   }
-
-  // endpoint to trust and save the public key of another user as known for this user
-  /*@Post('trust/publickey')
-  trustPublicKey(
-    @Body('username') username: string,
-    @Body('recipient') recipient: string,
-    @Body('publickey') publicKey: string,
-  ): void {
-    this.userService.trustPublicKey(username, recipient, publicKey);
-  }*/
 }
