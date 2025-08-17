@@ -130,15 +130,21 @@ export class TransferController {
 
   // endpoint to accept a transfer by ID
   @Post('accept/:id')
-  acceptTransfer(@Param('id') id: number, @Res() res: Response): void {
-    this.transferService.acceptTransfer(id);
+  async acceptTransfer(
+    @Param('id') id: number,
+    @Res() res: Response,
+  ): Promise<void> {
+    await this.transferService.acceptTransfer(id);
     res.redirect('/transfer/list');
   }
 
   // endpoint to refuse a transfer by ID
   @Post('refuse/:id')
-  refuseTransfer(@Param('id') id: number, @Res() res: Response): void {
-    this.transferService.refuseTransfer(id);
+  async refuseTransfer(
+    @Param('id') id: number,
+    @Res() res: Response,
+  ): Promise<void> {
+    await this.transferService.refuseTransfer(id);
     res.redirect('/transfer/list');
   }
 
