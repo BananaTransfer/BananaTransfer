@@ -19,7 +19,7 @@ function rejectTransfer(id: string) {
   fetch(`/transfer/refuse/${id}`, { method: 'POST' })
     .then(() => {
       console.log(`Rejected transfer with ID: ${id}`);
-      location.reload()
+      location.reload();
     })
     .catch((err) => {
       console.error(`Error refusing transfer with ID: ${id}`, err);
