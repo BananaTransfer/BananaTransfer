@@ -14,12 +14,13 @@ import {
 import { Response } from 'express';
 
 import { UserService } from '@user/services/user.service';
+import { HashKeyService } from '@user/services/hashKey.service';
+import { RecipientService } from '@user/services/recipient.service';
 import { JwtAuthGuard } from '@auth/jwt/guards/jwt-auth.guard';
 import { AuthenticatedRequest } from '@auth/types/authenticated-request.interface';
 import { ChangePasswordDto } from '@user/dto/changePassword.dto';
 import { SetKeysDto } from '@user/dto/setKeys.dto';
 import { GetPubKeyDto } from '@user/dto/getPubKey.dto';
-import { RecipientService } from '@user/services/recipient.service';
 import { PrivateKeyDto } from '@user/dto/privateKey.dto';
 
 // all routes in this controller are protected by the JwtAuthGuard and require authentication
@@ -30,6 +31,7 @@ export class UserController {
 
   constructor(
     private readonly userService: UserService,
+    private readonly hashKeyService: HashKeyService,
     private readonly recipientService: RecipientService,
   ) {}
 
@@ -43,8 +45,13 @@ export class UserController {
       changePasswordSuccess?: boolean;
     } = {},
   ): Promise<void> {
-    const user = await this.userService.findByUserId(req.user.id);
-    res.render('user/settings', { user, ...options });
+    const user = await this.userService.getCurrentUser(req.user.id);
+    const publicKeyHash = user.public_key
+      ? this.hashKeyService.hashKey({
+          publicKey: user.public_key,
+        })
+      : null;
+    res.render('user/settings', { user, publicKeyHash, ...options });
   }
 
   private renderChangePasswordPage(
@@ -64,7 +71,7 @@ export class UserController {
     res: Response,
     options: { error?: string } = {},
   ): Promise<void> {
-    const user = await this.userService.findByUserId(req.user.id);
+    const user = await this.userService.getCurrentUser(req.user.id);
     res.render('user/set-keys', {
       user,
       csrfToken: req.csrfToken(),

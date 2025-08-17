@@ -18,7 +18,7 @@ block content
     input(type="hidden" id="_csrf" value=csrfToken)
     .col-12.col-md-10.col-lg-8.mb-3
       h4.font-weight-bold 1. Generate new Private and Public Key
-      hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
+      hr.mb-3(style="border-top:3px solid #000; width:100%; margin:auto")
       button.btn.btn-secondary(type="button" id="generateKeyPairBtn")
         i.bi.bi-key.me-1
         | Generate Key-Pair
@@ -40,7 +40,7 @@ block content
 
     .col-12.col-md-10.col-lg-8.mb-3
       h4.font-weight-bold 2. Generate new Master-Password
-      hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
+      hr.mb-3(style="border-top:3px solid #000; width:100%; margin:auto")
       button.btn.btn-secondary(type="button" id="generateMasterPasswordBtn")
         i.bi.bi-shield-lock.me-1
         | Generate Master-Password
@@ -57,7 +57,7 @@ block content
 
     .col-12.col-md-10.col-lg-8.mb-3
       h4.font-weight-bold 3. Encrypt and Save new Keys
-      hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
+      hr.mb-3(style="border-top:3px solid #000; width:100%; margin:auto")
       if user.public_key
         div.text-danger.mt-1.mb-1
           | Warning: This will override your current keys stored on the server.

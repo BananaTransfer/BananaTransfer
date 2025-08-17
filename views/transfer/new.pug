@@ -20,7 +20,7 @@ block content
   .row.justify-content-center.mb-3
     .col-12.col-md-10.col-lg-8
       h4.font-weight-bold Recipient
-      hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
+      hr.mb-3(style="border-top:3px solid #000; width:100%; margin:auto")
       .input-group.mb-2
         input.form-control(type="text" name="recipient" id="recipient" placeholder="Recipient's name" required)
         span.input-group-text @#{domain}
@@ -35,7 +35,7 @@ block content
   .row.justify-content-center.mb-3
     .col-12.col-md-10.col-lg-8
       h4.font-weight-bold Files
-      hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
+      hr.mb-3(style="border-top:3px solid #000; width:100%; margin:auto")
       .file-upload-area.p-5.text-center.rounded(style="background-color: #f9d71c; border: 2px dashed #333; cursor: pointer;" onclick="/")
         i.bi.bi-cloud-upload.display-4.mb-3
         h5 Add file (click to browse or drag and drop)
@@ -46,14 +46,14 @@ block content
     .col-12.col-md-10.col-lg-8
       input(type="hidden" id="_csrf" value=csrfToken)
       h4.font-weight-bold Subject
-      hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
+      hr.mb-3(style="border-top:3px solid #000; width:100%; margin:auto")
       input.form-control(type="text" name="subject" id="subject" placeholder="Transfer Subject (Filename by default)")
 
     // Send button
   .row.justify-content-center.mb-3
     .col-12.col-md-10.col-lg-8
       h4.font-weight-bold Send Transfer
-      hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
+      hr.mb-3(style="border-top:3px solid #000; width:100%; margin:auto")
       button.btn.btn-dark.mb-3(type="submit" style="border-radius:15px; padding:10px 40px;") Send file(s)
       div.small.text-muted
         | Files will be encrypted and securely transferred to the recipient.

@@ -27,7 +27,7 @@ block content
   .row.justify-content-center.mb-3
     .col-12.col-md-10.col-lg-8.mb-3
       h4.font-weight-bold User profile information
-      hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
+      hr.mb-3(style="border-top:3px solid #000; width:100%; margin:auto")
       div.text.mt-2
        | username: #{user.username}
        br
@@ -39,38 +39,35 @@ block content
 
     // .col-12.col-md-10.col-lg-8.mb-3
       h4.font-weight-bold Server information
-      hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
+      hr.mb-3(style="border-top:3px solid #000; width:100%; margin:auto")
       p.mt-3 [message configured by the server admin]
 
     .col-12.col-md-10.col-lg-8.mb-3
       h4.font-weight-bold Password management
-      hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
+      hr.mb-3(style="border-top:3px solid #000; width:100%; margin:auto")
       div.text-muted.small.mb-1
         | password set at: #{user.password_created_at}
       a.btn.btn-dark.mb-3(href="/user/change-password" style="border-radius:15px; padding:10px 40px;") Change password
 
     .col-12.col-md-10.col-lg-8.mb-3
       h4.font-weight-bold Key management
-      hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
-      label.form-label(for="publicKeyField") Public Key
-      div.text-muted.small.mb-1
-        | key created at: #{user.key_created_at}
-      .input-group.mb-2.mx-auto(style="max-width:100%")
-        textarea.form-control.form-control-sm(
-          id="publicKeyField",
-          readonly,
-          rows="2",
-          style="word-break:break-all; overflow-wrap:anywhere;"
-          disabled
-        ) #{user.public_key}
-        button.btn.btn-outline-secondary(type="button", id="copyPublicKeyBtn")
-          i.bi.bi-clipboard
-      div.text-muted.mb-2
-        | This is your public key. It will be automatically shared with others so they can send you files.
-      a.btn.btn-dark.mt-2(href="/user/set-keys" style="border-radius:15px; padding:10px 30px;") Change Key-Pair and Master-Password
+      hr.mb-3(style="border-top:3px solid #000; width:100%; margin:auto")
       if user.public_key
+        div.text-muted.small.mb-1
+          | keys created at: #{user.key_created_at}
+        label.form-label(for="publicKeyHashField") Public Key Hash
+        .input-group.mb-2.mx-auto(style="max-width:100%")
+          input.form-control.form-control-sm(type="text", id="publicKeyHashField", value=publicKeyHash, readonly, disabled)
+          button.btn.btn-outline-secondary(type="button", id="copyPublicKeyHashBtn")
+            i.bi.bi-clipboard
+        div.text-muted.mb-2
+          | This is your public key hash fingerprint. Your public key will be automatically shared with others so they can send you files.
+        a.btn.btn-dark(href="/user/set-keys" style="border-radius:15px; padding:10px 30px;") Change Key-Pair and Master-Password
         p.mt-2.text-danger.small Warning: previously received files will become irretrievable upon changing your Key-Pair
+      else 
+        a.btn.btn-dark(href="/user/set-keys" style="border-radius:15px; padding:10px 30px;") Set Key-Pair and Master-Password
+
 
   script(type="module").
     import { copyToClipboard } from '/js/utils/common.js';
-    document.getElementById('copyPublicKeyBtn').addEventListener('click', () => copyToClipboard('publicKeyField', 'copyPublicKeyBtn'));
+    document.getElementById('copyPublicKeyHashBtn').addEventListener('click', () => copyToClipboard('publicKeyHashField', 'copyPublicKeyHashBtn'));
