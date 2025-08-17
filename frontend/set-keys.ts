@@ -9,7 +9,7 @@ function updateEncryptButtonState() {
     document.getElementById('masterPasswordField') as HTMLInputElement
   ).value;
   const publicKey = (
-    document.getElementById('publicKeyField') as HTMLTextAreaElement
+    document.getElementById('publicKeyHashField') as HTMLTextAreaElement
   ).value;
   const btn = document.getElementById('encryptAndSaveBtn') as HTMLButtonElement;
   btn.disabled = !(masterPassword && publicKey);
