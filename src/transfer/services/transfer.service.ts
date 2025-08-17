@@ -193,8 +193,30 @@ export class TransferService {
     return await this.transferLogRepository.save(log);
   }
 
-  acceptTransfer(id: number): string {
-    // TODO: implement logic to accept a transfer by ID
+  async acceptTransfer(id: number): Promise<string> {
+    const transfer = await this.fileTransferRepository.findOne({
+      where: { id },
+      relations: ['receiver'],
+    });
+    if (!transfer) {
+      throw new NotFoundException(`Transfer with ID ${id} not found`);
+    }
+
+    if (transfer.status != TransferStatus.UPLOADED) {
+      throw new BadRequestException(
+        'Transfer is not pending acceptance or refusal',
+      );
+    }
+
+    transfer.status = TransferStatus.RETRIEVED;
+    await this.fileTransferRepository.save(transfer);
+
+    await this.createTransferLog(
+      transfer,
+      LogInfo.TRANSFER_RETRIEVED,
+      transfer.receiver.id,
+    );
+
     return `Transfer with ID ${id} accepted`;
   }
 
@@ -213,7 +235,6 @@ export class TransferService {
       );
     }
 
-    // Set the status to REFUSED
     transfer.status = TransferStatus.REFUSED;
     await this.fileTransferRepository.save(transfer);
 

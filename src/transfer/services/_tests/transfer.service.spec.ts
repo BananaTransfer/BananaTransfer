@@ -54,6 +54,56 @@ describe('TransferService', () => {
     );
   });
 
+  it('should accept a valid transfer', async () => {
+    const transfer = {
+      id: 1,
+      status: TransferStatus.UPLOADED,
+      receiver: { id: 2 },
+    };
+    (fileTransferRepository.findOne as jest.Mock).mockResolvedValue(transfer);
+    (fileTransferRepository.save as jest.Mock).mockResolvedValue({
+      ...transfer,
+      status: TransferStatus.RETRIEVED,
+    });
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    (service as any).createTransferLog = jest.fn().mockResolvedValue({});
+
+    const result = await service.acceptTransfer(1);
+    expect(result).toBe('Transfer with ID 1 accepted');
+    expect(transfer.status).toBe(TransferStatus.RETRIEVED);
+  });
+
+  it('should throw if transfer not found (accept)', async () => {
+    (fileTransferRepository.findOne as jest.Mock).mockResolvedValue(null);
+    await expect(service.acceptTransfer(999)).rejects.toThrow(
+      'Transfer with ID 999 not found',
+    );
+  });
+
+  it('should throw if already accepted (accept)', async () => {
+    const transfer = {
+      id: 1,
+      status: TransferStatus.RETRIEVED,
+      receiver: { id: 2 },
+    };
+    (fileTransferRepository.findOne as jest.Mock).mockResolvedValue(transfer);
+    await expect(service.acceptTransfer(1)).rejects.toThrow(
+      'Transfer is not pending acceptance or refusal',
+    );
+  });
+
+  it('should throw if already refused (accept)', async () => {
+    const transfer = {
+      id: 1,
+      status: TransferStatus.REFUSED,
+      receiver: { id: 2 },
+    };
+    (fileTransferRepository.findOne as jest.Mock).mockResolvedValue(transfer);
+    await expect(service.acceptTransfer(1)).rejects.toThrow(
+      'Transfer is not pending acceptance or refusal',
+    );
+  });
+
   it('should refuse a valid transfer', async () => {
     const transfer = {
       id: 1,
@@ -65,8 +115,7 @@ describe('TransferService', () => {
       ...transfer,
       status: TransferStatus.REFUSED,
     });
-    (service as any).createTransferLog = jest.fn().mockResolvedValue({});
-
+    jest.spyOn(service as any, 'createTransferLog').mockResolvedValue({});
     const result = await service.refuseTransfer(1);
     expect(result).toBe('Transfer with ID 1 refused');
     expect(transfer.status).toBe(TransferStatus.REFUSED);
