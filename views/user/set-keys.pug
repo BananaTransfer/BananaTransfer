@@ -24,19 +24,13 @@ block content
         | Generate Key-Pair
       div.text-muted.mt-2
         | The Private and Public Key will be used to encrypt the files shared with you.        
-      label.mt-3.form-label(for="publicKeyField") Public Key
+      label.mt-3.form-label(for="publicKeyField") Public Key Hash
       .input-group.mb-2.mx-auto(style="max-width:100%")
-        textarea.form-control.form-control-sm(
-          id="publicKeyField",
-          readonly,
-          rows="2",
-          style="word-break:break-all; overflow-wrap:anywhere;"
-          disabled
-        )
-        button.btn.btn-outline-secondary(type="button", id="copyPublicKeyBtn")
+        input.form-control.form-control-sm(type="text", id="publicKeyHashField", value=publicKeyHash, readonly, disabled)
+        button.btn.btn-outline-secondary(type="button", id="copyPublicKeyHashBtn")
           i.bi.bi-clipboard
       div.text-muted.mb-2
-        | This is your public key. It will be automatically shared with others so they can send you files.
+        | This is your public key hash fingerprint. Your public key will be automatically shared with others so they can send you files.
 
     .col-12.col-md-10.col-lg-8.mb-3
       h4.font-weight-bold 2. Generate new Master-Password
@@ -78,7 +72,7 @@ block content
     document.getElementById('generateKeyPairBtn').addEventListener('click', generateKeyPair);
     document.getElementById('generateMasterPasswordBtn').addEventListener('click', generateMasterPassword);
     document.getElementById('encryptAndSaveBtn').addEventListener('click', encryptAndSaveKey);
-    document.getElementById('copyPublicKeyBtn').addEventListener('click', () => copyToClipboard('publicKeyField', 'copyPublicKeyBtn'));
+    document.getElementById('copyPublicKeyHashBtn').addEventListener('click', () => copyToClipboard('publicKeyHashField', 'copyPublicKeyHashBtn'));
     document.getElementById('copyMasterPasswordBtn').addEventListener('click', () => copyToClipboard('masterPasswordField', 'copyMasterPasswordBtn'));
 
 

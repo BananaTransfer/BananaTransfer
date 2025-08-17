@@ -20,8 +20,9 @@ export async function generateKeyPair() {
   const publicKeyBase64 = await KeyManager.exportPublicKey(
     generatedKeyPair.publicKey,
   );
-  (document.getElementById('publicKeyField') as HTMLInputElement).value =
-    publicKeyBase64;
+  const publicKeyHash = await SecurityUtils.hash(publicKeyBase64);
+  (document.getElementById('publicKeyHashField') as HTMLInputElement).value =
+    publicKeyHash;
   updateEncryptButtonState();
 }
 
