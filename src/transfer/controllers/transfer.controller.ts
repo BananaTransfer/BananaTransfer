@@ -14,6 +14,7 @@ import { ConfigService } from '@nestjs/config';
 
 import { TransferService } from '@transfer/services/transfer.service';
 import { UserService } from '@user/services/user.service';
+import { RecipientService } from '@user/services/recipient.service';
 import { JwtAuthGuard } from '@auth/jwt/guards/jwt-auth.guard';
 import { AuthenticatedRequest } from '@auth/types/authenticated-request.interface';
 import CreateTransferDto from '@transfer/dto/create-transfer.dto';
@@ -29,16 +30,14 @@ export class TransferController {
     private readonly configService: ConfigService,
     private readonly transferService: TransferService,
     private readonly userService: UserService,
+    private readonly recipientService: RecipientService,
   ) {}
 
   // endpoint to get transfers list page
   @Get('')
   @Render('transfer/list')
   async renderTransfersList(@Req() req: AuthenticatedRequest) {
-    const userId = req.user.id;
-
-    const transfers = await this.transferService.getTransferList(userId);
-
+    const transfers = await this.transferService.getTransferList(req.user.id);
     return {
       transfers: transfers,
       currentUser: req.user,
@@ -47,14 +46,18 @@ export class TransferController {
 
   // endpoint to get new transfer page
   @Get('new')
-  renderNewTransfer(
+  async renderNewTransfer(
     @Req() req: AuthenticatedRequest,
     @Res() res: Response,
-  ): void {
+  ): Promise<void> {
+    const currentUser = await this.userService.getCurrentUser(req.user.id);
+    const knownRecipients =
+      await this.recipientService.getKnownRecipients(currentUser);
     res.render('transfer/new', {
       user: req.user,
       csrfToken: req.csrfToken(),
       domain: this.envDomain,
+      knownRecipients,
     });
   }
 
@@ -79,13 +82,13 @@ export class TransferController {
 
   // endpoint to add a new transfer
   @Post('/new')
-  async newTransfer(
+  newTransfer(
     @Body() transferData: CreateTransferDto,
     @Req() req: AuthenticatedRequest,
     @Res() res: Response,
-  ): Promise<void> {
+  ): void {
     const userId = req.user.id;
-    res.json(await this.transferService.newTransfer(transferData, userId));
+    res.json(this.transferService.newTransfer(transferData, userId));
   }
 
   @Post('/:id/chunk')
