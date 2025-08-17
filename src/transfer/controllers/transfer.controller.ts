@@ -61,7 +61,7 @@ export class TransferController {
   // endpoint to fetch the data of a transfer by ID
   @Get('/:id')
   async getTransferInfo(
-    @Param('id') id: number,
+    @Param('id') id: string,
     @Req() req: AuthenticatedRequest,
     @Res() res: Response,
   ): Promise<void> {
@@ -90,7 +90,7 @@ export class TransferController {
 
   @Post('/:id/chunk')
   async uploadChunk(
-    @Param('id') transferId: number,
+    @Param('id') transferId: string,
     @Body() chunkData: ChunkDto,
     @Req() req: AuthenticatedRequest,
     @Res() res: Response,
@@ -102,7 +102,7 @@ export class TransferController {
 
   @Get('/:transferId/chunk/:chunkId')
   getChunk(
-    @Param('transferId') transferId: number,
+    @Param('transferId') transferId: string,
     @Param('chunkId') chunkId: number,
     @Req() req: AuthenticatedRequest,
   ): Promise<Omit<ChunkDto, 'isLastChunk'>> {
@@ -113,7 +113,7 @@ export class TransferController {
   @Get('download/:id')
   @Render('transfer/download')
   async renderDownloadPage(
-    @Param('id') id: number,
+    @Param('id') id: string,
     @Req() req: AuthenticatedRequest,
   ) {
     try {
@@ -130,21 +130,21 @@ export class TransferController {
 
   // endpoint to accept a transfer by ID
   @Post('accept/:id')
-  acceptTransfer(@Param('id') id: number, @Res() res: Response): void {
+  acceptTransfer(@Param('id') id: string, @Res() res: Response): void {
     this.transferService.acceptTransfer(id);
     res.redirect('/transfer/list');
   }
 
   // endpoint to refuse a transfer by ID
   @Post('refuse/:id')
-  refuseTransfer(@Param('id') id: number, @Res() res: Response): void {
+  refuseTransfer(@Param('id') id: string, @Res() res: Response): void {
     this.transferService.refuseTransfer(id);
     res.redirect('/transfer/list');
   }
 
   // endpoint to delete a transfer by ID
   @Post('delete/:id')
-  deleteTransfer(@Param('id') id: number, @Res() res: Response): void {
+  deleteTransfer(@Param('id') id: string, @Res() res: Response): void {
     this.transferService.deleteTransfer(id);
     res.redirect('/transfer/list');
   }

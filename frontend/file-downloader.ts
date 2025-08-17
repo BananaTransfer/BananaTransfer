@@ -15,10 +15,10 @@ export class FileDownloader {
     this.userPrivateKey = userPrivateKey;
   }
 
-  async downloadAndDecrypt(transferId: number): Promise<Uint8Array> {
+  async downloadAndDecrypt(transferId: string): Promise<Uint8Array> {
     try {
       const transfer: {
-        id: number;
+        id: string;
         symmetric_key_encrypted: string;
         chunks: number[];
       } = await callApi('GET', `/transfer/${transferId}`);
@@ -74,7 +74,7 @@ export class FileDownloader {
     }
   }
 
-  async downloadFile(transferId: number, filename: string): Promise<void> {
+  async downloadFile(transferId: string, filename: string): Promise<void> {
     try {
       const decryptedData = await this.downloadAndDecrypt(transferId);
 

@@ -15,7 +15,6 @@ import { BucketService } from '@transfer/services/bucket.service';
 import TransferDto from '@transfer/dto/transfer.dto';
 import CreateTransferDto from '@transfer/dto/create-transfer.dto';
 import { UserService } from '@user/services/user.service';
-import { v4 as uuidv4 } from 'uuid';
 import ChunkDto from '@transfer/dto/chunk.dto';
 import * as fs from 'node:fs/promises';
 import { RecipientService } from '@user/services/recipient.service';
@@ -50,7 +49,7 @@ export class TransferService {
     );
   }
 
-  private async getTransfer(transferId: number, userId: number) {
+  private async getTransfer(transferId: string, userId: number) {
     const transfer = await this.fileTransferRepository.findOne({
       where: [
         { id: transferId, sender: { id: userId } },
@@ -66,7 +65,7 @@ export class TransferService {
   }
 
   async getTransferDetails(
-    transferId: number,
+    transferId: string,
     userId: number,
   ): Promise<[FileTransfer, TransferLog[]]> {
     const transfer = await this.getTransfer(transferId, userId);
@@ -78,7 +77,7 @@ export class TransferService {
   }
 
   private async toDTO(transfer: FileTransfer): Promise<TransferDto> {
-    const keys = await this.bucketService.listFiles(transfer.s3_path);
+    const keys = await this.bucketService.listFiles(transfer.id);
 
     return {
       id: transfer.id,
@@ -94,7 +93,7 @@ export class TransferService {
     };
   }
 
-  async getTransferInfo(id: number, userId: number): Promise<TransferDto> {
+  async getTransferInfo(id: string, userId: number): Promise<TransferDto> {
     return this.toDTO(await this.getTransfer(id, userId));
   }
 
@@ -112,7 +111,6 @@ export class TransferService {
       status: TransferStatus.CREATED,
       filename: transferData.filename,
       subject: transferData.subject,
-      s3_path: uuidv4().toString(),
       sender: sender,
       receiver: receiver,
     });
@@ -126,7 +124,7 @@ export class TransferService {
   }
 
   async uploadChunk(
-    transferId: number,
+    transferId: string,
     chunkData: ChunkDto,
     userId: number,
   ): Promise<void> {
@@ -144,7 +142,7 @@ export class TransferService {
     };
 
     await this.bucketService.putObject(
-      transfer.s3_path + '/' + chunkData.chunkIndex,
+      transfer.id + '/' + chunkData.chunkIndex,
       Buffer.from(JSON.stringify(bucketData)),
     );
 
@@ -156,15 +154,13 @@ export class TransferService {
   }
 
   async getChunk(
-    transferId: number,
+    transferId: string,
     chunkId: number,
     userId: number,
   ): Promise<Omit<ChunkDto, 'isLastChunk'>> {
     const transfer = await this.getTransfer(transferId, userId);
 
-    const path = await this.bucketService.getFile(
-      transfer.s3_path + '/' + chunkId,
-    );
+    const path = await this.bucketService.getFile(transfer.id + '/' + chunkId);
 
     try {
       const data = await fs.readFile(path, 'utf8');
@@ -193,17 +189,17 @@ export class TransferService {
     return await this.transferLogRepository.save(log);
   }
 
-  acceptTransfer(id: number): string {
+  acceptTransfer(id: string): string {
     // TODO: implement logic to accept a transfer by ID
     return `Transfer with ID ${id} accepted`;
   }
 
-  refuseTransfer(id: number): string {
+  refuseTransfer(id: string): string {
     // TODO: implement logic to refuse a transfer by ID
     return `Transfer with ID ${id} refused`;
   }
 
-  deleteTransfer(id: number): string {
+  deleteTransfer(id: string): string {
     // TODO: implement logic to delete a transfer by ID
     return `Transfer with ID ${id} deleted`;
   }
