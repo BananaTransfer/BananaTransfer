@@ -83,13 +83,13 @@ export class TransferController {
 
   // endpoint to add a new transfer
   @Post('/new')
-  newTransfer(
+  async newTransfer(
     @Body() transferData: CreateTransferDto,
     @Req() req: AuthenticatedRequest,
     @Res() res: Response,
-  ): void {
+  ): Promise<void> {
     const userId = req.user.id;
-    res.json(this.transferService.newTransfer(transferData, userId));
+    res.json(await this.transferService.newTransfer(transferData, userId));
   }
 
   @Post('/:id/chunk')

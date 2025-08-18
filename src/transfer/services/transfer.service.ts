@@ -82,7 +82,6 @@ export class TransferService {
     return {
       id: transfer.id,
       symmetric_key_encrypted: transfer.symmetric_key_encrypted,
-      signature_sender: transfer.signature_sender,
       status: transfer.status,
       created_at: transfer.created_at,
       filename: transfer.filename,
