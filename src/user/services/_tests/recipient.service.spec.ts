@@ -115,10 +115,7 @@ describe('RecipientService', () => {
           public_key_hash: 'hash2',
         } as TrustedRecipient,
       ]);
-      const result = await service.getKnownRecipients({
-        id: 1,
-        username: 'alice',
-      } as LocalUser);
+      const result = await service.getKnownRecipients(1);
       expect(result).toBeInstanceOf(Array);
     });
   });
