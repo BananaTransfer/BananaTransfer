@@ -89,6 +89,10 @@ export class TransferService {
       chunks: keys.map((key) => Number(key.split('/')[1])),
       senderId: transfer.sender.id,
       receiverId: transfer.receiver.id,
+      senderAddress: this.recipientService.getRecipientAddress(transfer.sender),
+      receiverAddress: this.recipientService.getRecipientAddress(
+        transfer.receiver,
+      ),
     };
   }
 

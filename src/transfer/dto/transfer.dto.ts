@@ -10,4 +10,6 @@ export default class TransferDto {
   chunks: number[];
   senderId: number;
   receiverId: number;
+  senderAddress: string;
+  receiverAddress: string;
 }

@@ -39,8 +39,8 @@ block content
             if transfers && transfers.length
               each transfer in transfers
                 tr
-                  td= transfer.sender
-                  td= transfer.recipient
+                  td= transfer.senderAddress
+                  td= transfer.receiverAddress
                   td= transfer.filename
                   td= transfer.subject
                   td= transfer.date

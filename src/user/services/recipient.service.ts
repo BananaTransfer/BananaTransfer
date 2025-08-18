@@ -147,16 +147,17 @@ export class RecipientService {
       where: { localUser: { id: userId } },
       relations: ['user', 'localUser'],
     });
-    let knownRecipientAddresses = trustedRecipients.map((recipient) => {
-      const user = recipient.user;
-      // If user has a 'domain' property, it's a RemoteUser; otherwise, it's LocalUser
-      const domain =
-        'domain' in user && typeof user.domain === 'string'
-          ? user.domain
-          : this.envDomain;
-      return `${user.username}@${domain}`;
-    });
+    let knownRecipientAddresses = trustedRecipients.map((recipient) =>
+      this.getRecipientAddress(recipient.user),
+    );
     knownRecipientAddresses = [...new Set(knownRecipientAddresses.sort())];
     return knownRecipientAddresses;
+  }
+
+  public getRecipientAddress(recipient: User): string {
+    if ('domain' in recipient && typeof recipient.domain === 'string') {
+      return `${recipient.username}@${recipient.domain}`;
+    }
+    return `${recipient.username}@${this.envDomain}`;
   }
 }
