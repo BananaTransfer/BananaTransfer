@@ -49,7 +49,7 @@ export class TransferService {
     );
   }
 
-  private async getTransfer(transferId: string, userId: number) {
+  private async getTransferOfUser(transferId: string, userId: number) {
     const transfer = await this.fileTransferRepository.findOne({
       where: [
         { id: transferId, sender: { id: userId } },
@@ -64,11 +64,27 @@ export class TransferService {
     return transfer;
   }
 
+  /*async getTransferOfSenderDomain(
+    transferId: string,
+    domain: string,
+  ): Promise<FileTransfer> {
+    const transfer = await this.fileTransferRepository.findOne({
+      where: { id: transferId, sender: { domain: domain } },
+      relations: ['sender', 'receiver'],
+    });
+
+    if (!transfer) {
+      throw new NotFoundException(`Transfer with ID ${transferId} not found`);
+    }
+    return transfer;
+  }*/
+
+  // TODO: do we still need this? don't we fetch now only the logs? can we rename the method then getTransferLogs?
   async getTransferDetails(
     transferId: string,
     userId: number,
   ): Promise<[FileTransfer, TransferLog[]]> {
-    const transfer = await this.getTransfer(transferId, userId);
+    const transfer = await this.getTransferOfUser(transferId, userId);
 
     const logs = await this.transferLogRepository.find({
       where: { fileTransfer: { id: transferId } },
@@ -97,7 +113,7 @@ export class TransferService {
   }
 
   async getTransferInfo(id: string, userId: number): Promise<TransferDto> {
-    return this.toDTO(await this.getTransfer(id, userId));
+    return this.toDTO(await this.getTransferOfUser(id, userId));
   }
 
   async newTransfer(
@@ -150,7 +166,7 @@ export class TransferService {
     chunkData: ChunkDto,
     userId: number,
   ): Promise<void> {
-    const transfer = await this.getTransfer(transferId, userId);
+    const transfer = await this.getTransferOfUser(transferId, userId);
 
     if (transfer.sender.id !== userId) {
       throw new UnauthorizedException(`User is not sender`);
@@ -180,7 +196,7 @@ export class TransferService {
     chunkId: number,
     userId: number,
   ): Promise<Omit<ChunkDto, 'isLastChunk'>> {
-    const transfer = await this.getTransfer(transferId, userId);
+    const transfer = await this.getTransferOfUser(transferId, userId);
 
     const path = await this.bucketService.getFile(transfer.id + '/' + chunkId);
 

@@ -14,7 +14,8 @@ import { LocalUser } from '@database/entities/local-user.entity';
 import { RemoteUser } from '@database/entities/remote-user.entity';
 import { TrustedRecipient } from '@database/entities/trusted-recipient.entity';
 import { RecipientService } from '@user/services/recipient.service';
-import { RemoteService } from '@remote/services/remote.service';
+import { RemoteInboundService } from '@remote/services/remoteInbound.service';
+import { RemoteQueryService } from '@remote/services/remoteQuery.service';
 import { DnsService } from '@remote/services/dns.service';
 
 // This module handles all user related operations that are done by the authenticated users
@@ -31,7 +32,8 @@ import { DnsService } from '@remote/services/dns.service';
     PasswordService,
     RecipientService,
     HashKeyService,
-    RemoteService,
+    RemoteInboundService,
+    RemoteQueryService,
     DnsService,
     {
       provide: Resolver,

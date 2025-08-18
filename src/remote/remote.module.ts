@@ -5,7 +5,8 @@ import { UserModule } from '@user/user.module';
 import { TransferModule } from '@transfer/transfer.module';
 import { RemoteController } from '@remote/controllers/remote.controller';
 import { DnsService } from '@remote/services/dns.service';
-import { RemoteService } from '@remote/services/remote.service';
+import { RemoteInboundService } from './services/remoteInbound.service';
+import { RemoteQueryService } from '@remote/services/remoteQuery.service';
 
 @Module({
   imports: [UserModule, TransferModule],
@@ -16,7 +17,8 @@ import { RemoteService } from '@remote/services/remote.service';
       useFactory: () => new Resolver(),
     },
     DnsService,
-    RemoteService,
+    RemoteInboundService,
+    RemoteQueryService,
   ],
 })
 export class RemoteModule {}

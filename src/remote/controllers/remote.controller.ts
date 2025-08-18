@@ -10,7 +10,7 @@ import {
 
 import { RemoteGuard } from '@remote/guards/remote.guard';
 import { RemoteRequest } from '@remote/types/remote-request.type';
-import { RemoteService } from '@remote/services/remote.service';
+import { RemoteInboundService } from '@remote/services/remoteInbound.service';
 import { RecipientService } from '@user/services/recipient.service';
 import { UserService } from '@user/services/user.service';
 import { PublicKeyDto } from '@user/dto/publicKey.dto';
@@ -21,7 +21,7 @@ import { PublicKeyDto } from '@user/dto/publicKey.dto';
 @Controller('remote')
 export class RemoteController {
   constructor(
-    private readonly remoteService: RemoteService,
+    private readonly remoteInboundService: RemoteInboundService,
     private readonly recipientService: RecipientService,
     private readonly userService: UserService,
   ) {}
@@ -46,25 +46,27 @@ export class RemoteController {
   // endpoint to notify server about a new transfer
   @Post('new/transfer')
   notifyTransfer(@Req() req: RemoteRequest, @Body() transferData: any): string {
-    console.log(req.domain);
-    return this.remoteService.remoteNewTransfer(transferData);
+    return this.remoteInboundService.remoteNewTransfer(
+      req.domain,
+      transferData,
+    );
   }
 
-  // endpoint to accept and retrieve transfer data by ID
+  // endpoint to accept and fetch transfer data by ID
   @Post('fetch/transfer/:id')
-  fetchTransfer(@Param('id') id: string): string {
-    return this.remoteService.remoteFetchTransfer(id);
+  fetchTransfer(@Req() req: RemoteRequest, @Param('id') id: string): string {
+    return this.remoteInboundService.remoteFetchTransfer(req.domain, id);
   }
 
   // endpoint to refuse a transfer by ID
   @Post('refuse/transfer/:id')
-  refuseTransfer(@Param('id') id: string): string {
-    return this.remoteService.remoteRefuseTransfer(id);
+  refuseTransfer(@Req() req: RemoteRequest, @Param('id') id: string): string {
+    return this.remoteInboundService.remoteRefuseTransfer(req.domain, id);
   }
 
   // endpoint to delete a transfer by ID
   @Post('delete/transfer/:id')
-  deleteTransfer(@Param('id') id: string): string {
-    return this.remoteService.remoteDeleteTransfer(id);
+  deleteTransfer(@Req() req: RemoteRequest, @Param('id') id: string): string {
+    return this.remoteInboundService.remoteDeleteTransfer(req.domain, id);
   }
 }
