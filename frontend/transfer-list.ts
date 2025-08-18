@@ -21,7 +21,7 @@ function rejectTransfer(id: string) {
 
 async function downloadTransfer(id: string) {
   const userPrivateKey = await SecurityUtils.useUserPrivateKey();
-  const downloader = await FileDownloader.createDownloader(userPrivateKey);
+  const downloader = FileDownloader.createDownloader(userPrivateKey);
   await downloader.downloadFile(id);
 }
 

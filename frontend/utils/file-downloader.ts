@@ -81,10 +81,10 @@ export class FileDownloader {
     try {
       const transfer = await this.getTransfer(transferId);
 
-      const decryptedData = await this.downloadAndDecrypt(transfer);
+      const transferData = await this.downloadAndDecrypt(transfer);
 
       // Create blob and trigger download
-      const blob = new Blob([new Uint8Array(decryptedData)]);
+      const blob = new Blob([new Uint8Array(transferData)]);
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -118,9 +118,7 @@ export class FileDownloader {
     return bytes;
   }
 
-  static async createDownloader(
-    userPrivateKey: CryptoKey,
-  ): Promise<FileDownloader> {
+  static createDownloader(userPrivateKey: CryptoKey): FileDownloader {
     return new FileDownloader(userPrivateKey);
   }
 }

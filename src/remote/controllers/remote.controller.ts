@@ -52,19 +52,19 @@ export class RemoteController {
 
   // endpoint to accept and retrieve transfer data by ID
   @Post('fetch/transfer/:id')
-  fetchTransfer(@Param('id') id: number): string {
+  fetchTransfer(@Param('id') id: string): string {
     return this.remoteService.remoteFetchTransfer(id);
   }
 
   // endpoint to refuse a transfer by ID
   @Post('refuse/transfer/:id')
-  refuseTransfer(@Param('id') id: number): string {
+  refuseTransfer(@Param('id') id: string): string {
     return this.remoteService.remoteRefuseTransfer(id);
   }
 
   // endpoint to delete a transfer by ID
   @Post('delete/transfer/:id')
-  deleteTransfer(@Param('id') id: number): string {
+  deleteTransfer(@Param('id') id: string): string {
     return this.remoteService.remoteDeleteTransfer(id);
   }
 }

@@ -1,7 +1,7 @@
 import { TransferStatus } from '@database/entities/enums';
 
 export default class TransferDto {
-  id: number;
+  id: string;
   symmetric_key_encrypted: string;
   signature_sender: string;
   status: TransferStatus;
