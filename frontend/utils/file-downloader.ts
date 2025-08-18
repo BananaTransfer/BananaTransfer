@@ -1,11 +1,18 @@
-import { FileEncryption, StreamChunk } from './crypto/encryption.js';
-import { KeyManager } from './crypto/key-manager.js';
-import { callApi } from './utils/common.js';
+import { FileEncryption, StreamChunk } from '../crypto/encryption.js';
+import { KeyManager } from '../crypto/key-manager.js';
+import { callApi } from '../utils/common.js';
 
 interface ChunkData {
   chunkIndex: number;
   encryptedData: string;
   iv: string;
+}
+
+interface Transfer {
+  id: string;
+  symmetric_key_encrypted: string;
+  chunks: number[];
+  filename: string;
 }
 
 export class FileDownloader {
@@ -15,27 +22,23 @@ export class FileDownloader {
     this.userPrivateKey = userPrivateKey;
   }
 
-  async downloadAndDecrypt(transferId: number): Promise<Uint8Array> {
+  private async getTransfer(transferId: string): Promise<Transfer> {
+    return await callApi('GET', `/transfer/${transferId}`);
+  }
+
+  async downloadAndDecrypt(transfer: Transfer): Promise<Uint8Array> {
     try {
-      const transfer: {
-        id: number;
-        symmetric_key_encrypted: string;
-        chunks: number[];
-      } = await callApi('GET', `/transfer/${transferId}`);
-
-      console.log('Raw server response:', transfer);
-
       const chunks: ChunkData[] = await Promise.all(
         transfer.chunks.map((chunk) => {
           return callApi<void, ChunkData>(
             'GET',
-            `/transfer/${transferId}/chunk/${chunk}`,
+            `/transfer/${transfer.id}/chunk/${chunk}`,
           );
         }),
       );
 
       console.log(
-        `Fetched transfer ${transferId} with ${chunks.length} chunks`,
+        `Fetched transfer ${transfer.id} with ${chunks.length} chunks`,
       );
 
       // Unwrap AES key with user's private key
@@ -74,20 +77,22 @@ export class FileDownloader {
     }
   }
 
-  async downloadFile(transferId: number, filename: string): Promise<void> {
+  async downloadFile(transferId: string): Promise<void> {
     try {
-      const decryptedData = await this.downloadAndDecrypt(transferId);
+      const transfer = await this.getTransfer(transferId);
+
+      const transferData = await this.downloadAndDecrypt(transfer);
 
       // Create blob and trigger download
-      const blob = new Blob([new Uint8Array(decryptedData)]);
+      const blob = new Blob([new Uint8Array(transferData)]);
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = filename;
+      a.download = transfer.filename;
       a.click();
       URL.revokeObjectURL(url);
 
-      console.log(`Downloaded file: ${filename}`);
+      console.log(`Downloaded file: ${transfer.filename}`);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       console.error(`File download failed: ${message}`);

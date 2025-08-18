@@ -301,7 +301,7 @@ class TransferNewPage {
     wrappedAesKey: ArrayBuffer,
     recipientUsername: string,
     subject: string,
-  ): Promise<{ id: number }> {
+  ): Promise<{ id: string }> {
     // Create digital signature
     const signatureSender = await this.createMockDigitalSignature();
 
@@ -318,7 +318,7 @@ class TransferNewPage {
 
   private async sendChunksToServer(
     encryptedChunks: StreamChunk,
-    transferId: number,
+    transferId: string,
   ): Promise<void> {
     this.formElements.sendButton.textContent = `Uploading chunk ${encryptedChunks.chunkIndex}...`;
 

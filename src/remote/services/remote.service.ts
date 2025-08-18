@@ -50,7 +50,7 @@ export class RemoteService {
     return `New transfer notification received: ${JSON.stringify(transferData)}`;
   }
 
-  remoteFetchTransfer(id: number): string {
+  remoteFetchTransfer(id: string): string {
     // TODO: implement logic to fetch transfer data by ID
     // check if transfer exists, send back a NotFoundException if not
     // return transfer data
@@ -58,14 +58,14 @@ export class RemoteService {
     return `Transfer data for ID ${id}`;
   }
 
-  remoteRefuseTransfer(id: number): string {
+  remoteRefuseTransfer(id: string): string {
     // TODO: implement logic to refuse a transfer by ID
     // check if transfer exists, send back a NotFoundException if not
     // update the transfer status to "REFUSED"
     return `Transfer with ID ${id} refused`;
   }
 
-  remoteDeleteTransfer(id: number): string {
+  remoteDeleteTransfer(id: string): string {
     // TODO: implement logic to delete a transfer by ID
     // check if transfer exists, send back a NotFoundException if not
     // check if transfer status is "SENT", send back a BadRequestException if not
