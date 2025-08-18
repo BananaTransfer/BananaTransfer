@@ -43,7 +43,7 @@ block content
                   td= transfer.receiverAddress
                   td= transfer.filename
                   td= transfer.subject
-                  td= transfer.date
+                  td= transfer.created_at.toLocaleString('en-GB', { hour12: false })
                   td= transfer.size
                   td= transfer.status
                   td
