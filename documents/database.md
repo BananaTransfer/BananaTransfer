@@ -18,8 +18,9 @@
 
 #### TransferStatus descriptions
 
-* CREATED: Sender created the transfer and uploaded the file to their server but didn't already sent it / notified remote server about it
-* PENDING: Sender notified recipient server about file but transfer wasn't accepted yet by recipient
+* CREATED: Sender created the transfer but didn't already uploaded the file yet
+* UPLOADED: Sender created the transfer and uploaded the file to their server but didn't already sent it / notified remote server about it
+* SENT: Sender notified recipient server about file but transfer wasn't accepted yet by recipient
 * RETRIEVED: Status of the transfer when recipient accepted the transfer and fetched the file
 * DELETED: File was deleted by sender or recipient
 * REFUSED: Transfer was refused by recipient

@@ -7,10 +7,6 @@ export default class CreateTransferDto {
 
   @IsString()
   @IsNotEmpty()
-  signature_sender: string;
-
-  @IsString()
-  @IsNotEmpty()
   filename: string;
 
   @IsString()

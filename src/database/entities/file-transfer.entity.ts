@@ -18,9 +18,6 @@ export class FileTransfer {
   @Column({ type: 'text' })
   symmetric_key_encrypted: string;
 
-  @Column({ type: 'text' })
-  signature_sender: string;
-
   @Column({ type: 'enum', enum: TransferStatus })
   status: TransferStatus;
 
