@@ -1,5 +1,6 @@
 import { SecurityUtils } from './crypto/security-utils.js';
 import { FileDownloader } from './utils/file-downloader.js';
+import { callApi } from './utils/common';
 
 function viewTransferDetails(id: string) {
   // TODO:
@@ -7,7 +8,7 @@ function viewTransferDetails(id: string) {
 }
 
 function acceptTransfer(id: string) {
-  fetch(`/transfer/accept/${id}`, { method: 'POST' })
+  callApi('POST', `/transfer/accept/${id}`)
     .then(() => {
       console.log(`Accepted transfer with ID: ${id}`);
       location.reload();
@@ -19,7 +20,7 @@ function acceptTransfer(id: string) {
 }
 
 function rejectTransfer(id: string) {
-  fetch(`/transfer/refuse/${id}`, { method: 'POST' })
+  callApi('POST', `/transfer/refuse/${id}`)
     .then(() => {
       console.log(`Rejected transfer with ID: ${id}`);
       location.reload();
