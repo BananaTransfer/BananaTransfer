@@ -110,25 +110,6 @@ export class TransferController {
     return this.transferService.getChunk(transferId, chunkId, req.user.id);
   }
 
-  // TODO: TO Delete, only for testing purposes
-  @Get('download/:id')
-  @Render('transfer/download')
-  async renderDownloadPage(
-    @Param('id') id: string,
-    @Req() req: AuthenticatedRequest,
-  ) {
-    try {
-      const [transfer] = await this.transferService.getTransferDetails(
-        id,
-        req.user.id,
-      );
-      return { transfer };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      return { error: message };
-    }
-  }
-
   // endpoint to accept a transfer by ID
   @Post('accept/:id')
   acceptTransfer(@Param('id') id: string, @Res() res: Response): void {
