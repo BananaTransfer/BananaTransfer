@@ -1,7 +1,9 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class Removesign1755521493251 implements MigrationInterface {
-  name = 'Removesign1755521493251';
+export class RemoveSigantureFromTransfer1755521167139
+  implements MigrationInterface
+{
+  name = 'RemoveSigantureFromTransfer1755521167139';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
