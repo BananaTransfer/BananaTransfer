@@ -10,10 +10,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
-import { ConfigService } from '@nestjs/config';
 
 import { TransferService } from '@transfer/services/transfer.service';
-import { UserService } from '@user/services/user.service';
 import { RecipientService } from '@user/services/recipient.service';
 import { JwtAuthGuard } from '@auth/jwt/guards/jwt-auth.guard';
 import { AuthenticatedRequest } from '@auth/types/authenticated-request.interface';
@@ -28,9 +26,7 @@ export class TransferController {
   private readonly envDomain: string;
 
   constructor(
-    private readonly configService: ConfigService,
     private readonly transferService: TransferService,
-    private readonly userService: UserService,
     private readonly recipientService: RecipientService,
   ) {}
 

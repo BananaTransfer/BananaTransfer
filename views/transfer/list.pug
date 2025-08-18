@@ -31,7 +31,7 @@ block content
               th Filename
               th Subject
               th Date
-              th Size
+              // th Size
               th Status
               th.text-center Details
               th.text-center Actions
@@ -44,7 +44,7 @@ block content
                   td= transfer.filename
                   td= transfer.subject
                   td= transfer.created_at.toLocaleString('en-GB', { hour12: false })
-                  td= transfer.size
+                  // td= transfer.size
                   td= transfer.status
                   td
                     span.rounded-circle.bg-light.border.d-inline-flex.align-items-center.justify-content-center.view-details(
@@ -76,10 +76,10 @@ block content
             .card-body
               .row
                 .col-6.font-weight-bold Sender:
-                .col-6= transfer.sender
+                .col-6= transfer.senderAddress
               .row
                 .col-6.font-weight-bold Recipient:
-                .col-6= transfer.recipient
+                .col-6= transfer.receiverAddress
               .row
                 .col-6.font-weight-bold Filename:
                 .col-6= transfer.filename
@@ -88,8 +88,8 @@ block content
                 .col-6= transfer.subject
               .row
                 .col-6.font-weight-bold Date:
-                .col-6= transfer.date
-              .row
+                .col-6= transfer.created_at.toLocaleString('en-GB', { hour12: false })
+              // .row
                 .col-6.font-weight-bold Size:
                 .col-6= transfer.size
               .row
