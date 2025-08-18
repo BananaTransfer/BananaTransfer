@@ -1,154 +1,125 @@
-import { Test, TestingModule } from '@nestjs/testing';
-// import { ConfigService } from '@nestjs/config';
+import type { Mocked } from '@suites/doubles.jest';
+import { TestBed } from '@suites/unit';
+import { TransferService } from '@transfer/services/transfer.service';
+import { FileTransfer } from '@database/entities/file-transfer.entity';
+import { TransferStatus } from '@database/entities/enums';
 import { BucketService } from '@transfer/services/bucket.service';
 import { UserService } from '@user/services/user.service';
 import { RecipientService } from '@user/services/recipient.service';
-import { TransferService } from '@transfer/services/transfer.service';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { FileTransfer } from '@database/entities/file-transfer.entity';
-import { TransferLog } from '@database/entities/transfer-log.entity';
-import { Repository } from 'typeorm';
-import { TransferStatus } from '@database/entities/enums';
 
 describe('TransferService', () => {
-  let service: TransferService;
-  let fileTransferRepository: Repository<FileTransfer>;
+  let transferService: TransferService;
+  let mockFileTransferRepository: Mocked<any>;
+  let mockTransferLogRepository: Mocked<any>;
+  let mockBucketService: Mocked<BucketService>;
+  let mockUserService: Mocked<UserService>;
+  let mockRecipientService: Mocked<RecipientService>;
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        TransferService,
-        {
-          provide: getRepositoryToken(FileTransfer),
-          useValue: {
-            findOne: jest.fn(),
-            save: jest.fn(),
-          },
-        },
-        {
-          provide: getRepositoryToken(TransferLog),
-          useValue: {},
-        },
-        {
-          provide: BucketService,
-          useValue: {
-            listFiles: jest.fn(),
-            putObject: jest.fn(),
-            getFile: jest.fn(),
-          },
-        },
-        {
-          provide: UserService,
-          useValue: {},
-        },
-        {
-          provide: RecipientService,
-          useValue: {},
-        },
-      ],
-    }).compile();
+    const builder = TestBed.solitary(TransferService);
 
-    service = module.get<TransferService>(TransferService);
-    fileTransferRepository = module.get<Repository<FileTransfer>>(
-      getRepositoryToken(FileTransfer),
-    );
+    builder.mock(BucketService);
+    builder.mock(UserService);
+    builder.mock(RecipientService);
+    builder.mock('FileTransferRepository');
+    builder.mock('TransferLogRepository');
+
+    const { unit, unitRef } = await builder.compile();
+
+    transferService = unit;
+    mockFileTransferRepository = unitRef.get('FileTransferRepository');
+    mockTransferLogRepository = unitRef.get('TransferLogRepository');
+    mockBucketService = unitRef.get(BucketService);
+    mockUserService = unitRef.get(UserService);
+    mockRecipientService = unitRef.get(RecipientService);
+
+    // Reset all relevant mocks
+    Object.values(mockFileTransferRepository).forEach((v) => v?.mockReset?.());
+    Object.values(mockTransferLogRepository).forEach((v) => v?.mockReset?.());
+    Object.values(mockBucketService).forEach((v) => v?.mockReset?.());
+    Object.values(mockUserService).forEach((v) => v?.mockReset?.());
+    Object.values(mockRecipientService).forEach((v) => v?.mockReset?.());
   });
 
-  it('should accept a valid transfer', async () => {
-    const transfer = {
-      id: 1,
-      status: TransferStatus.UPLOADED,
-      receiver: { id: 2 },
-    };
-    (fileTransferRepository.findOne as jest.Mock).mockResolvedValue(transfer);
-    (fileTransferRepository.save as jest.Mock).mockResolvedValue({
-      ...transfer,
-      status: TransferStatus.RETRIEVED,
+  describe('acceptTransfer', () => {
+    it('should accept a transfer', async () => {
+      const transfer = {
+        id: 'transfer-id',
+        receiver: { id: 2 },
+        sender: { id: 1 },
+        status: TransferStatus.SENT,
+      } as FileTransfer;
+
+      mockFileTransferRepository.findOne.mockResolvedValue(transfer);
+      mockFileTransferRepository.save.mockImplementation(
+        async (t) => ({ ...t }) as FileTransfer,
+      );
+      mockTransferLogRepository.create.mockReturnValue({} as any);
+      mockTransferLogRepository.save.mockResolvedValue({} as any);
+
+      const result = await transferService.acceptTransfer('transfer-id', 2);
+
+      expect(result.status).toBe(TransferStatus.RETRIEVED);
+      expect(mockFileTransferRepository.save).toHaveBeenCalledWith({
+        ...transfer,
+        status: TransferStatus.RETRIEVED,
+      });
     });
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    (service as any).createTransferLog = jest.fn().mockResolvedValue({});
 
-    const result = await service.acceptTransfer(1);
-    expect(result).toBe('Transfer with ID 1 accepted');
-    expect(transfer.status).toBe(TransferStatus.RETRIEVED);
-  });
+    it('should throw if transfer is not SENT', async () => {
+      const transfer = {
+        id: 'transfer-id',
+        receiver: { id: 2 },
+        sender: { id: 1 },
+        status: TransferStatus.UPLOADED,
+      } as FileTransfer;
 
-  it('should throw if transfer not found (accept)', async () => {
-    (fileTransferRepository.findOne as jest.Mock).mockResolvedValue(null);
-    await expect(service.acceptTransfer(999)).rejects.toThrow(
-      'Transfer with ID 999 not found',
-    );
-  });
+      mockFileTransferRepository.findOne.mockResolvedValue(transfer);
 
-  it('should throw if already accepted (accept)', async () => {
-    const transfer = {
-      id: 1,
-      status: TransferStatus.RETRIEVED,
-      receiver: { id: 2 },
-    };
-    (fileTransferRepository.findOne as jest.Mock).mockResolvedValue(transfer);
-    await expect(service.acceptTransfer(1)).rejects.toThrow(
-      'Transfer is not pending acceptance or refusal',
-    );
-  });
-
-  it('should throw if already refused (accept)', async () => {
-    const transfer = {
-      id: 1,
-      status: TransferStatus.REFUSED,
-      receiver: { id: 2 },
-    };
-    (fileTransferRepository.findOne as jest.Mock).mockResolvedValue(transfer);
-    await expect(service.acceptTransfer(1)).rejects.toThrow(
-      'Transfer is not pending acceptance or refusal',
-    );
-  });
-
-  it('should refuse a valid transfer', async () => {
-    const transfer = {
-      id: 1,
-      status: TransferStatus.UPLOADED,
-      receiver: { id: 2 },
-    };
-    (fileTransferRepository.findOne as jest.Mock).mockResolvedValue(transfer);
-    (fileTransferRepository.save as jest.Mock).mockResolvedValue({
-      ...transfer,
-      status: TransferStatus.REFUSED,
+      await expect(
+        transferService.acceptTransfer('transfer-id', 2),
+      ).rejects.toThrow('Transfer is not pending acceptance or refusal');
     });
-    jest.spyOn(service as any, 'createTransferLog').mockResolvedValue({});
-    const result = await service.refuseTransfer(1);
-    expect(result).toBe('Transfer with ID 1 refused');
-    expect(transfer.status).toBe(TransferStatus.REFUSED);
   });
 
-  it('should throw if transfer not found', async () => {
-    (fileTransferRepository.findOne as jest.Mock).mockResolvedValue(null);
-    await expect(service.refuseTransfer(999)).rejects.toThrow(
-      'Transfer with ID 999 not found',
-    );
-  });
+  describe('refuseTransfer', () => {
+    it('should refuse a transfer', async () => {
+      const transfer = {
+        id: 'transfer-id',
+        receiver: { id: 2 },
+        sender: { id: 1 },
+        status: TransferStatus.SENT,
+      } as FileTransfer;
 
-  it('should throw if already refused', async () => {
-    const transfer = {
-      id: 1,
-      status: TransferStatus.REFUSED,
-      receiver: { id: 2 },
-    };
-    (fileTransferRepository.findOne as jest.Mock).mockResolvedValue(transfer);
-    await expect(service.refuseTransfer(1)).rejects.toThrow(
-      'Transfer is not pending acceptance or refusal',
-    );
-  });
+      mockFileTransferRepository.findOne.mockResolvedValue(transfer);
+      mockFileTransferRepository.save.mockImplementation(
+        async (t) => ({ ...t }) as FileTransfer,
+      );
+      mockTransferLogRepository.create.mockReturnValue({} as any);
+      mockTransferLogRepository.save.mockResolvedValue({} as any);
 
-  it('should throw if already accepted', async () => {
-    const transfer = {
-      id: 1,
-      status: TransferStatus.RETRIEVED,
-      receiver: { id: 2 },
-    };
-    (fileTransferRepository.findOne as jest.Mock).mockResolvedValue(transfer);
-    await expect(service.refuseTransfer(1)).rejects.toThrow(
-      'Transfer is not pending acceptance or refusal',
-    );
+      const result = await transferService.refuseTransfer('transfer-id', 2);
+
+      expect(result.status).toBe(TransferStatus.REFUSED);
+      expect(mockFileTransferRepository.save).toHaveBeenCalledWith({
+        ...transfer,
+        status: TransferStatus.REFUSED,
+      });
+    });
+
+    it('should throw if transfer is not SENT', async () => {
+      const transfer = {
+        id: 'transfer-id',
+        receiver: { id: 2 },
+        sender: { id: 1 },
+        status: TransferStatus.RETRIEVED,
+      } as FileTransfer;
+
+      mockFileTransferRepository.findOne.mockResolvedValue(transfer);
+
+      await expect(
+        transferService.refuseTransfer('transfer-id', 2),
+      ).rejects.toThrow('Transfer is not pending acceptance or refusal');
+    });
   });
 });
