@@ -31,7 +31,7 @@ block content
               th Filename
               th Subject
               th Date
-              th Size
+              // th Size TODO add size
               th Status
               th.text-center Details
               th.text-center Actions
@@ -39,12 +39,12 @@ block content
             if transfers && transfers.length
               each transfer in transfers
                 tr
-                  td= transfer.sender
-                  td= transfer.recipient
+                  td= transfer.senderAddress
+                  td= transfer.receiverAddress
                   td= transfer.filename
                   td= transfer.subject
-                  td= transfer.date
-                  td= transfer.size
+                  td= transfer.created_at.toLocaleString('en-GB', { hour12: false })
+                  // td= transfer.size TODO add size
                   td= transfer.status
                   td
                     span.rounded-circle.bg-light.border.d-inline-flex.align-items-center.justify-content-center.view-details(
@@ -76,10 +76,10 @@ block content
             .card-body
               .row
                 .col-6.font-weight-bold Sender:
-                .col-6= transfer.sender
+                .col-6= transfer.senderAddress
               .row
                 .col-6.font-weight-bold Recipient:
-                .col-6= transfer.recipient
+                .col-6= transfer.receiverAddress
               .row
                 .col-6.font-weight-bold Filename:
                 .col-6= transfer.filename
@@ -88,8 +88,8 @@ block content
                 .col-6= transfer.subject
               .row
                 .col-6.font-weight-bold Date:
-                .col-6= transfer.date
-              .row
+                .col-6= transfer.created_at.toLocaleString('en-GB', { hour12: false })
+              // .row TODO: add size
                 .col-6.font-weight-bold Size:
                 .col-6= transfer.size
               .row
@@ -115,7 +115,7 @@ block content
                   if transfer.status != "CREATED" && transfer.receiverId === currentUser.id
                     button.btn.btn-sm.btn-primary.ms-1.download-btn(type="button" data-id=transfer.id) Download
                   button.btn.btn-sm.btn-danger.ms-1.delete-btn(type="button" data-id=transfer.id) Delete
-
+  include ../modals/master-password.pug
 
                   
 

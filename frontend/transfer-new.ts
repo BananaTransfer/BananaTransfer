@@ -1,21 +1,32 @@
 import { FileEncryption, StreamChunk } from './crypto/encryption.js';
-import { callApi } from './utils/common.js';
-import { SecurityUtils } from './crypto/security-utils.js';
-import { KeyManager } from './crypto/key-manager.js';
+import { callApi, copyToClipboard } from './utils/common.js';
+import {
+  SecurityUtils,
+  RecipientPublicKeyData,
+} from './crypto/security-utils.js';
 
 interface TransferFormElements {
   recipientInput: HTMLInputElement;
   recipientBtn: HTMLButtonElement;
+  publicKeyHashField: HTMLInputElement;
+  copyPublicKeyHashBtn: HTMLButtonElement;
+  trustRecipientKey: HTMLElement;
+  trustRecipientKeyCheckbox: HTMLInputElement;
+  newRecipientInfo: HTMLElement;
+  newRecipientKeyWarning: HTMLElement;
+  recipientKeyNotFoundError: HTMLElement;
+  fileUploadArea: HTMLElement;
   fileInput: HTMLInputElement;
   subjectInput: HTMLInputElement;
   sendButton: HTMLButtonElement;
-  fileUploadArea: HTMLElement;
-  expectedHashInput: HTMLInputElement;
+  sendError: HTMLElement;
 }
 
 class TransferNewPage {
   private formElements!: TransferFormElements;
   private selectedFile: File | null = null;
+  private trustPublicKeyRequired: boolean = false;
+  private recipientPublicKey: RecipientPublicKeyData | null = null;
 
   constructor() {
     this.initializeElements();
@@ -28,40 +39,61 @@ class TransferNewPage {
       recipientBtn: document.getElementById(
         'recipient-btn',
       ) as HTMLButtonElement,
-      fileInput: document.getElementById('fileInput') as HTMLInputElement,
-      subjectInput: document.getElementById('subject') as HTMLInputElement,
-      sendButton: document.querySelector(
-        'button[type="submit"]',
+
+      publicKeyHashField: document.getElementById(
+        'publicKeyHashField',
+      ) as HTMLInputElement,
+      copyPublicKeyHashBtn: document.getElementById(
+        'copyPublicKeyHashBtn',
       ) as HTMLButtonElement,
+
+      trustRecipientKey: document.getElementById(
+        'trustRecipientKey',
+      ) as HTMLElement,
+      trustRecipientKeyCheckbox: document.getElementById(
+        'trustKeyCheckbox',
+      ) as HTMLInputElement,
+
+      newRecipientInfo: document.getElementById(
+        'newRecipientInfo',
+      ) as HTMLElement,
+      newRecipientKeyWarning: document.getElementById(
+        'newRecipientKeyWarning',
+      ) as HTMLElement,
+      recipientKeyNotFoundError: document.getElementById(
+        'recipientKeyNotFoundError',
+      ) as HTMLElement,
+
       fileUploadArea: document.querySelector(
         '.file-upload-area',
       ) as HTMLElement,
-      expectedHashInput: document.getElementById(
-        'expectedHash',
-      ) as HTMLInputElement,
+      fileInput: document.getElementById('fileInput') as HTMLInputElement,
+      subjectInput: document.getElementById('subject') as HTMLInputElement,
+
+      sendButton: document.querySelector(
+        'button[type="submit"]',
+      ) as HTMLButtonElement,
+      sendError: document.getElementById('sendError') as HTMLElement,
     };
+    this.updateSendButtonState();
   }
 
   private attachEventListeners(): void {
-    // File upload area click handler
-    this.formElements.fileUploadArea.addEventListener('click', () => {
-      this.formElements.fileInput.click();
+    this.formElements.recipientInput.addEventListener('input', () => {
+      this.resetRecipientPublicKey();
     });
 
-    // recipient btn
+    // load recipient key btn
     this.formElements.recipientBtn.addEventListener('click', () => {
-      this.handleRecipientPubKeyFetch();
+      void this.handleRecipientPublicKeyFetch();
     });
 
-    // File selection handler
-    this.formElements.fileInput.addEventListener('change', (event) => {
-      this.handleFileSelection(event);
-    });
-
-    // Send button handler
-    this.formElements.sendButton.addEventListener('click', (event) => {
-      event.preventDefault();
-      this.handleSubmit();
+    // Copy public key hash button
+    this.formElements.copyPublicKeyHashBtn.addEventListener('click', () => {
+      void copyToClipboard(
+        this.formElements.publicKeyHashField,
+        this.formElements.copyPublicKeyHashBtn,
+      );
     });
 
     // Drag and drop handlers
@@ -84,22 +116,73 @@ class TransferNewPage {
         this.handleFileSelection({ target: { files } } as any);
       }
     });
+
+    // File upload area click handler
+    this.formElements.fileUploadArea.addEventListener('click', () => {
+      this.formElements.fileInput.click();
+    });
+
+    // File selection handler
+    this.formElements.fileInput.addEventListener('change', (event) => {
+      this.handleFileSelection(event);
+    });
+
+    // Send button handler
+    this.formElements.sendButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      void this.handleSubmit();
+    });
   }
 
-  private async handleRecipientPubKeyFetch() {
-    try {
-      this.formElements.expectedHashInput.value = '';
+  private updateSendButtonState(): void {
+    const recipient = !!this.recipientPublicKey;
+    const fileSelected = !!this.selectedFile;
+    this.formElements.sendButton.disabled = !(recipient && fileSelected);
+  }
 
-      const keyData = await SecurityUtils.useUserPublicKey(
-        this.formElements.recipientInput.value,
+  private resetRecipientPublicKey(): void {
+    this.recipientPublicKey = null;
+    this.updateRecipientPublicKeyInfo();
+    this.updateSendButtonState();
+  }
+
+  private async handleRecipientPublicKeyFetch() {
+    try {
+      this.formElements.publicKeyHashField.value = '';
+
+      this.recipientPublicKey = await SecurityUtils.useRecipientPublicKey(
+        this.formElements.recipientInput.value.trim(),
       );
 
-      const exportedPubKey = await KeyManager.exportPublicKey(keyData.key);
-
-      this.formElements.expectedHashInput.value =
-        await SecurityUtils.hash(exportedPubKey);
+      this.updateRecipientPublicKeyInfo();
+      this.updateSendButtonState();
     } catch {
-      alert('Could not fetch recipient public key');
+      this.formElements.recipientKeyNotFoundError.classList.remove('d-none');
+    }
+  }
+
+  private updateRecipientPublicKeyInfo() {
+    this.formElements.newRecipientInfo.classList.add('d-none');
+    this.formElements.newRecipientKeyWarning.classList.add('d-none');
+    this.formElements.recipientKeyNotFoundError.classList.add('d-none');
+    this.formElements.trustRecipientKey.classList.add('d-none');
+    this.formElements.trustRecipientKeyCheckbox.checked = false;
+    this.trustPublicKeyRequired = false;
+
+    if (!this.recipientPublicKey) {
+      this.formElements.publicKeyHashField.value = '';
+    } else {
+      this.formElements.publicKeyHashField.value =
+        this.recipientPublicKey.publicKeyHash;
+      if (!this.recipientPublicKey.isKnownRecipient) {
+        this.formElements.newRecipientInfo.classList.remove('d-none');
+        this.formElements.trustRecipientKey.classList.remove('d-none');
+        this.trustPublicKeyRequired = true;
+      } else if (!this.recipientPublicKey.isTrustedRecipientKey) {
+        this.formElements.newRecipientKeyWarning.classList.remove('d-none');
+        this.formElements.trustRecipientKey.classList.remove('d-none');
+        this.trustPublicKeyRequired = true;
+      }
     }
   }
 
@@ -124,6 +207,7 @@ class TransferNewPage {
         this.formElements.subjectInput.value = this.selectedFile.name;
       }
     }
+    this.updateSendButtonState();
   }
 
   private formatFileSize(bytes: number): string {
@@ -134,29 +218,46 @@ class TransferNewPage {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
 
+  private showSendError(error: string) {
+    this.formElements.sendError.classList.remove('d-none');
+    this.formElements.sendError.textContent = error;
+  }
+
   private async handleSubmit(): Promise<void> {
     // Validation
+
+    // check that recipient is entered
+    const recipientAddress = this.formElements.recipientInput.value.trim();
+    if (!recipientAddress) {
+      return this.showSendError('Please enter a recipient address.');
+    }
+
+    // check that recipient key is loaded
+    if (!this.recipientPublicKey?.importedPublicKey) {
+      return this.showSendError(
+        'Please select a recipient and load their public key.',
+      );
+    }
+
+    // check that the checkbox to trust recipient key is set if needed
+    if (
+      this.trustPublicKeyRequired &&
+      !this.formElements.trustRecipientKeyCheckbox.checked
+    ) {
+      return this.showSendError(
+        'You must trust the public key of the recipient.',
+      );
+    }
+
+    // check that there is a file selected
     if (!this.selectedFile) {
-      alert('Please select a file to transfer.');
-      return;
+      return this.showSendError('Please select a file to transfer.');
     }
 
-    const recipientUsername = this.formElements.recipientInput.value.trim();
-
-    let pubKey: CryptoKey | undefined;
-
-    try {
-      pubKey = (await SecurityUtils.useUserPublicKey(recipientUsername)).key;
-    } catch {
-      alert('Could not fetch recipient public key');
-      return;
-    }
-
+    // check that the subject is entered
     const subject = this.formElements.subjectInput.value.trim();
-
-    if (!recipientUsername || !subject) {
-      alert('Please fill in all required fields.');
-      return;
+    if (!subject) {
+      return this.showSendError('Please enter a subject for the transfer.');
     }
 
     try {
@@ -166,11 +267,14 @@ class TransferNewPage {
 
       // Step 1: Create the transfer
       const aesKey = await FileEncryption.generateAESKey();
-      const wrappedAesKey = await FileEncryption.wrapAESKey(aesKey, pubKey);
+      const wrappedAesKey = await FileEncryption.wrapAESKey(
+        aesKey,
+        this.recipientPublicKey.importedPublicKey,
+      );
 
       const transfer = await this.createTransfer(
         wrappedAesKey,
-        recipientUsername,
+        recipientAddress,
         subject,
       );
 
@@ -185,7 +289,7 @@ class TransferNewPage {
       window.location.href = '/transfer';
     } catch (error) {
       console.error('Error creating transfer:', error);
-      alert('Failed to create transfer. Please try again.');
+      this.showSendError('Failed to create transfer. Please try again.');
     } finally {
       // Re-enable send button
       this.formElements.sendButton.disabled = false;
@@ -195,18 +299,16 @@ class TransferNewPage {
 
   private async createTransfer(
     wrappedAesKey: ArrayBuffer,
-    recipientUsername: string,
+    recipientAddress: string,
     subject: string,
-  ): Promise<{ id: number }> {
-    // Create digital signature
-    const signatureSender = await this.createMockDigitalSignature();
-
+  ): Promise<{ id: string }> {
     const payload = {
+      recipient: recipientAddress,
       filename: this.selectedFile!.name,
       subject: subject,
-      receiver: recipientUsername,
       symmetric_key_encrypted: this.arrayBufferToBase64(wrappedAesKey),
-      signature_sender: signatureSender,
+      recipient_public_key_hash: this.recipientPublicKey!.publicKeyHash,
+      trust_recipient_key: this.formElements.trustRecipientKeyCheckbox.checked,
     };
 
     return callApi('POST', '/transfer/new', payload);
@@ -214,7 +316,7 @@ class TransferNewPage {
 
   private async sendChunksToServer(
     encryptedChunks: StreamChunk,
-    transferId: number,
+    transferId: string,
   ): Promise<void> {
     this.formElements.sendButton.textContent = `Uploading chunk ${encryptedChunks.chunkIndex}...`;
 
@@ -235,16 +337,6 @@ class TransferNewPage {
       binary += String.fromCharCode(bytes[i]);
     }
     return btoa(binary);
-  }
-
-  private async createMockDigitalSignature(): Promise<string> {
-    // TODO: TO DELETE and replace with real sender signature with recipient verification on server to server transfer
-    const mockData = `MOCK_SIGNATURE_${Date.now()}_${Math.random()}`;
-    const hashBuffer = await crypto.subtle.digest(
-      'SHA-256',
-      new TextEncoder().encode(mockData),
-    );
-    return this.arrayBufferToBase64(hashBuffer);
   }
 }
 

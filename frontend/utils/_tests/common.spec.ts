@@ -42,7 +42,7 @@ describe('common.ts functions', () => {
       input.value = 'test content';
 
       // when
-      await copyToClipboard('copyInput', 'copyBtn');
+      await copyToClipboard(input, btn);
 
       // then
       expect(btn.innerHTML).toContain('bi-clipboard-check');
@@ -51,13 +51,14 @@ describe('common.ts functions', () => {
     test('copyToClipboard copies value', async () => {
       // given
       const input = document.getElementById('copyInput') as HTMLInputElement;
+      const btn = document.getElementById('copyBtn') as HTMLButtonElement;
       input.value = 'test content';
       // Mock clipboard
       const writeTextMock = jest.fn();
       navigator.clipboard.writeText = writeTextMock;
 
       // when
-      await copyToClipboard('copyInput', 'copyBtn');
+      await copyToClipboard(input, btn);
 
       // then
       expect(writeTextMock).toHaveBeenCalledWith('test content');

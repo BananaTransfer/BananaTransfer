@@ -23,9 +23,10 @@ export function enforceLowerCase(input: HTMLInputElement) {
   }
 }
 
-export async function copyToClipboard(inputId: string, btnId: string) {
-  const input = document.getElementById(inputId) as HTMLInputElement;
-  const btn = document.getElementById(btnId) as HTMLButtonElement;
+export async function copyToClipboard(
+  input: HTMLInputElement,
+  btn: HTMLButtonElement,
+) {
   if (!input.value) {
     // Optionally, you can give user feedback here (e.g., shake button, show tooltip)
     return;

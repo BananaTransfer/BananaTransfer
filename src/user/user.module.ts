@@ -7,6 +7,7 @@ import { UserController } from '@user/controllers/user.controller';
 import { UserService } from '@user/services/user.service';
 import { RemoteUserService } from '@user/services/remoteUser.service';
 import { PasswordService } from '@user/services/password.service';
+import { HashKeyService } from './services/hashKey.service';
 
 import { User } from '@database/entities/user.entity';
 import { LocalUser } from '@database/entities/local-user.entity';
@@ -29,6 +30,7 @@ import { DnsService } from '@remote/services/dns.service';
     RemoteUserService,
     PasswordService,
     RecipientService,
+    HashKeyService,
     RemoteService,
     DnsService,
     {

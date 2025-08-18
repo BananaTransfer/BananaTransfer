@@ -9,6 +9,7 @@ enum UserStatus {
 
 enum TransferStatus {
     CREATED
+    UPLOADED
     SENT
     RETRIEVED
     DELETED
@@ -51,7 +52,6 @@ class RemoteUser {
 class FileTransfer {
     id: bigserial
     symmetric_key_encrypted: text
-    signature_sender: text
     status: TransferStatus
     created_at: timestamp
     filename: varchar

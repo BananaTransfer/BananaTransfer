@@ -9,7 +9,7 @@ function updateEncryptButtonState() {
     document.getElementById('masterPasswordField') as HTMLInputElement
   ).value;
   const publicKey = (
-    document.getElementById('publicKeyField') as HTMLTextAreaElement
+    document.getElementById('publicKeyHashField') as HTMLTextAreaElement
   ).value;
   const btn = document.getElementById('encryptAndSaveBtn') as HTMLButtonElement;
   btn.disabled = !(masterPassword && publicKey);
@@ -20,8 +20,9 @@ export async function generateKeyPair() {
   const publicKeyBase64 = await KeyManager.exportPublicKey(
     generatedKeyPair.publicKey,
   );
-  (document.getElementById('publicKeyField') as HTMLInputElement).value =
-    publicKeyBase64;
+  const publicKeyHash = await SecurityUtils.hash(publicKeyBase64);
+  (document.getElementById('publicKeyHashField') as HTMLInputElement).value =
+    publicKeyHash;
   updateEncryptButtonState();
 }
 

@@ -4,6 +4,14 @@
 import { callApi, showModal } from '../utils/common.js';
 import { KeyManager } from './key-manager.js';
 
+export interface RecipientPublicKeyData {
+  publicKey: string;
+  publicKeyHash: string;
+  importedPublicKey: CryptoKey;
+  isKnownRecipient: boolean;
+  isTrustedRecipientKey: boolean;
+}
+
 export class SecurityUtils {
   public static readonly PBKDF_ITERATIONS: number = 100000;
   // All following sizes are in Bytes
@@ -125,16 +133,18 @@ export class SecurityUtils {
   /**
    * Method to get the pub key associated with a user
    */
-  static async useUserPublicKey(
+  static async useRecipientPublicKey(
     recipient: string,
-  ): Promise<{ key: CryptoKey; isTrusted: boolean }> {
-    const pubKeyData: { publicKey: string; isTrustedRecipient: boolean } =
-      await callApi('GET', `/user/publickey/${recipient}`);
+  ): Promise<RecipientPublicKeyData> {
+    const pubKeyData: RecipientPublicKeyData = await callApi(
+      'GET',
+      `/user/publickey/${recipient}`,
+    );
 
-    return {
-      key: await KeyManager.importPublicKey(pubKeyData.publicKey),
-      isTrusted: pubKeyData.isTrustedRecipient,
-    };
+    pubKeyData.importedPublicKey = await KeyManager.importPublicKey(
+      pubKeyData.publicKey,
+    );
+    return pubKeyData;
   }
 
   static async hash(value: string): Promise<string> {

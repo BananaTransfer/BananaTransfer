@@ -9,26 +9,26 @@ test.beforeEach(async ({ registerPage }) => {
 test('registering with username and password works (twice same password and default email)', async ({
   page,
   registerPage,
-  transferListPage,
+  setKeysPage,
 }) => {
   await registerPage.register({
     username: faker.person.firstName(),
     password: faker.internet.password({ length: 13 }),
   });
-  await expect(page).toHaveURL(transferListPage.URL);
+  await expect(page).toHaveURL(setKeysPage.URL);
 });
 
 test('registering with username, email and password works (twice same password)', async ({
   page,
   registerPage,
-  transferListPage,
+  setKeysPage,
 }) => {
   await registerPage.register({
     username: faker.person.firstName(),
     email: faker.internet.email(),
     password: faker.internet.password({ length: 13 }),
   });
-  await expect(page).toHaveURL(transferListPage.URL);
+  await expect(page).toHaveURL(setKeysPage.URL);
 });
 
 test('registering with two different password dont work', async ({
@@ -48,7 +48,7 @@ test('registering with two different password dont work', async ({
 test('user should be redirected to transfer list if logged in', async ({
   registerPage,
   page,
-  transferListPage,
+  setKeysPage,
 }) => {
   const credentials = {
     username: faker.person.firstName(),
@@ -58,5 +58,5 @@ test('user should be redirected to transfer list if logged in', async ({
   await registerPage.goto();
   await registerPage.register(credentials);
   await registerPage.goto();
-  await expect(page).toHaveURL(transferListPage.URL);
+  await expect(page).toHaveURL(setKeysPage.URL);
 });

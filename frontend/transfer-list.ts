@@ -1,3 +1,6 @@
+import { SecurityUtils } from './crypto/security-utils.js';
+import { FileDownloader } from './utils/file-downloader.js';
+
 function viewTransferDetails(id: string) {
   // TODO:
   console.log(`Viewing details for transfer with ID: ${id}`);
@@ -27,11 +30,10 @@ function rejectTransfer(id: string) {
     });
 }
 
-function downloadTransfer(id: string) {
-  // TODO: real implementation
-  window.location.href = `/transfer/download/${id}`;
-
-  console.log(`Downloaded transfer with ID: ${id}`);
+async function downloadTransfer(id: string) {
+  const userPrivateKey = await SecurityUtils.useUserPrivateKey();
+  const downloader = FileDownloader.createDownloader(userPrivateKey);
+  await downloader.downloadFile(id);
 }
 
 function deleteTransfer(id: string) {
@@ -74,7 +76,7 @@ export function setupListPage() {
     button.addEventListener('click', () => {
       const id = button.getAttribute('data-id');
       if (!id) return;
-      downloadTransfer(id);
+      void downloadTransfer(id);
     });
   });
 

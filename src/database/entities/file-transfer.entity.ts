@@ -12,14 +12,11 @@ import { TransferLog } from './transfer-log.entity';
 
 @Entity()
 export class FileTransfer {
-  @PrimaryGeneratedColumn('increment')
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column({ type: 'text' })
   symmetric_key_encrypted: string;
-
-  @Column({ type: 'text' })
-  signature_sender: string;
 
   @Column({ type: 'enum', enum: TransferStatus })
   status: TransferStatus;
@@ -32,9 +29,6 @@ export class FileTransfer {
 
   @Column({ type: 'text' })
   subject: string;
-
-  @Column({ type: 'text', nullable: true })
-  s3_path: string;
 
   @ManyToOne(() => User, (user) => user.sentTransfers)
   sender: User;
