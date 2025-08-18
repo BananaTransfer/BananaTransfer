@@ -82,7 +82,6 @@ export class TransferService {
     return {
       id: transfer.id,
       symmetric_key_encrypted: transfer.symmetric_key_encrypted,
-      signature_sender: transfer.signature_sender,
       status: transfer.status,
       created_at: transfer.created_at,
       filename: transfer.filename,
@@ -107,7 +106,6 @@ export class TransferService {
     // Create transfer record
     let transfer = this.fileTransferRepository.create({
       symmetric_key_encrypted: transferData.symmetric_key_encrypted,
-      signature_sender: transferData.signature_sender,
       status: TransferStatus.CREATED,
       filename: transferData.filename,
       subject: transferData.subject,
