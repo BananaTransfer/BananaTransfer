@@ -29,7 +29,7 @@ block content
             | Load Recipient Key
 
       #newRecipientInfo.alert.alert-danger.mb-2.small.d-none
-        i.bi.bi-info-circle.me-1
+        i.bi.bi-x-circle-fill.me-1
         | Invalid recipient, unable to load and verify key
 
       label.mt-2.form-label(for="publicKeyHashField") Recipient Public Key Fingerprint
@@ -39,14 +39,14 @@ block content
           i.bi.bi-clipboard
 
       #newRecipientKeyWarning.alert.alert-info.mb-2.small.d-none
-        i.bi.bi-info-circle.me-1
+        i.bi.bi-info-circle-fill.me-1
         | This is the first time you share a file with this recipient.
 
       #recipientKeyNotFoundError.alert.alert-warning.mb-2.small.d-none
-        i.bi.bi-info-circle.me-1
+        i.bi.bi-exclamation-triangle-fill.me-1
         | The public key of the recipient has changed since the last file share.
 
-      .input-group.mb-2.d-none
+      #trustRecipientKey.input-group.mb-2.d-none
         input.form-check-input(type="checkbox" id="trustKeyCheckbox" name="trustKey")
         label.form-check-label.ms-2(for="trustKeyCheckbox") Trust Public Key of Recipient
 
@@ -73,6 +73,8 @@ block content
     .col-12.col-md-10.col-lg-8
       h4.font-weight-bold Send Transfer
       hr.mb-3(style="border-top:3px solid #000; width:100%; margin:auto")
+      #sendError.alert.alert-danger.mb-2.small.d-none
+        i.bi.bi-x-circle-fill.me-1
       button.btn.btn-dark.mb-3(type="submit" style="border-radius:15px; padding:10px 40px;" disabled) Send file(s)
       div.small.text-muted
         | Files will be encrypted and securely transferred to the recipient.

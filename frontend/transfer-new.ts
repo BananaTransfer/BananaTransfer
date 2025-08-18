@@ -1,12 +1,17 @@
 import { FileEncryption, StreamChunk } from './crypto/encryption.js';
 import { callApi, copyToClipboard } from './utils/common.js';
-import { SecurityUtils } from './crypto/security-utils.js';
+import {
+  SecurityUtils,
+  RecipientPublicKeyData,
+} from './crypto/security-utils.js';
 
 interface TransferFormElements {
   recipientInput: HTMLInputElement;
   recipientBtn: HTMLButtonElement;
   publicKeyHashField: HTMLInputElement;
   copyPublicKeyHashBtn: HTMLButtonElement;
+  trustRecipientKey: HTMLElement;
+  trustRecipientKeyCheckbox: HTMLInputElement;
   newRecipientInfo: HTMLElement;
   newRecipientKeyWarning: HTMLElement;
   recipientKeyNotFoundError: HTMLElement;
@@ -14,12 +19,14 @@ interface TransferFormElements {
   fileInput: HTMLInputElement;
   subjectInput: HTMLInputElement;
   sendButton: HTMLButtonElement;
+  sendError: HTMLElement;
 }
 
 class TransferNewPage {
   private formElements!: TransferFormElements;
   private selectedFile: File | null = null;
-  private recipientPublicKey: CryptoKey | null = null;
+  private trustPublicKeyRequired: boolean = false;
+  private recipientPublicKey: RecipientPublicKeyData | null = null;
 
   constructor() {
     this.initializeElements();
@@ -40,6 +47,13 @@ class TransferNewPage {
         'copyPublicKeyHashBtn',
       ) as HTMLButtonElement,
 
+      trustRecipientKey: document.getElementById(
+        'trustRecipientKey',
+      ) as HTMLElement,
+      trustRecipientKeyCheckbox: document.getElementById(
+        'trustKeyCheckbox',
+      ) as HTMLInputElement,
+
       newRecipientInfo: document.getElementById(
         'newRecipientInfo',
       ) as HTMLElement,
@@ -59,6 +73,7 @@ class TransferNewPage {
       sendButton: document.querySelector(
         'button[type="submit"]',
       ) as HTMLButtonElement,
+      sendError: document.getElementById('sendError') as HTMLElement,
     };
     this.updateSendButtonState();
   }
@@ -131,6 +146,10 @@ class TransferNewPage {
     this.formElements.newRecipientInfo.classList.add('d-none');
     this.formElements.newRecipientKeyWarning.classList.add('d-none');
     this.formElements.recipientKeyNotFoundError.classList.add('d-none');
+    this.trustPublicKeyRequired = false;
+    this.formElements.trustRecipientKey.classList.add('d-none');
+    this.formElements.trustRecipientKeyCheckbox.checked = false;
+
     this.updateSendButtonState();
   }
 
@@ -138,24 +157,39 @@ class TransferNewPage {
     try {
       this.formElements.publicKeyHashField.value = '';
 
-      const keyData = await SecurityUtils.useRecipientPublicKey(
+      this.recipientPublicKey = await SecurityUtils.useRecipientPublicKey(
         this.formElements.recipientInput.value,
       );
 
-      this.recipientPublicKey = keyData.importedPublicKey;
-
-      // show public key hash fingerprint
-      this.formElements.publicKeyHashField.value = keyData.publicKeyHash;
-
-      // show banner depending if recipient or key is new or unknown
-      if (!keyData.isKnownRecipient) {
-        this.formElements.newRecipientInfo.classList.remove('d-none');
-      } else if (!keyData.isTrustedRecipientKey) {
-        this.formElements.newRecipientKeyWarning.classList.remove('d-none');
-      }
+      this.setRecipientPublicKeyInfo();
       this.updateSendButtonState();
     } catch {
       this.formElements.recipientKeyNotFoundError.classList.remove('d-none');
+    }
+  }
+
+  private setRecipientPublicKeyInfo() {
+    this.formElements.newRecipientInfo.classList.add('d-none');
+    this.formElements.newRecipientKeyWarning.classList.add('d-none');
+    this.formElements.recipientKeyNotFoundError.classList.add('d-none');
+    this.formElements.trustRecipientKey.classList.add('d-none');
+    this.formElements.trustRecipientKeyCheckbox.checked = false;
+    this.trustPublicKeyRequired = false;
+
+    if (!this.recipientPublicKey) {
+      this.formElements.publicKeyHashField.value = '';
+    } else {
+      this.formElements.publicKeyHashField.value =
+        this.recipientPublicKey.publicKeyHash;
+      if (!this.recipientPublicKey.isKnownRecipient) {
+        this.formElements.newRecipientInfo.classList.remove('d-none');
+        this.formElements.trustRecipientKey.classList.remove('d-none');
+        this.formElements.trustRecipientKeyCheckbox.checked = false;
+      } else if (!this.recipientPublicKey.isTrustedRecipientKey) {
+        this.formElements.newRecipientKeyWarning.classList.remove('d-none');
+        this.formElements.trustRecipientKey.classList.remove('d-none');
+        this.formElements.trustRecipientKeyCheckbox.checked = false;
+      }
     }
   }
 
@@ -193,8 +227,20 @@ class TransferNewPage {
 
   private async handleSubmit(): Promise<void> {
     // Validation
+    if (
+      this.trustPublicKeyRequired &&
+      !this.formElements.trustKeyCheckbox.checked
+    ) {
+      this.formElements.sendError.classList.remove('d-none');
+      this.formElements.sendError.textContent =
+        'You must trust the public key of the recipient.';
+      return;
+    }
+
     if (!this.selectedFile) {
-      alert('Please select a file to transfer.');
+      this.formElements.sendError.classList.remove('d-none');
+      this.formElements.sendError.textContent =
+        'Please select a file to transfer.';
       return;
     }
 
@@ -203,7 +249,9 @@ class TransferNewPage {
     const subject = this.formElements.subjectInput.value.trim();
 
     if (!recipientUsername || !subject) {
-      alert('Please fill in all required fields.');
+      this.formElements.sendError.classList.remove('d-none');
+      this.formElements.sendError.textContent =
+        'Please fill in all required fields.';
       return;
     }
 
@@ -236,7 +284,9 @@ class TransferNewPage {
       window.location.href = '/transfer';
     } catch (error) {
       console.error('Error creating transfer:', error);
-      alert('Failed to create transfer. Please try again.');
+      this.formElements.sendError.classList.remove('d-none');
+      this.formElements.sendError.textContent =
+        'Failed to create transfer. Please try again.';
     } finally {
       // Re-enable send button
       this.formElements.sendButton.disabled = false;
