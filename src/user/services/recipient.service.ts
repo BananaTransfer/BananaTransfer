@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -19,6 +19,7 @@ import { TrustedRecipient } from '@database/entities/trusted-recipient.entity';
 @Injectable()
 export class RecipientService {
   private readonly envDomain: string;
+  private readonly logger: Logger;
 
   constructor(
     private readonly configService: ConfigService,
@@ -29,6 +30,7 @@ export class RecipientService {
     @InjectRepository(TrustedRecipient)
     private trustedRecipientRepository: Repository<TrustedRecipient>,
   ) {
+    this.logger = new Logger(RecipientService.name);
     this.envDomain = this.configService.getOrThrow<string>('DOMAIN');
   }
 
@@ -91,7 +93,6 @@ export class RecipientService {
     recipient: string,
   ): Promise<GetPubKeyDto> {
     const parsedRecipient = this.parseRecipient(recipient);
-    const recipientUser = await this.getRecipientUser(parsedRecipient);
 
     const publicKey = parsedRecipient.isLocal
       ? (await this.userService.getLocalUser(parsedRecipient.username))
@@ -100,17 +101,29 @@ export class RecipientService {
           .publicKey;
     const publicKeyHash = this.hashKeyService.hashKey({ publicKey });
 
-    const isKnownRecipient = await this.isKnownRecipient(userId, recipientUser);
-    const isTrustedRecipientKey = isKnownRecipient
-      ? await this.isTrustedRecipientKey(userId, recipientUser, publicKeyHash)
-      : false;
-
-    return {
+    const result = {
       publicKey,
       publicKeyHash,
-      isKnownRecipient,
-      isTrustedRecipientKey,
+      isKnownRecipient: false,
+      isTrustedRecipientKey: false,
     };
+    try {
+      const recipientUser = await this.getRecipientUser(parsedRecipient);
+      result.isKnownRecipient = await this.isKnownRecipient(
+        userId,
+        recipientUser,
+      );
+      result.isTrustedRecipientKey = result.isKnownRecipient
+        ? await this.isTrustedRecipientKey(userId, recipientUser, publicKeyHash)
+        : false;
+    } catch (err) {
+      console.debug(err);
+      this.logger.log(
+        'Fetching public key for remote recipient that does not exist in local db',
+      );
+    }
+
+    return result;
   }
 
   public async getUser(recipient: string): Promise<User> {

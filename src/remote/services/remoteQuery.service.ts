@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { DnsService } from '@remote/services/dns.service';
 import { Recipient } from '@user/types/recipient.type';
 import { PublicKeyDto } from '@user/dto/publicKey.dto';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class RemoteQueryService {
@@ -20,6 +21,9 @@ export class RemoteQueryService {
   }
 
   async getRemoteUserPublicKey(recipient: Recipient): Promise<PublicKeyDto> {
+    this.logger.debug(
+      `Fetching public key for remote user ${recipient.username} on domain ${recipient.domain}`,
+    );
     const serverAddress = await this.dnsService.getServerAddress(
       recipient.domain,
     );
@@ -35,8 +39,9 @@ export class RemoteQueryService {
       throw new Error(`Request failed with status ${res.status}`);
     }
     const data = (await res.json()) as PublicKeyDto;
-    await validateOrReject(data);
+    const dto = plainToInstance(PublicKeyDto, data);
+    await validateOrReject(dto);
 
-    return data;
+    return dto;
   }
 }

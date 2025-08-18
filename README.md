@@ -195,6 +195,8 @@ S3_ENDPOINT=http://localhost:9010
 ```
 
 In both env files the parameter `NODE_ENV=dev` needs to be set.
+Set in both env files the parameter `OTHER_SERVER` to point to the other server instance. `OTHER_SERVER=localhost:3001`
+`OTHER_SERVER=localhost:3000`
 
 ```bash
 # Install dotenv-cli globally

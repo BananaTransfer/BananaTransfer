@@ -58,10 +58,10 @@ export class RemoteGuard implements CanActivate {
     // Compare the request IP to the resolved IPs
     if (!ipAddresses.includes(remoteServerIp)) {
       this.logger.error(
-        'Sender IP does not match resolved ip addresses of remote domain',
+        `Sender IP ${remoteServerIp} does not match resolved ip addresses of remote domain`,
       );
       throw new ForbiddenException(
-        'Sender IP does not match resolved ip addresses of remote domain',
+        `Sender IP does not match resolved ip addresses of remote domain`,
       );
     }
 

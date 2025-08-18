@@ -6,15 +6,23 @@ import {
 } from '@nestjs/common';
 import { Resolver, NOTFOUND } from 'dns/promises';
 import validator from 'validator';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class DnsService {
   private readonly logger: Logger;
   private readonly resolver: Resolver;
+  private readonly nodeEnv?: string;
+  private readonly otherServer?: string;
 
-  constructor(resolver: Resolver) {
+  constructor(
+    resolver: Resolver,
+    private configService: ConfigService,
+  ) {
     this.resolver = resolver;
     this.logger = new Logger(DnsService.name);
+    this.nodeEnv = this.configService.get<string>('NODE_ENV');
+    this.otherServer = this.configService.get<string>('OTHER_SERVER');
   }
 
   private isFQDN(domain: string): boolean {
@@ -56,6 +64,11 @@ export class DnsService {
       throw new InvalidDomainException('The provided domain is invalid.');
     }
 
+    if (this.nodeEnv === 'dev' && this.otherServer) {
+      this.logger.warn(`Using dev server address: ${this.otherServer}`);
+      return this.otherServer;
+    }
+
     this.logger.debug(`Resolving server address for ${domain}`);
     const result = await this.resolveTxt('_bananatransfer.' + domain);
 
@@ -76,6 +89,12 @@ export class DnsService {
     this.logger.debug(
       `Resolving BananaTransfer server IP addresses for domain ${domain}`,
     );
+
+    if (this.nodeEnv === 'dev') {
+      this.logger.warn(`Using dev server ip address: 127.0.0.1`);
+      return ['127.0.0.1', '::1'];
+    }
+
     const hostname = await this.getServerAddress(domain);
     const addresses = await this.resolver.resolve4(hostname);
     if (addresses.length === 0) {
