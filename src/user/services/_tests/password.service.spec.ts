@@ -1,3 +1,4 @@
+import { LocalUser } from '@database/entities/local-user.entity';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PasswordService } from '@user/services/password.service';
 
@@ -18,5 +19,37 @@ describe('PasswordService', () => {
     });
   });
 
-  // TODO: Add tests for all methods in PasswordService
+  describe('hashPassword', () => {
+    it('should hash the password correctly', async () => {
+      const password = 'testPassword';
+      const hashedPassword = await passwordService.hashPassword(password);
+      expect(hashedPassword).not.toEqual(password);
+    });
+  });
+
+  describe('comparePasswords', () => {
+    it('should return true for matching passwords', async () => {
+      const password = 'testPassword';
+      const localUser = {
+        password_hash: await passwordService.hashPassword(password),
+      };
+      const result = await passwordService.validatePassword(
+        localUser as LocalUser,
+        password,
+      );
+      expect(result).toBe(true);
+    });
+
+    it('should return false for non-matching passwords', async () => {
+      const password = 'testPassword';
+      const localUser = {
+        password_hash: await passwordService.hashPassword('wrongPassword'),
+      };
+      const result = await passwordService.validatePassword(
+        localUser as LocalUser,
+        password,
+      );
+      expect(result).toBe(false);
+    });
+  });
 });

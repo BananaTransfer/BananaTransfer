@@ -10,9 +10,10 @@ export function createInput(id: string, value = ''): HTMLInputElement {
 // Helper to mock the clipboard API for testing
 export function mockClipboard() {
   if (!navigator.clipboard) {
-    // @ts-ignore
+    // @ts-expect-error: Assigning to navigator.clipboard for test mocking
     navigator.clipboard = {};
   }
-  navigator.clipboard.writeText = jest.fn();
-  return navigator.clipboard.writeText as jest.Mock;
+  const mock = jest.fn(async () => Promise.resolve());
+  navigator.clipboard.writeText = mock;
+  return mock;
 }

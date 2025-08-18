@@ -18,6 +18,7 @@ jest.mock('../crypto/key-manager', () => ({
 jest.mock('../crypto/security-utils', () => ({
   SecurityUtils: {
     generateMasterPassword: jest.fn(() => 'mockMasterPassword'),
+    hash: jest.fn(() => 'mockHashedValue'),
   },
 }));
 
@@ -25,7 +26,7 @@ describe('set-keys.ts functions', () => {
   beforeEach(() => {
     document.body.innerHTML = `
       <input id="masterPasswordField" />
-      <textarea id="publicKeyField"></textarea>
+      <textarea id="publicKeyHashField"></textarea>
       <button id="encryptAndSaveBtn" disabled></button>
       <input id="modalMasterPasswordInput" />
       <div id="modalMasterPasswordError"></div>
@@ -38,9 +39,9 @@ describe('set-keys.ts functions', () => {
     test('generateKeyPair sets publicKeyField', async () => {
       await generateKeyPair();
       expect(
-        (document.getElementById('publicKeyField') as HTMLTextAreaElement)
+        (document.getElementById('publicKeyHashField') as HTMLTextAreaElement)
           .value,
-      ).toBe('mockExportedPublicKey');
+      ).toBe('mockHashedValue');
     });
   });
 

@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
 
 export default class CreateTransferDto {
   @IsString()
@@ -15,5 +15,12 @@ export default class CreateTransferDto {
 
   @IsString()
   @IsNotEmpty()
-  receiver: string;
+  recipient: string;
+
+  @IsString()
+  @IsNotEmpty()
+  recipient_public_key_hash: string;
+
+  @IsBoolean()
+  trust_recipient_key: boolean;
 }

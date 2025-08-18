@@ -1,12 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { RemoteService } from '@remote/services/remote.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+
 import { UserService } from '@user/services/user.service';
 import { RemoteUserService } from '@user/services/remoteUser.service';
+import { HashKeyService } from './hashKey.service';
+import { RemoteService } from '@remote/services/remote.service';
+
 import { GetPubKeyDto } from '@user/dto/getPubKey.dto';
 import { Recipient } from '@user/types/recipient.type';
 import { MalformedRecipientException } from '@user/types/malformed-recipient-exception.type';
+
 import { User } from '@database/entities/user.entity';
+import { LocalUser } from '@database/entities/local-user.entity';
+import { TrustedRecipient } from '@database/entities/trusted-recipient.entity';
 
 @Injectable()
 export class RecipientService {
@@ -14,9 +22,12 @@ export class RecipientService {
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly remoteService: RemoteService,
     private readonly userService: UserService,
     private readonly remoteUserService: RemoteUserService,
+    private readonly hashKeyService: HashKeyService,
+    private readonly remoteService: RemoteService,
+    @InjectRepository(TrustedRecipient)
+    private trustedRecipientRepository: Repository<TrustedRecipient>,
   ) {
     this.envDomain = this.configService.getOrThrow<string>('DOMAIN');
   }
@@ -48,54 +59,105 @@ export class RecipientService {
     return { username, domain, isLocal };
   }
 
-  async getPublicKey(recipient: string): Promise<GetPubKeyDto> {
-    const parsedRecipient = this.parseRecipient(recipient);
-
-    if (parsedRecipient.isLocal) {
-      const localUser = await this.userService.getLocalUser(
-        parsedRecipient.username,
-      );
-      return {
-        publicKey: localUser.public_key,
-        isTrustedRecipient: true, // local user are trusted by default
-      };
-    } else {
-      const remoteUserPublicKey =
-        await this.remoteService.getRemoteUserPublicKey(parsedRecipient);
-      // get trusted local
-      // hash public key
-      // compare with trusted local
-
-      return {
-        publicKey: remoteUserPublicKey.publicKey,
-        isTrustedRecipient: false,
-      };
-    }
+  private async isKnownRecipient(
+    userId: number,
+    recipientUser: User,
+  ): Promise<boolean> {
+    const trustedRecipient = await this.trustedRecipientRepository.findOne({
+      where: { localUser: { id: userId }, user: { id: recipientUser.id } },
+      relations: ['user', 'localUser'],
+    });
+    return !!trustedRecipient;
   }
 
-  async getUser(recipient: string): Promise<User> {
-    const parsed = this.parseRecipient(recipient);
+  async isTrustedRecipientKey(
+    userId: number,
+    recipientUser: User,
+    publicKeyHash: string,
+  ): Promise<boolean> {
+    const trustedRecipient = await this.trustedRecipientRepository.findOne({
+      where: {
+        localUser: { id: userId },
+        user: { id: recipientUser.id },
+        public_key_hash: publicKeyHash,
+      },
+      relations: ['user', 'localUser'],
+    });
+    return !!trustedRecipient;
+  }
 
-    if (parsed.isLocal) {
-      return await this.userService.getLocalUser(parsed.username);
+  public async getPublicKey(
+    userId: number,
+    recipient: string,
+  ): Promise<GetPubKeyDto> {
+    const parsedRecipient = this.parseRecipient(recipient);
+    const recipientUser = await this.getRecipientUser(parsedRecipient);
+
+    const publicKey = parsedRecipient.isLocal
+      ? (await this.userService.getLocalUser(parsedRecipient.username))
+          .public_key
+      : (await this.remoteService.getRemoteUserPublicKey(parsedRecipient))
+          .publicKey;
+    const publicKeyHash = this.hashKeyService.hashKey({ publicKey });
+
+    const isKnownRecipient = await this.isKnownRecipient(userId, recipientUser);
+    const isTrustedRecipientKey = isKnownRecipient
+      ? await this.isTrustedRecipientKey(userId, recipientUser, publicKeyHash)
+      : false;
+
+    return {
+      publicKey,
+      publicKeyHash,
+      isKnownRecipient,
+      isTrustedRecipientKey,
+    };
+  }
+
+  public async getUser(recipient: string): Promise<User> {
+    const parsedRecipient = this.parseRecipient(recipient);
+    return await this.getRecipientUser(parsedRecipient);
+  }
+
+  private async getRecipientUser(recipient: Recipient): Promise<User> {
+    if (recipient.isLocal) {
+      return await this.userService.getLocalUser(recipient.username);
     } else {
       return await this.remoteUserService.getRemoteUser(
-        parsed.username,
-        parsed.username,
+        recipient.username,
+        recipient.domain,
       );
     }
   }
 
-  trustPublicKey(/*username: string, recipient: string, publicKey: string*/): void {
-    // TODO: implement logic to trust and save the hash of the public key in the DB
-    // console.debug(`Trusting public key for user ${username}:`);
-    // console.debug(`Recipient: ${recipient}`);
-    // console.debug(`Public Key: ${publicKey}`);
+  public async addTrustedRecipient(
+    currentUser: LocalUser,
+    recipientUser: User,
+    publicKeyHash: string,
+  ): Promise<void> {
+    const newTrustedRecipient = this.trustedRecipientRepository.create({
+      localUser: currentUser,
+      user: recipientUser,
+      public_key_hash: publicKeyHash,
+    });
+    await this.trustedRecipientRepository.save(newTrustedRecipient);
   }
 
-  getKnownRecipients(/*userId: number*/): string[] {
-    // TODO: get known recipients of current user from the db
-    // console.debug(`Fetching known recipients for user ID: ${userId}`);
-    return ['recipient1', 'recipient2', 'recipient3'];
+  public async getKnownRecipients(userId: number): Promise<string[]> {
+    const trustedRecipients = await this.trustedRecipientRepository.find({
+      where: { localUser: { id: userId } },
+      relations: ['user', 'localUser'],
+    });
+    let knownRecipientAddresses = trustedRecipients.map((recipient) =>
+      this.getRecipientAddress(recipient.user),
+    );
+    knownRecipientAddresses = [...new Set(knownRecipientAddresses.sort())];
+    return knownRecipientAddresses;
+  }
+
+  public getRecipientAddress(recipient: User): string {
+    if ('domain' in recipient && typeof recipient.domain === 'string') {
+      return `${recipient.username}@${recipient.domain}`;
+    }
+    return `${recipient.username}@${this.envDomain}`;
   }
 }

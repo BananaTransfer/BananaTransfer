@@ -13,29 +13,48 @@ block content
     .row.justify-content-center.mb-3
       .col-12.col-md-10.col-lg-8
         .alert.alert-danger.text-center= error
-
-
   
   // Recipient section
   .row.justify-content-center.mb-3
     .col-12.col-md-10.col-lg-8
       h4.font-weight-bold Recipient
-      hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
+      hr.mb-3(style="border-top:3px solid #000; width:100%; margin:auto")
+      .d-flex.flex-column.flex-md-row.gap-1.mb-2
+        input.form-control.form-control-sm(type="text" name="recipient" id="recipient" placeholder="Recipient address" list="recipients-list" autocomplete="on" required)
+        datalist#recipients-list
+          each recipient in knownRecipients
+            option(value=recipient)
+        button.btn.btn-outline-secondary.text-nowrap(type="button" onclick="/" id="recipient-btn")
+            i.bi.bi-key.me-1
+            | Load Recipient Key
+
+      #recipientKeyNotFoundError.alert.alert-danger.mb-2.small.d-none
+        i.bi.bi-x-circle-fill.me-1
+        | Invalid recipient, unable to load and verify key
+
+      label.mt-2.form-label(for="publicKeyHashField") Recipient Public Key Fingerprint
       .input-group.mb-2
-        input.form-control(type="text" name="recipient" id="recipient" placeholder="Recipient's name" required)
-        span.input-group-text @#{domain}
-      
-      // Verification section
-      input.form-control.small(type="text" id="expectedHash"  style="font-size: 0.9em;" disabled=true placeholder='Recipient key')
-      button.btn.btn-outline-secondary(type="button" onclick="/" id="recipient-btn")
-        i.me-1
-        | Verify Public Key Hash
+        input.form-control.form-control-sm(type="text", id="publicKeyHashField", value=publicKeyHash, readonly, disabled)
+        button.btn.btn-outline-secondary(type="button", id="copyPublicKeyHashBtn")
+          i.bi.bi-clipboard
+
+      #newRecipientInfo.alert.alert-info.mb-2.small.d-none
+        i.bi.bi-info-circle-fill.me-1
+        | This is the first time you share a file with this recipient.
+
+      #newRecipientKeyWarning.alert.alert-warning.mb-2.small.d-none
+        i.bi.bi-exclamation-triangle-fill.me-1
+        | The public key of the recipient has changed since the last file share.
+
+      #trustRecipientKey.input-group.mb-2.d-none
+        input.form-check-input(type="checkbox" id="trustKeyCheckbox" name="trustKey")
+        label.form-check-label.ms-2(for="trustKeyCheckbox") Trust Public Key of Recipient
 
   // File upload section
   .row.justify-content-center.mb-3
     .col-12.col-md-10.col-lg-8
       h4.font-weight-bold Files
-      hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
+      hr.mb-3(style="border-top:3px solid #000; width:100%; margin:auto")
       .file-upload-area.p-5.text-center.rounded(style="background-color: #f9d71c; border: 2px dashed #333; cursor: pointer;" onclick="/")
         i.bi.bi-cloud-upload.display-4.mb-3
         h5 Add file (click to browse or drag and drop)
@@ -46,15 +65,17 @@ block content
     .col-12.col-md-10.col-lg-8
       input(type="hidden" id="_csrf" value=csrfToken)
       h4.font-weight-bold Subject
-      hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
+      hr.mb-3(style="border-top:3px solid #000; width:100%; margin:auto")
       input.form-control(type="text" name="subject" id="subject" placeholder="Transfer Subject (Filename by default)")
 
     // Send button
   .row.justify-content-center.mb-3
     .col-12.col-md-10.col-lg-8
       h4.font-weight-bold Send Transfer
-      hr(style="border-top:3px solid #000; width:100%; margin:auto; margin-bottom:20px;")
-      button.btn.btn-dark.mb-3(type="submit" style="border-radius:15px; padding:10px 40px;") Send file(s)
+      hr.mb-3(style="border-top:3px solid #000; width:100%; margin:auto")
+      #sendError.alert.alert-danger.mb-2.small.d-none
+        i.bi.bi-x-circle-fill.me-1
+      button.btn.btn-dark.mb-3(type="submit" style="border-radius:15px; padding:10px 40px;" disabled) Send file(s)
       div.small.text-muted
         | Files will be encrypted and securely transferred to the recipient.
 

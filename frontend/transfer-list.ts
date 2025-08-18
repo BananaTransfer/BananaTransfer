@@ -65,7 +65,7 @@ export function setupListPage() {
     button.addEventListener('click', () => {
       const id = button.getAttribute('data-id');
       if (!id) return;
-      downloadTransfer(id);
+      void downloadTransfer(id);
     });
   });
 
