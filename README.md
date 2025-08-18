@@ -93,6 +93,7 @@ Create file `.env` with the configuration variables
 # .env
 # Environment configuration
 PORT=3000
+# NODE_ENV=dev
 
 # Application configuration
 DOMAIN=domain.com
@@ -179,7 +180,41 @@ npm run migration:generate src/database/migrations/<name>
 npm run migration:run
 ```
 
-## Resources
+## Run two servers locally for testing the communication between servers
+
+You can run two instances of the application locally for testing purposes. This can be useful for testing communication between servers.
+
+For this you need to create a .env file for the second server instance.: `.env.serverB`:
+the following parameters need to be changed compared to the first server instance:
+
+```txt
+PORT=3001
+DOMAIN=<use a different domain>
+DB_PORT=5433
+S3_ENDPOINT=http://localhost:9010
+```
+
+In both env files the parameter `NODE_ENV=dev` needs to be set.
+
+```bash
+# Install dotenv-cli globally
+npm install -g dotenv-cli
+
+# Start the docker compose for the first instance
+npm run docker up
+
+# Start the docker compose for the second instance
+npm run docker:serverB up
+
+# Run the db migration on second db
+npm run migration:run:serverB
+
+# Start the first server instance:
+npm run start:dev
+
+# Start the second server instance:
+npm run start:dev:serverB
+```
 
 Check out a few resources that may come in handy when working with NestJS:
 

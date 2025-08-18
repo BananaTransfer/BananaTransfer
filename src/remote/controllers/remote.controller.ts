@@ -11,7 +11,6 @@ import {
 import { RemoteGuard } from '@remote/guards/remote.guard';
 import { RemoteRequest } from '@remote/types/remote-request.type';
 import { RemoteInboundService } from '@remote/services/remoteInbound.service';
-import { RecipientService } from '@user/services/recipient.service';
 import { UserService } from '@user/services/user.service';
 import { PublicKeyDto } from '@user/dto/publicKey.dto';
 
@@ -22,7 +21,6 @@ import { PublicKeyDto } from '@user/dto/publicKey.dto';
 export class RemoteController {
   constructor(
     private readonly remoteInboundService: RemoteInboundService,
-    private readonly recipientService: RecipientService,
     private readonly userService: UserService,
   ) {}
 
