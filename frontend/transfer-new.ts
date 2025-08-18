@@ -142,14 +142,7 @@ class TransferNewPage {
 
   private resetRecipientPublicKey(): void {
     this.recipientPublicKey = null;
-    this.formElements.publicKeyHashField.value = '';
-    this.formElements.newRecipientInfo.classList.add('d-none');
-    this.formElements.newRecipientKeyWarning.classList.add('d-none');
-    this.formElements.recipientKeyNotFoundError.classList.add('d-none');
-    this.trustPublicKeyRequired = false;
-    this.formElements.trustRecipientKey.classList.add('d-none');
-    this.formElements.trustRecipientKeyCheckbox.checked = false;
-
+    this.updateRecipientPublicKeyInfo();
     this.updateSendButtonState();
   }
 
@@ -158,17 +151,17 @@ class TransferNewPage {
       this.formElements.publicKeyHashField.value = '';
 
       this.recipientPublicKey = await SecurityUtils.useRecipientPublicKey(
-        this.formElements.recipientInput.value,
+        this.formElements.recipientInput.value.trim(),
       );
 
-      this.setRecipientPublicKeyInfo();
+      this.updateRecipientPublicKeyInfo();
       this.updateSendButtonState();
     } catch {
       this.formElements.recipientKeyNotFoundError.classList.remove('d-none');
     }
   }
 
-  private setRecipientPublicKeyInfo() {
+  private updateRecipientPublicKeyInfo() {
     this.formElements.newRecipientInfo.classList.add('d-none');
     this.formElements.newRecipientKeyWarning.classList.add('d-none');
     this.formElements.recipientKeyNotFoundError.classList.add('d-none');
@@ -184,11 +177,11 @@ class TransferNewPage {
       if (!this.recipientPublicKey.isKnownRecipient) {
         this.formElements.newRecipientInfo.classList.remove('d-none');
         this.formElements.trustRecipientKey.classList.remove('d-none');
-        this.formElements.trustRecipientKeyCheckbox.checked = false;
+        this.trustPublicKeyRequired = true;
       } else if (!this.recipientPublicKey.isTrustedRecipientKey) {
         this.formElements.newRecipientKeyWarning.classList.remove('d-none');
         this.formElements.trustRecipientKey.classList.remove('d-none');
-        this.formElements.trustRecipientKeyCheckbox.checked = false;
+        this.trustPublicKeyRequired = true;
       }
     }
   }
@@ -225,34 +218,46 @@ class TransferNewPage {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
 
+  private showSendError(error: string) {
+    this.formElements.sendError.classList.remove('d-none');
+    this.formElements.sendError.textContent = error;
+  }
+
   private async handleSubmit(): Promise<void> {
     // Validation
+
+    // check that recipient is entered
+    const recipientAddress = this.formElements.recipientInput.value.trim();
+    if (!recipientAddress) {
+      return this.showSendError('Please enter a recipient address.');
+    }
+
+    // check that recipient key is loaded
+    if (!this.recipientPublicKey?.importedPublicKey) {
+      return this.showSendError(
+        'Please select a recipient and load their public key.',
+      );
+    }
+
+    // check that the checkbox to trust recipient key is set if needed
     if (
       this.trustPublicKeyRequired &&
-      !this.formElements.trustKeyCheckbox.checked
+      !this.formElements.trustRecipientKeyCheckbox.checked
     ) {
-      this.formElements.sendError.classList.remove('d-none');
-      this.formElements.sendError.textContent =
-        'You must trust the public key of the recipient.';
-      return;
+      return this.showSendError(
+        'You must trust the public key of the recipient.',
+      );
     }
 
+    // check that there is a file selected
     if (!this.selectedFile) {
-      this.formElements.sendError.classList.remove('d-none');
-      this.formElements.sendError.textContent =
-        'Please select a file to transfer.';
-      return;
+      return this.showSendError('Please select a file to transfer.');
     }
-
-    const recipientUsername = this.formElements.recipientInput.value.trim();
 
     const subject = this.formElements.subjectInput.value.trim();
 
-    if (!recipientUsername || !subject) {
-      this.formElements.sendError.classList.remove('d-none');
-      this.formElements.sendError.textContent =
-        'Please fill in all required fields.';
-      return;
+    if (!subject) {
+      return this.showSendError('Please enter a subject for the transfer.');
     }
 
     try {
@@ -264,12 +269,12 @@ class TransferNewPage {
       const aesKey = await FileEncryption.generateAESKey();
       const wrappedAesKey = await FileEncryption.wrapAESKey(
         aesKey,
-        this.recipientPublicKey!,
+        this.recipientPublicKey.importedPublicKey,
       );
 
       const transfer = await this.createTransfer(
         wrappedAesKey,
-        recipientUsername,
+        recipientAddress,
         subject,
       );
 
@@ -284,9 +289,7 @@ class TransferNewPage {
       window.location.href = '/transfer';
     } catch (error) {
       console.error('Error creating transfer:', error);
-      this.formElements.sendError.classList.remove('d-none');
-      this.formElements.sendError.textContent =
-        'Failed to create transfer. Please try again.';
+      this.showSendError('Failed to create transfer. Please try again.');
     } finally {
       // Re-enable send button
       this.formElements.sendButton.disabled = false;

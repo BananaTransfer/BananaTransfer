@@ -28,7 +28,7 @@ block content
             i.bi.bi-key.me-1
             | Load Recipient Key
 
-      #newRecipientInfo.alert.alert-danger.mb-2.small.d-none
+      #recipientKeyNotFoundError.alert.alert-danger.mb-2.small.d-none
         i.bi.bi-x-circle-fill.me-1
         | Invalid recipient, unable to load and verify key
 
@@ -38,11 +38,11 @@ block content
         button.btn.btn-outline-secondary(type="button", id="copyPublicKeyHashBtn")
           i.bi.bi-clipboard
 
-      #newRecipientKeyWarning.alert.alert-info.mb-2.small.d-none
+      #newRecipientInfo.alert.alert-info.mb-2.small.d-none
         i.bi.bi-info-circle-fill.me-1
         | This is the first time you share a file with this recipient.
 
-      #recipientKeyNotFoundError.alert.alert-warning.mb-2.small.d-none
+      #newRecipientKeyWarning.alert.alert-warning.mb-2.small.d-none
         i.bi.bi-exclamation-triangle-fill.me-1
         | The public key of the recipient has changed since the last file share.
 
@@ -81,6 +81,4 @@ block content
 
   script(type="module").
     import { setupNewTransfer } from '/js/transfer-new.js';
-    import { copyToClipboard } from '/js/utils/common.js';
     setupNewTransfer();
-    document.getElementById('copyPublicKeyHashBtn').addEventListener('click', () => copyToClipboard(document.getElementById('publicKeyHashField'), document.getElementById('copyPublicKeyHashBtn'))));
