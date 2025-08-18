@@ -51,9 +51,9 @@ export class TransferController {
     @Req() req: AuthenticatedRequest,
     @Res() res: Response,
   ): Promise<void> {
-    const currentUser = await this.userService.getCurrentUser(req.user.id);
-    const knownRecipients =
-      await this.recipientService.getKnownRecipients(currentUser);
+    const knownRecipients = await this.recipientService.getKnownRecipients(
+      req.user.id,
+    );
     res.render('transfer/new', {
       user: req.user,
       csrfToken: req.csrfToken(),

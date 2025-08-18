@@ -130,8 +130,7 @@ export class UserController {
     @Req() req: AuthenticatedRequest,
     @Param('recipient') recipient: string,
   ): Promise<GetPubKeyDto> {
-    const currentUser = await this.userService.getCurrentUser(req.user.id);
-    return this.recipientService.getPublicKey(currentUser, recipient);
+    return this.recipientService.getPublicKey(req.user.id, recipient);
   }
 
   // endpoint to change password of user

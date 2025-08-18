@@ -101,7 +101,27 @@ export class TransferService {
     senderId: number,
   ): Promise<TransferDto> {
     const sender = await this.userService.getCurrentUser(senderId);
-    const receiver = await this.recipientService.getUser(transferData.receiver);
+    const recipient = await this.recipientService.getUser(
+      transferData.recipient,
+    );
+
+    // Check if recipient key is trusted
+    const isTrustedKey = await this.recipientService.isTrustedRecipientKey(
+      senderId,
+      recipient,
+      transferData.recipient_public_key_hash,
+    );
+    if (!isTrustedKey) {
+      if (transferData.trust_recipient_key) {
+        await this.recipientService.addTrustedRecipient(
+          sender,
+          recipient,
+          transferData.recipient_public_key_hash,
+        );
+      } else {
+        throw new BadRequestException('User must trust recipient key');
+      }
+    }
 
     // Create transfer record
     let transfer = this.fileTransferRepository.create({
@@ -110,7 +130,7 @@ export class TransferService {
       filename: transferData.filename,
       subject: transferData.subject,
       sender: sender,
-      receiver: receiver,
+      receiver: recipient,
     });
 
     transfer = await this.fileTransferRepository.save(transfer);

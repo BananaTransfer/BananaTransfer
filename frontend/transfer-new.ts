@@ -299,14 +299,16 @@ class TransferNewPage {
 
   private async createTransfer(
     wrappedAesKey: ArrayBuffer,
-    recipientUsername: string,
+    recipientAddress: string,
     subject: string,
   ): Promise<{ id: string }> {
     const payload = {
+      recipient: recipientAddress,
       filename: this.selectedFile!.name,
       subject: subject,
-      receiver: recipientUsername,
       symmetric_key_encrypted: this.arrayBufferToBase64(wrappedAesKey),
+      recipient_public_key_hash: this.recipientPublicKey!.publicKeyHash,
+      trust_recipient_key: this.formElements.trustRecipientKeyCheckbox.checked,
     };
 
     return callApi('POST', '/transfer/new', payload);

@@ -60,32 +60,34 @@ export class RecipientService {
   }
 
   private async isKnownRecipient(
-    currentUser: LocalUser,
+    userId: number,
     recipientUser: User,
   ): Promise<boolean> {
     const trustedRecipient = await this.trustedRecipientRepository.findOne({
-      where: { localUser: currentUser, user: recipientUser },
+      where: { localUser: { id: userId }, user: { id: recipientUser.id } },
+      relations: ['user', 'localUser'],
     });
     return !!trustedRecipient;
   }
 
-  private async isTrustedRecipientKey(
-    currentUser: LocalUser,
+  async isTrustedRecipientKey(
+    userId: number,
     recipientUser: User,
     publicKeyHash: string,
   ): Promise<boolean> {
     const trustedRecipient = await this.trustedRecipientRepository.findOne({
       where: {
-        localUser: currentUser,
-        user: recipientUser,
+        localUser: { id: userId },
+        user: { id: recipientUser.id },
         public_key_hash: publicKeyHash,
       },
+      relations: ['user', 'localUser'],
     });
     return !!trustedRecipient;
   }
 
   public async getPublicKey(
-    currentUser: LocalUser,
+    userId: number,
     recipient: string,
   ): Promise<GetPubKeyDto> {
     const parsedRecipient = this.parseRecipient(recipient);
@@ -98,16 +100,9 @@ export class RecipientService {
           .publicKey;
     const publicKeyHash = this.hashKeyService.hashKey({ publicKey });
 
-    const isKnownRecipient = await this.isKnownRecipient(
-      currentUser,
-      recipientUser,
-    );
+    const isKnownRecipient = await this.isKnownRecipient(userId, recipientUser);
     const isTrustedRecipientKey = isKnownRecipient
-      ? await this.isTrustedRecipientKey(
-          currentUser,
-          recipientUser,
-          publicKeyHash,
-        )
+      ? await this.isTrustedRecipientKey(userId, recipientUser, publicKeyHash)
       : false;
 
     return {
@@ -147,12 +142,12 @@ export class RecipientService {
     await this.trustedRecipientRepository.save(newTrustedRecipient);
   }
 
-  public async getKnownRecipients(currentUser: LocalUser): Promise<string[]> {
+  public async getKnownRecipients(userId: number): Promise<string[]> {
     const trustedRecipients = await this.trustedRecipientRepository.find({
-      where: { localUser: currentUser },
+      where: { localUser: { id: userId } },
+      relations: ['user', 'localUser'],
     });
-
-    const knownRecipientAddresses = trustedRecipients.map((recipient) => {
+    let knownRecipientAddresses = trustedRecipients.map((recipient) => {
       const user = recipient.user;
       // If user has a 'domain' property, it's a RemoteUser; otherwise, it's LocalUser
       const domain =
@@ -161,7 +156,7 @@ export class RecipientService {
           : this.envDomain;
       return `${user.username}@${domain}`;
     });
-
+    knownRecipientAddresses = [...new Set(knownRecipientAddresses.sort())];
     return knownRecipientAddresses;
   }
 }
