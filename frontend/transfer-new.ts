@@ -254,8 +254,8 @@ class TransferNewPage {
       return this.showSendError('Please select a file to transfer.');
     }
 
+    // check that the subject is entered
     const subject = this.formElements.subjectInput.value.trim();
-
     if (!subject) {
       return this.showSendError('Please enter a subject for the transfer.');
     }
@@ -302,15 +302,11 @@ class TransferNewPage {
     recipientUsername: string,
     subject: string,
   ): Promise<{ id: string }> {
-    // Create digital signature
-    const signatureSender = await this.createMockDigitalSignature();
-
     const payload = {
       filename: this.selectedFile!.name,
       subject: subject,
       receiver: recipientUsername,
       symmetric_key_encrypted: this.arrayBufferToBase64(wrappedAesKey),
-      signature_sender: signatureSender,
     };
 
     return callApi('POST', '/transfer/new', payload);
@@ -339,16 +335,6 @@ class TransferNewPage {
       binary += String.fromCharCode(bytes[i]);
     }
     return btoa(binary);
-  }
-
-  private async createMockDigitalSignature(): Promise<string> {
-    // TODO: TO DELETE and replace with real sender signature with recipient verification on server to server transfer
-    const mockData = `MOCK_SIGNATURE_${Date.now()}_${Math.random()}`;
-    const hashBuffer = await crypto.subtle.digest(
-      'SHA-256',
-      new TextEncoder().encode(mockData),
-    );
-    return this.arrayBufferToBase64(hashBuffer);
   }
 }
 
