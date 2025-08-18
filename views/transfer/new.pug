@@ -13,8 +13,6 @@ block content
     .row.justify-content-center.mb-3
       .col-12.col-md-10.col-lg-8
         .alert.alert-danger.text-center= error
-
-
   
   // Recipient section
   .row.justify-content-center.mb-3
@@ -30,10 +28,9 @@ block content
             i.bi.bi-key.me-1
             | Load Recipient Key
 
-      #newRecipientBanner.alert.alert-danger.mb-2.small.d-none
+      #newRecipientInfo.alert.alert-danger.mb-2.small.d-none
         i.bi.bi-info-circle.me-1
         | Invalid recipient, unable to load and verify key
-
 
       label.mt-2.form-label(for="publicKeyHashField") Recipient Public Key Fingerprint
       .input-group.mb-2
@@ -41,11 +38,11 @@ block content
         button.btn.btn-outline-secondary(type="button", id="copyPublicKeyHashBtn")
           i.bi.bi-clipboard
 
-      #newRecipientBanner.alert.alert-info.mb-2.small.d-none
+      #newRecipientKeyWarning.alert.alert-info.mb-2.small.d-none
         i.bi.bi-info-circle.me-1
         | This is the first time you share a file with this recipient.
 
-      #newRecipientBanner.alert.alert-warning.mb-2.small.d-none
+      #recipientKeyNotFoundError.alert.alert-warning.mb-2.small.d-none
         i.bi.bi-info-circle.me-1
         | The public key of the recipient has changed since the last file share.
 
@@ -76,10 +73,12 @@ block content
     .col-12.col-md-10.col-lg-8
       h4.font-weight-bold Send Transfer
       hr.mb-3(style="border-top:3px solid #000; width:100%; margin:auto")
-      button.btn.btn-dark.mb-3(type="submit" style="border-radius:15px; padding:10px 40px;") Send file(s)
+      button.btn.btn-dark.mb-3(type="submit" style="border-radius:15px; padding:10px 40px;" disabled) Send file(s)
       div.small.text-muted
         | Files will be encrypted and securely transferred to the recipient.
 
   script(type="module").
     import { setupNewTransfer } from '/js/transfer-new.js';
+    import { copyToClipboard } from '/js/utils/common.js';
     setupNewTransfer();
+    document.getElementById('copyPublicKeyHashBtn').addEventListener('click', () => copyToClipboard(document.getElementById('publicKeyHashField'), document.getElementById('copyPublicKeyHashBtn'))));

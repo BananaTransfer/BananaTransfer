@@ -113,9 +113,7 @@ export class FileDownloader {
     return bytes;
   }
 
-  static async createDownloader(
-    userPrivateKey: CryptoKey,
-  ): Promise<FileDownloader> {
+  static createDownloader(userPrivateKey: CryptoKey): FileDownloader {
     return new FileDownloader(userPrivateKey);
   }
 }

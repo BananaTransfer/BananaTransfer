@@ -72,7 +72,7 @@ block content
     document.getElementById('generateKeyPairBtn').addEventListener('click', generateKeyPair);
     document.getElementById('generateMasterPasswordBtn').addEventListener('click', generateMasterPassword);
     document.getElementById('encryptAndSaveBtn').addEventListener('click', encryptAndSaveKey);
-    document.getElementById('copyPublicKeyHashBtn').addEventListener('click', () => copyToClipboard('publicKeyHashField', 'copyPublicKeyHashBtn'));
-    document.getElementById('copyMasterPasswordBtn').addEventListener('click', () => copyToClipboard('masterPasswordField', 'copyMasterPasswordBtn'));
+    document.getElementById('copyPublicKeyHashBtn').addEventListener('click', () => copyToClipboard(document.getElementById('publicKeyHashField'), document.getElementById('copyPublicKeyHashBtn')));
+    document.getElementById('copyMasterPasswordBtn').addEventListener('click', () => copyToClipboard(document.getElementById('masterPasswordField'), document.getElementById('copyMasterPasswordBtn')));
 
 

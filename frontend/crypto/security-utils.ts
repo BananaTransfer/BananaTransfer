@@ -125,16 +125,25 @@ export class SecurityUtils {
   /**
    * Method to get the pub key associated with a user
    */
-  static async useUserPublicKey(
-    recipient: string,
-  ): Promise<{ key: CryptoKey; isTrusted: boolean }> {
-    const pubKeyData: { publicKey: string; isTrustedRecipient: boolean } =
-      await callApi('GET', `/user/publickey/${recipient}`);
+  static async useRecipientPublicKey(recipient: string): Promise<{
+    publicKey: string;
+    publicKeyHash: string;
+    importedPublicKey: CryptoKey;
+    isKnownRecipient: boolean;
+    isTrustedRecipientKey: boolean;
+  }> {
+    const pubKeyData: {
+      publicKey: string;
+      publicKeyHash: string;
+      importedPublicKey: CryptoKey;
+      isKnownRecipient: boolean;
+      isTrustedRecipientKey: boolean;
+    } = await callApi('GET', `/user/publickey/${recipient}`);
 
-    return {
-      key: await KeyManager.importPublicKey(pubKeyData.publicKey),
-      isTrusted: pubKeyData.isTrustedRecipient,
-    };
+    pubKeyData.importedPublicKey = await KeyManager.importPublicKey(
+      pubKeyData.publicKey,
+    );
+    return pubKeyData;
   }
 
   static async hash(value: string): Promise<string> {
