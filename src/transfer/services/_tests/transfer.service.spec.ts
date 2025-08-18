@@ -7,13 +7,24 @@ import { BucketService } from '@transfer/services/bucket.service';
 import { UserService } from '@user/services/user.service';
 import { RecipientService } from '@user/services/recipient.service';
 
+type FileTransferRepository = {
+  findOne: jest.Mock<Promise<FileTransfer | undefined>, any>;
+  save: jest.Mock<Promise<FileTransfer>, [FileTransfer]>;
+  create: jest.Mock<any, any>;
+};
+
+type TransferLogRepository = {
+  create: jest.Mock<any, any>;
+  save: jest.Mock<Promise<any>, [any]>;
+};
+
 describe('TransferService', () => {
   let transferService: TransferService;
-  let mockFileTransferRepository: Mocked<any>;
-  let mockTransferLogRepository: Mocked<any>;
-  let mockBucketService: Mocked<BucketService>;
-  let mockUserService: Mocked<UserService>;
-  let mockRecipientService: Mocked<RecipientService>;
+  let mockFileTransferRepository: Mocked<FileTransferRepository>;
+  let mockTransferLogRepository: Mocked<TransferLogRepository>;
+  //let mockBucketService: Mocked<BucketService>;
+  //let mockUserService: Mocked<UserService>;
+  //let mockRecipientService: Mocked<RecipientService>;
 
   beforeEach(async () => {
     const builder = TestBed.solitary(TransferService);
@@ -29,16 +40,11 @@ describe('TransferService', () => {
     transferService = unit;
     mockFileTransferRepository = unitRef.get('FileTransferRepository');
     mockTransferLogRepository = unitRef.get('TransferLogRepository');
-    mockBucketService = unitRef.get(BucketService);
-    mockUserService = unitRef.get(UserService);
-    mockRecipientService = unitRef.get(RecipientService);
+    //mockBucketService = unitRef.get(BucketService);
+    //mockUserService = unitRef.get(UserService);
+    //mockRecipientService = unitRef.get(RecipientService);
 
-    // Reset all relevant mocks
-    Object.values(mockFileTransferRepository).forEach((v) => v?.mockReset?.());
-    Object.values(mockTransferLogRepository).forEach((v) => v?.mockReset?.());
-    Object.values(mockBucketService).forEach((v) => v?.mockReset?.());
-    Object.values(mockUserService).forEach((v) => v?.mockReset?.());
-    Object.values(mockRecipientService).forEach((v) => v?.mockReset?.());
+    jest.clearAllMocks();
   });
 
   describe('acceptTransfer', () => {
@@ -51,11 +57,13 @@ describe('TransferService', () => {
       } as FileTransfer;
 
       mockFileTransferRepository.findOne.mockResolvedValue(transfer);
-      mockFileTransferRepository.save.mockImplementation(
-        async (t) => ({ ...t }) as FileTransfer,
+      mockFileTransferRepository.save.mockImplementation((t) =>
+        Promise.resolve({ ...t } as FileTransfer),
       );
       mockTransferLogRepository.create.mockReturnValue({} as any);
-      mockTransferLogRepository.save.mockResolvedValue({} as any);
+      mockFileTransferRepository.save.mockImplementation((t) =>
+        Promise.resolve({ ...t } as FileTransfer),
+      );
 
       const result = await transferService.acceptTransfer('transfer-id', 2);
 
@@ -92,8 +100,8 @@ describe('TransferService', () => {
       } as FileTransfer;
 
       mockFileTransferRepository.findOne.mockResolvedValue(transfer);
-      mockFileTransferRepository.save.mockImplementation(
-        async (t) => ({ ...t }) as FileTransfer,
+      mockFileTransferRepository.save.mockImplementation((t) =>
+        Promise.resolve({ ...t } as FileTransfer),
       );
       mockTransferLogRepository.create.mockReturnValue({} as any);
       mockTransferLogRepository.save.mockResolvedValue({} as any);
