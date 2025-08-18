@@ -7,7 +7,7 @@ test('login with valid credentials', async ({
   registerPage,
   loginPage,
   context,
-  transferListPage,
+  setKeysPage,
 }) => {
   const credentials = {
     username: faker.person.firstName(),
@@ -19,14 +19,14 @@ test('login with valid credentials', async ({
   await context.clearCookies();
   await loginPage.goto();
   await loginPage.login(credentials);
-  await expect(page).toHaveURL(transferListPage.URL);
+  await expect(page).toHaveURL(setKeysPage.URL);
 });
 
 test('user should be redirected to transfer list if logged in', async ({
   registerPage,
   loginPage,
   page,
-  transferListPage,
+  setKeysPage,
 }) => {
   const credentials = {
     username: faker.person.firstName(),
@@ -35,7 +35,7 @@ test('user should be redirected to transfer list if logged in', async ({
 
   await registerPage.goto();
   await registerPage.register(credentials);
-  await expect(page).toHaveURL(transferListPage.URL);
+  await expect(page).toHaveURL(setKeysPage.URL);
   await loginPage.goto();
-  await expect(page).toHaveURL(transferListPage.URL);
+  await expect(page).toHaveURL(setKeysPage.URL);
 });
