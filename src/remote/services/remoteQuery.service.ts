@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { validateOrReject } from 'class-validator';
 import { ConfigService } from '@nestjs/config';
-import { ClassConstructor, plainToInstance } from 'class-transformer';
+import { plainToInstance } from 'class-transformer';
 
 import { DnsService } from '@remote/services/dns.service';
 import { Recipient } from '@user/types/recipient.type';
