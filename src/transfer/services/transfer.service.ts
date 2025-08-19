@@ -214,6 +214,12 @@ export class TransferService {
   async acceptTransfer(id: string, userId: number): Promise<FileTransfer> {
     const transfer = await this.getTransfer(id, userId);
 
+    if (transfer.receiver.id !== userId) {
+      throw new UnauthorizedException(
+        'Only the receiver of a transfer can accept a transfer',
+      );
+    }
+
     if (transfer.status !== TransferStatus.SENT) {
       throw new BadRequestException(
         'Transfer is not pending acceptance or refusal',
@@ -225,11 +231,7 @@ export class TransferService {
     transfer.status = TransferStatus.RETRIEVED;
     await this.fileTransferRepository.save(transfer);
 
-    await this.createTransferLog(
-      transfer,
-      LogInfo.TRANSFER_RETRIEVED,
-      userId,
-    );
+    await this.createTransferLog(transfer, LogInfo.TRANSFER_RETRIEVED, userId);
 
     return transfer;
   }
@@ -246,11 +248,7 @@ export class TransferService {
     transfer.status = TransferStatus.REFUSED;
     await this.fileTransferRepository.save(transfer);
 
-    await this.createTransferLog(
-      transfer,
-      LogInfo.TRANSFER_REFUSED,
-      userId,
-    );
+    await this.createTransferLog(transfer, LogInfo.TRANSFER_REFUSED, userId);
 
     return transfer;
   }
