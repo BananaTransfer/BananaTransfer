@@ -216,7 +216,7 @@ export class TransferService {
 
     if (transfer.receiver.id !== userId) {
       throw new UnauthorizedException(
-        'Only the receiver of a transfer can accept a transfer',
+        'Only the receiver of a transfer can accept it',
       );
     }
 
@@ -238,6 +238,12 @@ export class TransferService {
 
   async refuseTransfer(id: string, userId: number): Promise<FileTransfer> {
     const transfer = await this.getTransfer(id, userId);
+
+    if (transfer.receiver.id !== userId) {
+      throw new UnauthorizedException(
+        'Only the receiver of a transfer can refuse it',
+      );
+    }
 
     if (transfer.status !== TransferStatus.SENT) {
       throw new BadRequestException(
