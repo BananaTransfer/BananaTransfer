@@ -339,11 +339,13 @@ export class TransferService {
 
   async deleteTransferLocally(transfer: FileTransfer) {
     // TODO: checks if can be deleted
-    await this.fileTransferRepository.remove(transfer);
+    transfer.status = TransferStatus.DELETED;
+    await this.fileTransferRepository.save(transfer);
     await this.createTransferLog(
       transfer,
       LogInfo.TRANSFER_DELETED,
       transfer.receiver.id,
     );
+    return transfer;
   }
 }
