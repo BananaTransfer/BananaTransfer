@@ -14,7 +14,6 @@ import { LocalUser } from '@database/entities/local-user.entity';
 import { RemoteUser } from '@database/entities/remote-user.entity';
 import { TrustedRecipient } from '@database/entities/trusted-recipient.entity';
 import { RecipientService } from '@user/services/recipient.service';
-import { RemoteInboundService } from '@remote/services/remoteInbound.service';
 import { RemoteQueryService } from '@remote/services/remoteQuery.service';
 import { DnsService } from '@remote/services/dns.service';
 
@@ -32,7 +31,6 @@ import { DnsService } from '@remote/services/dns.service';
     PasswordService,
     RecipientService,
     HashKeyService,
-    RemoteInboundService,
     RemoteQueryService,
     DnsService,
     {

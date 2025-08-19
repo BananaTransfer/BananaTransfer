@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-// import { TransferService } from '@transfer/services/transfer.service';
+import { TransferService } from '@transfer/services/transfer.service';
 
 @Injectable()
 export class RemoteInboundService {
@@ -10,7 +10,7 @@ export class RemoteInboundService {
 
   constructor(
     private readonly configService: ConfigService,
-    // private readonly transferService: TransferService,
+    private readonly transferService: TransferService,
   ) {
     this.logger = new Logger(RemoteInboundService.name);
     this.envDomain = this.configService.getOrThrow<string>('DOMAIN');
@@ -29,27 +29,36 @@ export class RemoteInboundService {
   }
 
   remoteFetchTransfer(domain: string, transferId: string): string {
-    // TODO: implement logic to fetch transfer data by ID
-    // check if transfer exists, send back a NotFoundException if not
-    // return transfer data
-    // set the transfer status to retrieved
-    // const transfer = this.transferService.getTransfer(transferId);
-    // if (transfer.sender)
-
-    // transfer.status = 'RETRIEVED';
+    // TODO: update the transfer status
+    this.logger.log(`Fetching transfer ${transferId} for domain ${domain}`);
+    const transfer = this.transferService.getTransferOfSenderDomain(
+      transferId,
+      domain,
+    );
+    console.log(transfer);
     return `Transfer data for ID ${transferId} fetched by ${domain}`;
   }
 
   remoteRefuseTransfer(domain: string, transferId: string): string {
     // TODO: implement logic to refuse a transfer by ID
-    // check if transfer exists, send back a NotFoundException if not
+    this.logger.log(`Refusing transfer ${transferId} for domain ${domain}`);
+    const transfer = this.transferService.getTransferOfSenderDomain(
+      transferId,
+      domain,
+    );
+    console.log(transfer);
     // update the transfer status to "REFUSED"
     return `Transfer with ID ${transferId} refused by ${domain}`;
   }
 
   remoteDeleteTransfer(domain: string, transferId: string): string {
     // TODO: implement logic to delete a transfer by ID
-    // check if transfer exists, send back a NotFoundException if not
+    this.logger.log(`Deleting transfer ${transferId} for domain ${domain}`);
+    const transfer = this.transferService.getTransferOfSenderDomain(
+      transferId,
+      domain,
+    );
+    console.log(transfer);
     // check if transfer status is "SENT", send back a BadRequestException if not
     // mark the transfer as DELETED in the database
     return `Transfer with ID ${transferId} deleted by ${domain}`;

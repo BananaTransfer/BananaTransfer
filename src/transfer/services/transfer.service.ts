@@ -63,20 +63,28 @@ export class TransferService {
     return transfer;
   }
 
-  /*async getTransferOfSenderDomain(
+  async getTransferOfSenderDomain(
     transferId: string,
     domain: string,
   ): Promise<FileTransfer> {
     const transfer = await this.fileTransferRepository.findOne({
-      where: { id: transferId, sender: { domain: domain } },
+      where: { id: transferId },
       relations: ['sender', 'receiver'],
     });
-
     if (!transfer) {
       throw new NotFoundException(`Transfer with ID ${transferId} not found`);
     }
-    return transfer;
-  }*/
+    if (
+      'domain' in transfer.sender &&
+      typeof transfer.sender.domain === 'string' &&
+      transfer.sender.domain === domain
+    ) {
+      return transfer;
+    }
+    throw new UnauthorizedException(
+      `Transfer sender domain does not match remote domain`,
+    );
+  }
 
   // TODO: do we still need this? don't we fetch now only the logs? can we rename the method then getTransferLogs?
   async getTransferDetails(
