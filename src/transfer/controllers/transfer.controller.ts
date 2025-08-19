@@ -15,8 +15,8 @@ import { TransferService } from '@transfer/services/transfer.service';
 import { RecipientService } from '@user/services/recipient.service';
 import { JwtAuthGuard } from '@auth/jwt/guards/jwt-auth.guard';
 import { AuthenticatedRequest } from '@auth/types/authenticated-request.interface';
-import CreateTransferDto from '@transfer/dto/create-transfer.dto';
-import ChunkDto from '@transfer/dto/chunk.dto';
+import { CreateTransferDto } from '@transfer/dto/create-transfer.dto';
+import { ChunkDto } from '@transfer/dto/chunk.dto';
 import { UserStatusGuard } from '@transfer/guards/userStatus.guard';
 
 // all routes in this controller are protected by the JwtAuthGuard and require authentication

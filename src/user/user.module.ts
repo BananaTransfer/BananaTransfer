@@ -38,6 +38,6 @@ import { DnsService } from '@remote/services/dns.service';
       useFactory: () => new Resolver(),
     },
   ],
-  exports: [UserService, PasswordService, RecipientService],
+  exports: [UserService, PasswordService, RecipientService, RemoteUserService],
 })
 export class UserModule {}
