@@ -48,7 +48,6 @@ describe('Streaming Encryption', () => {
     const encryptor = FileEncryption.createStreamingEncryptor(aesKey);
     expect(encryptor).toBeDefined();
     expect(typeof encryptor.processChunk).toBe('function');
-    expect(typeof encryptor.finalize).toBe('function');
   });
 
   test('should process chunks incrementally', async () => {
@@ -59,16 +58,16 @@ describe('Streaming Encryption', () => {
     const smallChunk = new Uint8Array(1024); // 1KB
     smallChunk.fill(65); // Fill with 'A'
 
-    const result1 = await encryptor.processChunk(smallChunk);
-    expect(result1).toBeNull(); // Not enough data yet
+    const result1 = await encryptor.processChunk(smallChunk.buffer);
+    expect(result1).not.toBeNull();
 
     // Send more data to complete a chunk
     const moreData = new Uint8Array(chunkSize - 1024 + 100); // Complete chunk + extra
     moreData.fill(66); // Fill with 'B'
 
-    const result2 = await encryptor.processChunk(moreData);
+    const result2 = await encryptor.processChunk(moreData.buffer);
     expect(result2).not.toBeNull();
-    expect(result2?.chunkIndex).toBe(0);
+    expect(result2?.chunkIndex).toBe(1);
     expect(result2?.isLastChunk).toBe(false);
     expect(result2?.encryptedData).toBeInstanceOf(ArrayBuffer);
     expect(result2?.iv).toBeInstanceOf(Uint8Array);
@@ -81,13 +80,16 @@ describe('Streaming Encryption', () => {
     const partialChunk = new Uint8Array(1024);
     partialChunk.fill(67); // Fill with 'C'
 
-    const result1 = await encryptor.processChunk(partialChunk);
-    expect(result1).toBeNull(); // Not enough for full chunk
+    const result1 = await encryptor.processChunk(partialChunk.buffer);
+    expect(result1).not.toBeNull();
 
     // Mark as last chunk - should process remaining data
-    const result2 = await encryptor.processChunk(new Uint8Array(0), true);
+    const result2 = await encryptor.processChunk(
+      new Uint8Array(0).buffer,
+      true,
+    );
     expect(result2).not.toBeNull();
-    expect(result2?.chunkIndex).toBe(0);
+    expect(result2?.chunkIndex).toBe(1);
     expect(result2?.isLastChunk).toBe(true);
     expect(result2?.encryptedData.byteLength).toBeGreaterThan(0);
   });
@@ -109,14 +111,12 @@ describe('Streaming Encryption', () => {
     // Process chunks as they arrive
     for (let i = 0; i < networkChunks.length; i++) {
       const isLast = i === networkChunks.length - 1;
-      const result: StreamChunk | null = await encryptor.processChunk(
-        networkChunks[i],
+      const result: StreamChunk = await encryptor.processChunk(
+        networkChunks[i].buffer,
         isLast,
       );
 
-      if (result) {
-        encryptedChunks.push(result);
-      }
+      encryptedChunks.push(result);
     }
 
     // Should have processed chunks when buffer filled up
@@ -130,11 +130,6 @@ describe('Streaming Encryption', () => {
     // Last chunk should be marked as such
     const lastChunk = encryptedChunks[encryptedChunks.length - 1];
     expect(lastChunk.isLastChunk).toBe(true);
-
-    // Get final metadata
-    const metadata = await encryptor.finalize();
-    expect(metadata.totalChunks).toBe(encryptedChunks.length);
-    expect(metadata.chunkSize).toBe(SecurityUtils.CHUNK_SIZE);
   });
 
   test('should handle multiple complete chunks', async () => {
@@ -147,23 +142,23 @@ describe('Streaming Encryption', () => {
     // Send first full chunk
     const chunk1 = new Uint8Array(chunkSize);
     chunk1.fill(1);
-    const result1 = await encryptor.processChunk(chunk1);
-    if (result1) encryptedChunks.push(result1);
+    const result1 = await encryptor.processChunk(chunk1.buffer);
+    encryptedChunks.push(result1);
 
     // Send second full chunk
     const chunk2 = new Uint8Array(chunkSize);
     chunk2.fill(2);
-    const result2 = await encryptor.processChunk(chunk2);
-    if (result2) encryptedChunks.push(result2);
+    const result2 = await encryptor.processChunk(chunk2.buffer);
+    encryptedChunks.push(result2);
 
     // Send partial final chunk
     const chunk3 = new Uint8Array(chunkSize / 2);
     chunk3.fill(3);
-    const result3 = await encryptor.processChunk(chunk3, true);
-    if (result3) encryptedChunks.push(result3);
+    const result3 = await encryptor.processChunk(chunk3.buffer, true);
+    encryptedChunks.push(result3);
 
     // Should have created multiple chunks
-    expect(encryptedChunks.length).toBeGreaterThanOrEqual(2);
+    expect(encryptedChunks.length).toBe(3);
 
     // Verify chunk properties
     expect(encryptedChunks[0].chunkIndex).toBe(0);
@@ -196,14 +191,14 @@ describe('Streaming Encryption', () => {
     // Send first chunk
     const chunk1 = new Uint8Array(chunkSize);
     chunk1.fill(1);
-    const result1 = await encryptor.processChunk(chunk1);
-    if (result1) encryptedChunks.push(result1);
+    const result1 = await encryptor.processChunk(chunk1.buffer);
+    encryptedChunks.push(result1);
 
     // Send second chunk (marked as last)
     const chunk2 = new Uint8Array(chunkSize);
     chunk2.fill(2);
-    const result2 = await encryptor.processChunk(chunk2, true);
-    if (result2) encryptedChunks.push(result2);
+    const result2 = await encryptor.processChunk(chunk2.buffer, true);
+    encryptedChunks.push(result2);
 
     // Should have 2 chunks with different IVs
     expect(encryptedChunks.length).toBe(2);
@@ -218,14 +213,14 @@ describe('Streaming Encryption', () => {
     const originalBytes = new TextEncoder().encode(originalData);
 
     // Process in one go
-    const result = await encryptor.processChunk(originalBytes, true);
+    const result = await encryptor.processChunk(originalBytes.buffer, true);
     expect(result).not.toBeNull();
 
     // Decrypt to verify data integrity
     const decrypted = await crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv: result!.iv as BufferSource },
+      { name: 'AES-GCM', iv: result.iv as BufferSource },
       aesKey,
-      result!.encryptedData as BufferSource,
+      result.encryptedData as BufferSource,
     );
 
     const decryptedText = new TextDecoder().decode(decrypted);
@@ -240,41 +235,37 @@ describe('Streaming Encryption', () => {
     expect(smallFileData.length).toBeLessThan(SecurityUtils.CHUNK_SIZE);
 
     // Process as single chunk marked as last
-    const result = await encryptor.processChunk(smallFileData, true);
+    const result = await encryptor.processChunk(smallFileData.buffer, true);
 
     // Should create one encrypted chunk
-    expect(result).not.toBeNull();
-    expect(result?.chunkIndex).toBe(0);
-    expect(result?.isLastChunk).toBe(true);
+    expect(result).toBeDefined();
+    expect(result.chunkIndex).toBe(0);
+    expect(result.isLastChunk).toBe(true);
 
     // Verify data integrity
     const decrypted = await crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv: result!.iv as BufferSource },
+      { name: 'AES-GCM', iv: result.iv as BufferSource },
       aesKey,
-      result!.encryptedData as BufferSource,
+      result.encryptedData as BufferSource,
     );
 
     const decryptedText = new TextDecoder().decode(decrypted);
     expect(decryptedText).toBe('small file');
-
-    // Verify metadata
-    const metadata = await encryptor.finalize();
-    expect(metadata.totalChunks).toBe(1);
   });
 
   test('should handle zero-byte chunks gracefully', async () => {
     const encryptor = FileEncryption.createStreamingEncryptor(aesKey);
 
     // Send empty chunk
-    const result1 = await encryptor.processChunk(new Uint8Array(0));
-    expect(result1).toBeNull();
+    const result1 = await encryptor.processChunk(new Uint8Array(0).buffer);
+    expect(result1).toBeDefined();
 
     // Send empty chunk marked as last
-    const result2 = await encryptor.processChunk(new Uint8Array(0), true);
-    expect(result2).toBeNull(); // No data to encrypt
-
-    const metadata = await encryptor.finalize();
-    expect(metadata.totalChunks).toBe(0);
+    const result2 = await encryptor.processChunk(
+      new Uint8Array(0).buffer,
+      true,
+    );
+    expect(result2).toBeDefined();
   });
 
   test('should maintain chunk order with concurrent processing simulation', async () => {
@@ -292,8 +283,8 @@ describe('Streaming Encryption', () => {
 
     for (let i = 0; i < chunks.length; i++) {
       const isLast = i === chunks.length - 1;
-      const result = await encryptor.processChunk(chunks[i], isLast);
-      if (result) results.push(result);
+      const result = await encryptor.processChunk(chunks[i].buffer, isLast);
+      results.push(result);
     }
 
     // Verify chunks are in correct order
@@ -320,12 +311,15 @@ describe('Decryption', () => {
 
     // Encrypt
     const encryptor = FileEncryption.createStreamingEncryptor(aesKey);
-    const encryptedChunk = await encryptor.processChunk(originalBytes, true);
-    expect(encryptedChunk).not.toBeNull();
+    const encryptedChunk = await encryptor.processChunk(
+      originalBytes.buffer,
+      true,
+    );
+    expect(encryptedChunk).toBeDefined();
 
     // Decrypt
     const decryptedBytes = await FileEncryption.decryptChunks(
-      [encryptedChunk!],
+      [encryptedChunk],
       aesKey,
     );
     const decryptedText = new TextDecoder().decode(decryptedBytes);
@@ -347,10 +341,8 @@ describe('Decryption', () => {
       const chunk = originalBytes.slice(i, i + chunkSize);
       const isLast = i + chunkSize >= originalBytes.length;
 
-      const result = await encryptor.processChunk(chunk, isLast);
-      if (result) {
-        encryptedChunks.push(result);
-      }
+      const result = await encryptor.processChunk(chunk.buffer, isLast);
+      encryptedChunks.push(result);
     }
 
     expect(encryptedChunks.length).toBeGreaterThan(1);
@@ -377,13 +369,13 @@ describe('Decryption', () => {
     const chunk2 = new Uint8Array(chunkSize).fill(66); // 'B'
     const chunk3 = new TextEncoder().encode(originalData);
 
-    const result1 = await encryptor.processChunk(chunk1);
-    const result2 = await encryptor.processChunk(chunk2);
-    const result3 = await encryptor.processChunk(chunk3, true);
+    const result1 = await encryptor.processChunk(chunk1.buffer);
+    const result2 = await encryptor.processChunk(chunk2.buffer);
+    const result3 = await encryptor.processChunk(chunk3.buffer, true);
 
-    if (result1) encryptedChunks.push(result1);
-    if (result2) encryptedChunks.push(result2);
-    if (result3) encryptedChunks.push(result3);
+    encryptedChunks.push(result1);
+    encryptedChunks.push(result2);
+    encryptedChunks.push(result3);
 
     // Shuffle chunks to simulate wrong order
     const shuffledChunks = [
@@ -414,16 +406,16 @@ describe('Decryption', () => {
 
   test('should throw error when no last chunk marker', async () => {
     const encryptor = FileEncryption.createStreamingEncryptor(aesKey);
-    const chunk = await encryptor.processChunk(new Uint8Array(100).fill(1));
+    const chunk = await encryptor.processChunk(
+      new Uint8Array(100).fill(1).buffer,
+    );
 
-    if (chunk) {
-      // Remove last chunk marker
-      const chunkWithoutLastMarker = { ...chunk, isLastChunk: false };
+    // Remove last chunk marker
+    const chunkWithoutLastMarker = { ...chunk, isLastChunk: false };
 
-      await expect(
-        FileEncryption.decryptChunks([chunkWithoutLastMarker], aesKey),
-      ).rejects.toThrow('No last chunk found - file may be incomplete');
-    }
+    await expect(
+      FileEncryption.decryptChunks([chunkWithoutLastMarker], aesKey),
+    ).rejects.toThrow('No last chunk found, file may be incomplete');
   });
 
   test('should throw error for missing chunks', async () => {
@@ -436,13 +428,13 @@ describe('Decryption', () => {
     const chunk2 = new Uint8Array(chunkSize).fill(2);
     const chunk3 = new Uint8Array(chunkSize).fill(3);
 
-    const result1 = await encryptor.processChunk(chunk1);
+    const result1 = await encryptor.processChunk(chunk1.buffer);
     // Skip result2 to simulate missing chunk
-    await encryptor.processChunk(chunk2);
-    const result3 = await encryptor.processChunk(chunk3, true);
+    await encryptor.processChunk(chunk2.buffer);
+    const result3 = await encryptor.processChunk(chunk3.buffer, true);
 
-    if (result1) encryptedChunks.push(result1);
-    if (result3) encryptedChunks.push(result3);
+    encryptedChunks.push(result1);
+    encryptedChunks.push(result3);
 
     await expect(
       FileEncryption.decryptChunks(encryptedChunks, aesKey),
@@ -456,11 +448,14 @@ describe('Decryption', () => {
 
     // Encrypt with correct key
     const encryptor = FileEncryption.createStreamingEncryptor(aesKey);
-    const encryptedChunk = await encryptor.processChunk(originalBytes, true);
+    const encryptedChunk = await encryptor.processChunk(
+      originalBytes.buffer,
+      true,
+    );
 
     // Try to decrypt with wrong key
     await expect(
-      FileEncryption.decryptChunks([encryptedChunk!], wrongKey),
+      FileEncryption.decryptChunks([encryptedChunk], wrongKey),
     ).rejects.toThrow('Failed to decrypt chunk 0');
   });
 
@@ -482,12 +477,10 @@ describe('Decryption', () => {
         const { done, value } = await reader.read();
 
         const result = await encryptor.processChunk(
-          value || new Uint8Array(0),
+          (value || new Uint8Array(0)).buffer,
           done,
         );
-        if (result) {
-          encryptedChunks.push(result);
-        }
+        encryptedChunks.push(result);
 
         if (done) break;
       }
