@@ -208,6 +208,9 @@ npm run docker up
 # Start the docker compose for the second instance
 npm run docker:serverB up
 
+# Run the db migration on first db
+npm run migration:run
+
 # Run the db migration on second db
 npm run migration:run:serverB
 
