@@ -66,4 +66,6 @@ export class RemoteQueryService {
     await validateOrReject(dto);
     return dto;
   }
+
+  // TODO: add check when fetching file from remote server that it isn't bigger than indicated
 }
