@@ -278,18 +278,18 @@ export class TransferService {
       );
     }
 
+    return this.acceptTransferLocally(transfer);
+    // TODO: Retrieve file from remote server if transfer is not local
+  }
+
+  async acceptTransferLocally(transfer: FileTransfer) {
+    // TODO: check if can be accepted
     if (transfer.status !== TransferStatus.SENT) {
       throw new BadRequestException(
         'Transfer is not pending acceptance or refusal',
       );
     }
 
-    return this.acceptTransferLocally(transfer);
-    // TODO: Retrieve file from remote server if transfer is not local
-  }
-
-  async acceptTransferLocally(transfer: FileTransfer) {
-    // TODO: checks if can be accepted
     transfer.status = TransferStatus.ACCEPTED;
     await this.fileTransferRepository.save(transfer);
     await this.createTransferLog(
@@ -309,18 +309,18 @@ export class TransferService {
       );
     }
 
-    if (transfer.status !== TransferStatus.SENT) {
-      throw new BadRequestException(
-        'Transfer is not pending acceptance or refusal',
-      );
-    }
-
     return this.refuseTransferLocally(transfer);
     // TODO: Notify remote server about refusal if needed
   }
 
   async refuseTransferLocally(transfer: FileTransfer) {
     // TODO: checks if can be refused
+    if (transfer.status !== TransferStatus.SENT) {
+      throw new BadRequestException(
+        'Transfer is not pending acceptance or refusal',
+      );
+    }
+
     transfer.status = TransferStatus.REFUSED;
     await this.fileTransferRepository.save(transfer);
     await this.createTransferLog(
@@ -339,7 +339,8 @@ export class TransferService {
   }
 
   async deleteTransferLocally(transfer: FileTransfer) {
-    // TODO: checks if can be deleted
+    // TODO: check status of transfer if can be deleted
+
     transfer.status = TransferStatus.DELETED;
     await this.fileTransferRepository.save(transfer);
     await this.createTransferLog(
