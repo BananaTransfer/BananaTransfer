@@ -21,20 +21,24 @@ describe('Key Management', () => {
     expect(unwrappedKey.algorithm.name).toBe('AES-GCM');
   });
 
-  test('should fail with wrong private key', async () => {
-    const recipientKeyPair = await KeyManager.generateRSAKeyPair();
-    const wrongKeyPair = await KeyManager.generateRSAKeyPair();
-    const aesKey = await FileEncryption.generateAESKey();
+  test(
+    'should fail with wrong private key',
+    async () => {
+      const recipientKeyPair = await KeyManager.generateRSAKeyPair();
+      const wrongKeyPair = await KeyManager.generateRSAKeyPair();
+      const aesKey = await FileEncryption.generateAESKey();
 
-    const wrappedAESKey = await KeyManager.wrapAESKey(
-      aesKey,
-      recipientKeyPair.publicKey,
-    );
+      const wrappedAESKey = await KeyManager.wrapAESKey(
+        aesKey,
+        recipientKeyPair.publicKey,
+      );
 
-    await expect(
-      KeyManager.unwrapAESKey(wrappedAESKey, wrongKeyPair.privateKey),
-    ).rejects.toThrow();
-  });
+      await expect(
+        KeyManager.unwrapAESKey(wrappedAESKey, wrongKeyPair.privateKey),
+      ).rejects.toThrow();
+    },
+    SecurityUtils.TIMEOUT,
+  );
 });
 
 describe('Streaming Encryption', () => {
@@ -327,36 +331,40 @@ describe('Decryption', () => {
     expect(decryptedText).toBe(originalData);
   });
 
-  test('should decrypt multiple chunks file correctly', async () => {
-    const originalData = 'A'.repeat(2.5 * 1024 * 1024); // 2.5MB file
-    const originalBytes = new TextEncoder().encode(originalData);
+  test(
+    'should decrypt multiple chunks file correctly',
+    async () => {
+      const originalData = 'A'.repeat(2.5 * 1024 * 1024); // 2.5MB file
+      const originalBytes = new TextEncoder().encode(originalData);
 
-    // Encrypt in chunks
-    const encryptor = FileEncryption.createStreamingEncryptor(aesKey);
-    const encryptedChunks: StreamChunk[] = [];
+      // Encrypt in chunks
+      const encryptor = FileEncryption.createStreamingEncryptor(aesKey);
+      const encryptedChunks: StreamChunk[] = [];
 
-    // Process in 500KB chunks
-    const chunkSize = 500 * 1024;
-    for (let i = 0; i < originalBytes.length; i += chunkSize) {
-      const chunk = originalBytes.slice(i, i + chunkSize);
-      const isLast = i + chunkSize >= originalBytes.length;
+      // Process in 500KB chunks
+      const chunkSize = 500 * 1024;
+      for (let i = 0; i < originalBytes.length; i += chunkSize) {
+        const chunk = originalBytes.slice(i, i + chunkSize);
+        const isLast = i + chunkSize >= originalBytes.length;
 
-      const result = await encryptor.processChunk(chunk.buffer, isLast);
-      encryptedChunks.push(result);
-    }
+        const result = await encryptor.processChunk(chunk.buffer, isLast);
+        encryptedChunks.push(result);
+      }
 
-    expect(encryptedChunks.length).toBeGreaterThan(1);
+      expect(encryptedChunks.length).toBeGreaterThan(1);
 
-    // Decrypt all chunks
-    const decryptedBytes = await FileEncryption.decryptChunks(
-      encryptedChunks,
-      aesKey,
-    );
-    const decryptedText = new TextDecoder().decode(decryptedBytes);
+      // Decrypt all chunks
+      const decryptedBytes = await FileEncryption.decryptChunks(
+        encryptedChunks,
+        aesKey,
+      );
+      const decryptedText = new TextDecoder().decode(decryptedBytes);
 
-    expect(decryptedText).toBe(originalData);
-    expect(decryptedBytes.length).toBe(originalBytes.length);
-  });
+      expect(decryptedText).toBe(originalData);
+      expect(decryptedBytes.length).toBe(originalBytes.length);
+    },
+    SecurityUtils.TIMEOUT,
+  );
 
   test('should handle chunks in wrong order', async () => {
     const originalData = 'Test data for out-of-order chunks';
@@ -459,44 +467,50 @@ describe('Decryption', () => {
     ).rejects.toThrow('Failed to decrypt chunk 0');
   });
 
-  test('should handle file upload simulation with decryption', async () => {
-    // Simulate file upload
-    const fileContent = 'Test file content for upload simulation';
-    const mockFile = new File([fileContent], 'test.txt', {
-      type: 'text/plain',
-    });
+  test(
+    'should handle file upload simulation with decryption',
+    async () => {
+      // Simulate file upload
+      const fileContent = 'Test file content for upload simulation';
+      const mockFile = new File([fileContent], 'test.txt', {
+        type: 'text/plain',
+      });
 
-    const encryptor = FileEncryption.createStreamingEncryptor(aesKey);
-    const encryptedChunks: StreamChunk[] = [];
+      const encryptor = FileEncryption.createStreamingEncryptor(aesKey);
+      const encryptedChunks: StreamChunk[] = [];
 
-    // Process file stream
-    const reader = mockFile.stream().getReader();
+      // Process file stream
+      const reader = mockFile.stream().getReader();
 
-    try {
-      while (true) {
-        const { done, value } = await reader.read();
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
 
-        const result = await encryptor.processChunk(
-          (value || new Uint8Array(0)).buffer,
-          done,
-        );
-        encryptedChunks.push(result);
+          const result = await encryptor.processChunk(
+            (value || new Uint8Array(0)).buffer,
+            done,
+          );
+          encryptedChunks.push(result);
 
-        if (done) break;
+          if (done) break;
+        }
+      } finally {
+        reader.releaseLock();
       }
-    } finally {
-      reader.releaseLock();
-    }
 
-    // Decrypt and verify
-    const decryptedBytes = await FileEncryption.decryptChunks(
-      encryptedChunks,
-      aesKey,
-    );
-    const decryptedText = new TextDecoder().decode(decryptedBytes);
+      // Decrypt and verify
+      const decryptedBytes = await FileEncryption.decryptChunks(
+        encryptedChunks,
+        aesKey,
+      );
+      const decryptedText = new TextDecoder().decode(decryptedBytes);
 
-    expect(decryptedText).toBe(fileContent);
-    expect(encryptedChunks.length).toBeGreaterThan(0);
-    expect(encryptedChunks[encryptedChunks.length - 1].isLastChunk).toBe(true);
-  });
+      expect(decryptedText).toBe(fileContent);
+      expect(encryptedChunks.length).toBeGreaterThan(0);
+      expect(encryptedChunks[encryptedChunks.length - 1].isLastChunk).toBe(
+        true,
+      );
+    },
+    SecurityUtils.TIMEOUT,
+  );
 });

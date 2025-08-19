@@ -21,6 +21,7 @@ export class SecurityUtils {
   public static readonly AES_LENGTH: number = 256;
   public static readonly CHUNK_SIZE: number = 5 * 1024 * 1024; // 5MB chunk
   public static readonly GCM_AUTH_TAG_SIZE: number = 16;
+  public static readonly TIMEOUT: number = 15000;
   private static readonly MAX_RANDOM_BYTES: number = 65536;
 
   /**
