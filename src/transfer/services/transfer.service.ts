@@ -268,11 +268,23 @@ export class TransferService {
     return await this.transferLogRepository.save(log);
   }
 
-  acceptTransfer(id: string): string {
-    // TODO: implement logic to accept a transfer by ID
-    // accept transfer local
-    // notify remote about it if needed
-    return `Transfer with ID ${id} accepted`;
+  async acceptTransfer(id: string, userId: number): Promise<FileTransfer> {
+    const transfer = await this.getTransferOfUser(id, userId);
+
+    if (transfer.receiver.id !== userId) {
+      throw new UnauthorizedException(
+        'Only the receiver of a transfer can accept it',
+      );
+    }
+
+    if (transfer.status !== TransferStatus.SENT) {
+      throw new BadRequestException(
+        'Transfer is not pending acceptance or refusal',
+      );
+    }
+
+    return this.acceptTransferLocally(transfer);
+    // TODO: Retrieve file from remote server if transfer is not local
   }
 
   async acceptTransferLocally(transfer: FileTransfer) {
@@ -284,13 +296,26 @@ export class TransferService {
       LogInfo.TRANSFER_ACCEPTED,
       transfer.receiver.id,
     );
+    return transfer;
   }
 
-  refuseTransfer(id: string): string {
-    // TODO: implement logic to refuse a transfer by ID
-    // refuse transfer local
-    // notify remote about it if needed
-    return `Transfer with ID ${id} refused`;
+  async refuseTransfer(id: string, userId: number): Promise<FileTransfer> {
+    const transfer = await this.getTransferOfUser(id, userId);
+
+    if (transfer.receiver.id !== userId) {
+      throw new UnauthorizedException(
+        'Only the receiver of a transfer can refuse it',
+      );
+    }
+
+    if (transfer.status !== TransferStatus.SENT) {
+      throw new BadRequestException(
+        'Transfer is not pending acceptance or refusal',
+      );
+    }
+
+    return this.refuseTransferLocally(transfer);
+    // TODO: Notify remote server about refusal if needed
   }
 
   async refuseTransferLocally(transfer: FileTransfer) {
@@ -302,6 +327,7 @@ export class TransferService {
       LogInfo.TRANSFER_REFUSED,
       transfer.receiver.id,
     );
+    return transfer;
   }
 
   deleteTransfer(id: string): string {

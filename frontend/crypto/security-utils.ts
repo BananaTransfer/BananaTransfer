@@ -19,8 +19,9 @@ export class SecurityUtils {
   public static readonly DEFAULT_SALT_LENGTH: number = 32;
   public static readonly RSA_MODULUS: number = 4096;
   public static readonly AES_LENGTH: number = 256;
-  public static readonly CHUNK_SIZE: number = 512 * 1024; // 512KB
+  public static readonly CHUNK_SIZE: number = 5 * 1024 * 1024; // 5MB chunk
   public static readonly GCM_AUTH_TAG_SIZE: number = 16;
+  public static readonly TIMEOUT: number = 15000;
   private static readonly MAX_RANDOM_BYTES: number = 65536;
 
   /**
