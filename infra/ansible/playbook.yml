@@ -134,3 +134,10 @@
           /bin/sh -c "DB_MIGRATION_PATH='./dist/database/migrations/*.js' 
           ./node_modules/typeorm/cli.js migration:run -d ./dist/database/data-source.js"
 
+    - name: Remove all unused resources
+      community.docker.docker_prune:
+        containers: true
+        images: true
+        networks: true
+        volumes: true
+        builder_cache: true

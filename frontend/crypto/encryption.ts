@@ -9,11 +9,7 @@ export interface StreamChunk {
 }
 
 export interface StreamingEncryptor {
-  processChunk(
-    chunk: Uint8Array,
-    isLastChunk?: boolean,
-  ): Promise<StreamChunk | null>;
-  finalize(): Promise<{ totalChunks: number; chunkSize: number }>;
+  processChunk(chunk: ArrayBuffer, isLastChunk?: boolean): Promise<StreamChunk>;
 }
 
 /**
@@ -55,25 +51,25 @@ export class FileEncryption {
   ): Promise<void> {
     const encryptor = FileEncryption.createStreamingEncryptor(aesKey);
 
-    const reader = file.stream().getReader();
+    const fileSize = file.size;
+    const step = SecurityUtils.CHUNK_SIZE;
+    let position = 0;
 
-    try {
-      while (true) {
-        const { done, value } = await reader.read();
-
-        const result = await encryptor.processChunk(
-          value || new Uint8Array(0),
-          done,
-        );
-
-        if (result) {
-          await chunkHandler(result);
-        }
-
-        if (done) break;
+    while (position < fileSize) {
+      let end = position + step;
+      if (end > fileSize) {
+        end = fileSize;
       }
-    } finally {
-      reader.releaseLock();
+
+      const chunk = file.slice(position, end, 'application/octet-stream');
+
+      const result = await encryptor.processChunk(
+        await chunk.arrayBuffer(),
+        end >= fileSize,
+      );
+
+      await chunkHandler(result);
+      position += step;
     }
   }
 
@@ -170,15 +166,11 @@ export class FileEncryption {
  */
 class ParallelStreamingEncryptor implements StreamingEncryptor {
   private readonly key: CryptoKey;
-  private buffer: Uint8Array;
   private chunkIndex: number;
-  private readonly chunkSize: number;
 
   constructor(key: CryptoKey) {
     this.key = key;
-    this.buffer = new Uint8Array(0);
     this.chunkIndex = 0;
-    this.chunkSize = SecurityUtils.CHUNK_SIZE;
   }
 
   /**
@@ -187,71 +179,27 @@ class ParallelStreamingEncryptor implements StreamingEncryptor {
    * @param isLastChunk - Whether this is the final chunk
    */
   async processChunk(
-    chunk: Uint8Array,
+    chunk: ArrayBuffer,
     isLastChunk = false,
-  ): Promise<StreamChunk | null> {
-    // Append new data to buffer
-    const newBuffer = new Uint8Array(this.buffer.length + chunk.length);
-    newBuffer.set(this.buffer);
-    newBuffer.set(chunk, this.buffer.length);
-    this.buffer = newBuffer;
+  ): Promise<StreamChunk> {
+    // Generate unique IV for this chunk
+    const iv = SecurityUtils.generateIV();
 
-    // Process complete chunks
-    if (
-      this.buffer.length >= this.chunkSize ||
-      (isLastChunk && this.buffer.length > 0)
-    ) {
-      const dataToEncrypt = isLastChunk
-        ? this.buffer
-        : this.buffer.slice(0, this.chunkSize);
+    // Encrypt chunk
+    const encryptedData = await crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv: iv as BufferSource },
+      this.key,
+      chunk,
+    );
 
-      // Generate unique IV for this chunk
-      const iv = SecurityUtils.generateIV();
-
-      // Encrypt chunk
-      const encryptedData = await crypto.subtle.encrypt(
-        { name: 'AES-GCM', iv: iv as BufferSource },
-        this.key,
-        dataToEncrypt as BufferSource,
-      );
-
-      // Create result
-      const result: StreamChunk = {
-        encryptedData,
-        iv,
-        chunkIndex: this.chunkIndex++,
-        isLastChunk: isLastChunk && this.buffer.length <= this.chunkSize,
-      };
-
-      // Update buffer (remove processed data)
-      if (!isLastChunk) {
-        this.buffer = this.buffer.slice(this.chunkSize);
-      } else {
-        this.buffer = new Uint8Array(0);
-      }
-
-      // Clear sensitive data
-      SecurityUtils.clearSensitiveData(dataToEncrypt);
-
-      return result;
-    }
-
-    return null; // Not enough data to process yet
-  }
-
-  // TODO - Test if finalize() is really necessary after all or just redundant
-  /**
-   * Finalize encryption and return metadata
-   */
-  async finalize(): Promise<{ totalChunks: number; chunkSize: number }> {
-    // Process any remaining data
-    if (this.buffer.length > 0) {
-      await this.processChunk(new Uint8Array(0), true);
-    }
-
-    return {
-      totalChunks: this.chunkIndex,
-      chunkSize: this.chunkSize,
+    // Create result
+    const result: StreamChunk = {
+      encryptedData,
+      iv,
+      chunkIndex: this.chunkIndex++,
+      isLastChunk: isLastChunk,
     };
+
+    return result;
   }
 }

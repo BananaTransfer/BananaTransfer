@@ -332,11 +332,13 @@ class TransferNewPage {
 
   private arrayBufferToBase64(buffer: ArrayBuffer | Uint8Array): string {
     const bytes = new Uint8Array(buffer);
-    let binary = '';
-    for (let i = 0; i < bytes.byteLength; i++) {
-      binary += String.fromCharCode(bytes[i]);
+    const charArray: string[] = [];
+
+    for (let i = 0; i < bytes.length; i++) {
+      charArray.push(String.fromCharCode(bytes[i]));
     }
-    return btoa(binary);
+
+    return btoa(charArray.join(''));
   }
 }
 
