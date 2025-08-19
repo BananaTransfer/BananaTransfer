@@ -225,6 +225,7 @@ export class TransferService {
 
     if (chunkData.isLastChunk) {
       transfer.status = TransferStatus.UPLOADED;
+      // TODO: compute file size and save it in transfer.size
       await this.fileTransferRepository.save(transfer);
       await this.createTransferLog(transfer, LogInfo.TRANSFER_UPLOADED, userId);
       // TODO: notify local recipient about new transfer
