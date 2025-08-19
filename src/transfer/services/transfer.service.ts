@@ -211,14 +211,52 @@ export class TransferService {
     return await this.transferLogRepository.save(log);
   }
 
-  acceptTransfer(id: string): string {
-    // TODO: implement logic to accept a transfer by ID
-    return `Transfer with ID ${id} accepted`;
+  async acceptTransfer(id: string, userId: number): Promise<FileTransfer> {
+    const transfer = await this.getTransfer(id, userId);
+
+    if (transfer.receiver.id !== userId) {
+      throw new UnauthorizedException(
+        'Only the receiver of a transfer can accept it',
+      );
+    }
+
+    if (transfer.status !== TransferStatus.SENT) {
+      throw new BadRequestException(
+        'Transfer is not pending acceptance or refusal',
+      );
+    }
+
+    // TODO: Retrieve file from remote server if transfer is not local
+
+    transfer.status = TransferStatus.RETRIEVED;
+    await this.fileTransferRepository.save(transfer);
+
+    await this.createTransferLog(transfer, LogInfo.TRANSFER_RETRIEVED, userId);
+
+    return transfer;
   }
 
-  refuseTransfer(id: string): string {
-    // TODO: implement logic to refuse a transfer by ID
-    return `Transfer with ID ${id} refused`;
+  async refuseTransfer(id: string, userId: number): Promise<FileTransfer> {
+    const transfer = await this.getTransfer(id, userId);
+
+    if (transfer.receiver.id !== userId) {
+      throw new UnauthorizedException(
+        'Only the receiver of a transfer can refuse it',
+      );
+    }
+
+    if (transfer.status !== TransferStatus.SENT) {
+      throw new BadRequestException(
+        'Transfer is not pending acceptance or refusal',
+      );
+    }
+
+    transfer.status = TransferStatus.REFUSED;
+    await this.fileTransferRepository.save(transfer);
+
+    await this.createTransferLog(transfer, LogInfo.TRANSFER_REFUSED, userId);
+
+    return transfer;
   }
 
   deleteTransfer(id: string): string {
