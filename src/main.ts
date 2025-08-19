@@ -27,7 +27,7 @@ async function bootstrap() {
   app.setViewEngine('pug'); // set the view engine to Pug
 
   app.use(urlencoded({ extended: true, limit: '2mb' })); // parse URL-encoded bodies (as sent by HTML forms)
-  app.use(json({ limit: '2mb' })); // increase JSON body limit for encrypted chunk uploads
+  app.use(json({ limit: '10mb' })); // increase JSON body limit for encrypted chunk uploads
   app.useGlobalPipes(new ValidationPipe({ whitelist: true })); // setup global validation pipe for inputs
 
   app.use(cookieParser()); // parse cookies from the request
