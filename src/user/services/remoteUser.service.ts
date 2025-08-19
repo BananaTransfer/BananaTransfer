@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  ConflictException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RemoteUser } from '@database/entities/remote-user.entity';
@@ -14,15 +10,14 @@ export class RemoteUserService {
     private remoteUserRepository: Repository<RemoteUser>,
   ) {}
 
-  async getRemoteUser(username: string, domain: string): Promise<RemoteUser> {
-    const user = await this.remoteUserRepository.findOneBy({
+  async getRemoteUser(
+    username: string,
+    domain: string,
+  ): Promise<RemoteUser | null> {
+    return await this.remoteUserRepository.findOneBy({
       username,
       domain,
     });
-    if (!user) {
-      throw new NotFoundException('Remote user not found');
-    }
-    return user;
   }
 
   async createRemoteUser(

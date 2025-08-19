@@ -19,6 +19,8 @@ export class RemoteInboundService {
   // remote transfer handling methods
   remoteNewTransfer(domain: string, transferData: any): string {
     // TODO: implement logic to handle a new remote transfer notification
+    // check if sender domain is correct
+    // check if sender exist as remote user, if not create it
     // check if recipient does exist, send back a NotFoundException if not
     // create sender if it doesn't exist
     // create transfer in database with the status "SENT"

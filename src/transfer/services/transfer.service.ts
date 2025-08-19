@@ -120,7 +120,9 @@ export class TransferService {
     senderId: number,
   ): Promise<TransferDto> {
     const sender = await this.userService.getCurrentUser(senderId);
-    const recipient = await this.recipientService.getUser(
+
+    // get recipient user if it exists or create it
+    const recipient = await this.recipientService.getOrCreateUser(
       transferData.recipient,
     );
 
