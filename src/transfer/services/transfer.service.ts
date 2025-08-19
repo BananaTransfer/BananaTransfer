@@ -227,7 +227,7 @@ export class TransferService {
   }
 
   async acceptTransfer(id: string, userId: number): Promise<FileTransfer> {
-    const transfer = await this.getTransfer(id, userId);
+    const transfer = await this.getTransferOfUser(id, userId);
 
     if (transfer.receiver.id !== userId) {
       throw new UnauthorizedException(
@@ -252,7 +252,7 @@ export class TransferService {
   }
 
   async refuseTransfer(id: string, userId: number): Promise<FileTransfer> {
-    const transfer = await this.getTransfer(id, userId);
+    const transfer = await this.getTransferOfUser(id, userId);
 
     if (transfer.receiver.id !== userId) {
       throw new UnauthorizedException(
