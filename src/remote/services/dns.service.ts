@@ -6,15 +6,25 @@ import {
 } from '@nestjs/common';
 import { Resolver, NOTFOUND } from 'dns/promises';
 import validator from 'validator';
+import { ConfigService } from '@nestjs/config';
+
+export abstract class DnsService {
+  /**
+   * Given a user domain, return the domain of the server hosting the BananaTransfer instance
+   */
+  abstract getServerAddress(domain: string): Promise<string>;
+
+  abstract getServerIpAddresses(domain: string): Promise<string[]>;
+}
 
 @Injectable()
-export class DnsService {
+export class ProductionDnsService implements DnsService {
   private readonly logger: Logger;
   private readonly resolver: Resolver;
 
   constructor(resolver: Resolver) {
     this.resolver = resolver;
-    this.logger = new Logger(DnsService.name);
+    this.logger = new Logger(ProductionDnsService.name);
   }
 
   private isFQDN(domain: string): boolean {
@@ -76,6 +86,7 @@ export class DnsService {
     this.logger.debug(
       `Resolving BananaTransfer server IP addresses for domain ${domain}`,
     );
+
     const hostname = await this.getServerAddress(domain);
     const addresses = await this.resolver.resolve4(hostname);
     if (addresses.length === 0) {
@@ -84,6 +95,26 @@ export class DnsService {
       );
     }
     return addresses;
+  }
+}
+
+export class DevDnsService implements DnsService {
+  private readonly logger: Logger;
+  private readonly otherServer: string;
+
+  constructor(private configService: ConfigService) {
+    this.logger = new Logger(DevDnsService.name);
+    this.otherServer = this.configService.getOrThrow<string>('OTHER_SERVER');
+  }
+
+  getServerAddress(): Promise<string> {
+    this.logger.warn(`Using dev server address: ${this.otherServer}`);
+    return Promise.resolve(this.otherServer);
+  }
+
+  getServerIpAddresses(): Promise<string[]> {
+    this.logger.warn(`Using dev server ip address: 127.0.0.1`);
+    return Promise.resolve(['127.0.0.1', '::1']);
   }
 }
 

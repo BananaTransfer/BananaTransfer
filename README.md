@@ -93,6 +93,7 @@ Create file `.env` with the configuration variables
 # .env
 # Environment configuration
 PORT=3000
+# NODE_ENV=dev
 
 # Application configuration
 DOMAIN=domain.com
@@ -110,6 +111,10 @@ S3_REGION=eu-west-1
 S3_CLIENT_ID=minio_user
 S3_CLIENT_SECRET=minio_password
 S3_BUCKET=bananatransfer
+
+## For use with docker compose only
+S3_PORT=9000
+S3_MANAGEMENT_PORT=9001
 
 JWT_SECRET=DO_NOT_USE_THIS_VALUE_IN_PRODUCTION_USE_256BIT_KEY
 ```
@@ -179,7 +184,48 @@ npm run migration:generate src/database/migrations/<name>
 npm run migration:run
 ```
 
-## Resources
+## Run two servers locally for testing the communication between servers
+
+You can run two instances of the application locally for testing purposes. This can be useful for testing communication between servers.
+
+For this you need to create a .env file for the second server instance: `.env.serverB`:
+the following parameters need to be changed compared to the first server instance:
+
+```txt
+PORT=3001
+DOMAIN=<use a different domain>
+DB_PORT=5433
+S3_ENDPOINT=http://localhost:10000
+S3_PORT=10000
+S3_MANAGEMENT_PORT=10001
+```
+
+In both env files the parameter `NODE_ENV=dev` needs to be set.
+Set in both env files the parameter `OTHER_SERVER` to point to the other server instance. `OTHER_SERVER=localhost:3001`
+`OTHER_SERVER=localhost:3000`
+
+```bash
+# Install dotenv-cli globally
+npm install -g dotenv-cli
+
+# Start the docker compose for the first instance normally
+docker compose up
+
+# Start the docker compose for the second instance
+docker compose --env-file .env.serverB -p server_b up
+
+# Run the db migration on first db
+npm run migration:run
+
+# Run the db migration on second db
+npm run migration:run:serverB
+
+# Start the first server instance:
+npm run start:dev
+
+# Start the second server instance:
+npm run start:dev:serverB
+```
 
 Check out a few resources that may come in handy when working with NestJS:
 

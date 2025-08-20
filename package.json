@@ -31,7 +31,9 @@
     "migration:generate": "npm run ts-node:typeorm migration:generate -n",
     "migration:run": "npm run ts-node:typeorm migration:run",
     "migration:revert": "npm run ts-node:typeorm migration:revert",
-    "copy:assets": "node copy-assets.js"
+    "copy:assets": "node copy-assets.js",
+    "start:dev:serverB": "dotenv -e .env.serverB npm run start:dev:server",
+    "migration:run:serverB": "dotenv -e .env.serverB npm run ts-node:typeorm migration:run"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.864.0",
