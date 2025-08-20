@@ -1,14 +1,23 @@
-.git
-.idea
-.github
+# Ignore everything
+*
 
-dist
-node_modules
+# Except some directory and files
+## dir
+!frontend/**
+!public/**
+!src/**
+!views/**
 
-documents
-Dockerfile
-README.md
-docker-compose.yaml
+## files
+!.prettierrc
+!copy-assets.js
+!eslint.config.mjs
+!nest-cli.json
+!package.json
+!package-lock.json
+!tsconfig.build.json
+!tsconfig.json
+!tsconfig.public.json
 
-.gitignore
-.dockerignore
+# Ignore file inside the included directory
+**/_tests/**

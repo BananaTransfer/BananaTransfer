@@ -138,7 +138,5 @@ the host as defined by our firewall configuration.
 
 ### Dockerfile
 
-***it's important to maintain the [.dockerignore](../.dockerignore) to keep our image size as small as possible***
-
 Our application docker image is using a multi-stage build to keep the final
 image size as small as possible. It's based on an Alpine distribution to also reduce the size.
