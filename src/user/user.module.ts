@@ -1,7 +1,6 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtCoreModule } from '@auth/jwt/jwt-core.module';
-import { Resolver } from 'dns/promises';
 
 import { UserController } from '@user/controllers/user.controller';
 import { UserService } from '@user/services/user.service';
@@ -14,15 +13,14 @@ import { LocalUser } from '@database/entities/local-user.entity';
 import { RemoteUser } from '@database/entities/remote-user.entity';
 import { TrustedRecipient } from '@database/entities/trusted-recipient.entity';
 import { RecipientService } from '@user/services/recipient.service';
-import { RemoteInboundService } from '@remote/services/remoteInbound.service';
-import { RemoteQueryService } from '@remote/services/remoteQuery.service';
-import { DnsService } from '@remote/services/dns.service';
+import { RemoteModule } from '@remote/remote.module';
 
 // This module handles all user related operations that are done by the authenticated users
 
 @Module({
   imports: [
     JwtCoreModule,
+    forwardRef(() => RemoteModule),
     TypeOrmModule.forFeature([User, LocalUser, RemoteUser, TrustedRecipient]),
   ],
   controllers: [UserController],
@@ -32,13 +30,6 @@ import { DnsService } from '@remote/services/dns.service';
     PasswordService,
     RecipientService,
     HashKeyService,
-    RemoteInboundService,
-    RemoteQueryService,
-    DnsService,
-    {
-      provide: Resolver,
-      useFactory: () => new Resolver(),
-    },
   ],
   exports: [UserService, PasswordService, RecipientService],
 })

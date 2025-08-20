@@ -4,6 +4,7 @@ import { NOTFOUND, SERVFAIL, Resolver } from 'dns/promises';
 import {
   DnsService,
   InvalidDomainException,
+  ProductionDnsService,
 } from '@remote/services/dns.service';
 import { InternalServerErrorException } from '@nestjs/common';
 
@@ -12,7 +13,8 @@ describe('DnsService', () => {
   let resolver: Mocked<Resolver>;
 
   beforeEach(async () => {
-    const { unit, unitRef } = await TestBed.solitary(DnsService).compile();
+    const { unit, unitRef } =
+      await TestBed.solitary(ProductionDnsService).compile();
     authService = unit;
     resolver = unitRef.get(Resolver);
   });
