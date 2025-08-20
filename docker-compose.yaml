@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: $DB_PASS
       POSTGRES_DB: $DB_NAME
     ports:
-      - "5432:5432"
+      - "${DB_PORT}:5432"
     volumes:
       - pg_data:/var/lib/postgresql/data
   s3:
@@ -17,8 +17,8 @@ services:
       MINIO_ROOT_USER: $S3_CLIENT_ID
       MINIO_ROOT_PASSWORD: $S3_CLIENT_SECRET
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "${S3_PORT}:9000"
+      - "${S3_MANAGEMENT_PORT}:9001"
     command: ["server", "--console-address", ":9001", "/data"]
     volumes:
       - s3_data:/data

@@ -8,21 +8,23 @@ import { Resolver, NOTFOUND } from 'dns/promises';
 import validator from 'validator';
 import { ConfigService } from '@nestjs/config';
 
+export abstract class DnsService {
+  /**
+   * Given a user domain, return the domain of the server hosting the BananaTransfer instance
+   */
+  abstract getServerAddress(domain: string): Promise<string>;
+
+  abstract getServerIpAddresses(domain: string): Promise<string[]>;
+}
+
 @Injectable()
-export class DnsService {
+export class ProductionDnsService implements DnsService {
   private readonly logger: Logger;
   private readonly resolver: Resolver;
-  private readonly nodeEnv?: string;
-  private readonly otherServer?: string;
 
-  constructor(
-    resolver: Resolver,
-    private configService: ConfigService,
-  ) {
+  constructor(resolver: Resolver) {
     this.resolver = resolver;
-    this.logger = new Logger(DnsService.name);
-    this.nodeEnv = this.configService.get<string>('NODE_ENV');
-    this.otherServer = this.configService.get<string>('OTHER_SERVER');
+    this.logger = new Logger(ProductionDnsService.name);
   }
 
   private isFQDN(domain: string): boolean {
@@ -64,11 +66,6 @@ export class DnsService {
       throw new InvalidDomainException('The provided domain is invalid.');
     }
 
-    if (this.nodeEnv === 'dev' && this.otherServer) {
-      this.logger.warn(`Using dev server address: ${this.otherServer}`);
-      return this.otherServer;
-    }
-
     this.logger.debug(`Resolving server address for ${domain}`);
     const result = await this.resolveTxt('_bananatransfer.' + domain);
 
@@ -90,11 +87,6 @@ export class DnsService {
       `Resolving BananaTransfer server IP addresses for domain ${domain}`,
     );
 
-    if (this.nodeEnv === 'dev') {
-      this.logger.warn(`Using dev server ip address: 127.0.0.1`);
-      return ['127.0.0.1', '::1'];
-    }
-
     const hostname = await this.getServerAddress(domain);
     const addresses = await this.resolver.resolve4(hostname);
     if (addresses.length === 0) {
@@ -103,6 +95,26 @@ export class DnsService {
       );
     }
     return addresses;
+  }
+}
+
+export class DevDnsService implements DnsService {
+  private readonly logger: Logger;
+  private readonly otherServer: string;
+
+  constructor(private configService: ConfigService) {
+    this.logger = new Logger(DevDnsService.name);
+    this.otherServer = this.configService.getOrThrow<string>('OTHER_SERVER');
+  }
+
+  getServerAddress(): Promise<string> {
+    this.logger.warn(`Using dev server address: ${this.otherServer}`);
+    return Promise.resolve(this.otherServer);
+  }
+
+  getServerIpAddresses(): Promise<string[]> {
+    this.logger.warn(`Using dev server ip address: 127.0.0.1`);
+    return Promise.resolve(['127.0.0.1', '::1']);
   }
 }
 
