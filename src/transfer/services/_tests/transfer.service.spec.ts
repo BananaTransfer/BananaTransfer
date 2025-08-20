@@ -67,10 +67,10 @@ describe('TransferService', () => {
 
       const result = await transferService.acceptTransfer('transfer-id', 2);
 
-      expect(result.status).toBe(TransferStatus.RETRIEVED);
+      expect(result.status).toBe(TransferStatus.ACCEPTED);
       expect(mockFileTransferRepository.save).toHaveBeenCalledWith({
         ...transfer,
-        status: TransferStatus.RETRIEVED,
+        status: TransferStatus.ACCEPTED,
       });
     });
 

@@ -31,6 +31,6 @@ import { RemoteModule } from '@remote/remote.module';
     RecipientService,
     HashKeyService,
   ],
-  exports: [UserService, PasswordService, RecipientService],
+  exports: [UserService, PasswordService, RecipientService, RemoteUserService],
 })
 export class UserModule {}

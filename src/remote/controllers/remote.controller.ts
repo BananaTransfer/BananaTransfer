@@ -9,9 +9,11 @@ import {
 } from '@nestjs/common';
 
 import { RemoteGuard } from '@remote/guards/remote.guard';
-import { RemoteRequest } from '@remote/types/remote-request.type';
 import { RemoteInboundService } from '@remote/services/remoteInbound.service';
 import { UserService } from '@user/services/user.service';
+
+import { RemoteRequest } from '@remote/types/remote-request.type';
+import { RemoteTransferDto } from '@remote/dto/remoteTransfer.dto';
 import { PublicKeyDto } from '@user/dto/publicKey.dto';
 
 // RemoteController is responsible for handling transfer-related requests from and to other remote servers
@@ -43,28 +45,49 @@ export class RemoteController {
 
   // endpoint to notify server about a new transfer
   @Post('new/transfer')
-  notifyTransfer(@Req() req: RemoteRequest, @Body() transferData: any): string {
-    return this.remoteInboundService.remoteNewTransfer(
+  async notifyTransfer(
+    @Req() req: RemoteRequest,
+    @Body() remoteTransfer: RemoteTransferDto,
+  ): Promise<string> {
+    return await this.remoteInboundService.remoteNewTransfer(
       req.domain,
-      transferData,
+      remoteTransfer,
     );
   }
 
-  // endpoint to accept and fetch transfer data by ID
+  // endpoint to accept a transfer by ID
+  @Post('accept/transfer/:id')
+  async acceptTransfer(
+    @Req() req: RemoteRequest,
+    @Param('id') id: string,
+  ): Promise<string> {
+    return await this.remoteInboundService.remoteAcceptTransfer(req.domain, id);
+  }
+
+  // endpoint to fetch a transfer chunk by ID
   @Post('fetch/transfer/:id')
-  fetchTransfer(@Req() req: RemoteRequest, @Param('id') id: string): string {
-    return this.remoteInboundService.remoteFetchTransfer(req.domain, id);
+  async fetchTransfer(
+    @Req() req: RemoteRequest,
+    @Param('id') id: string,
+  ): Promise<string> {
+    return await this.remoteInboundService.remoteFetchTransfer(req.domain, id);
   }
 
   // endpoint to refuse a transfer by ID
   @Post('refuse/transfer/:id')
-  refuseTransfer(@Req() req: RemoteRequest, @Param('id') id: string): string {
-    return this.remoteInboundService.remoteRefuseTransfer(req.domain, id);
+  async refuseTransfer(
+    @Req() req: RemoteRequest,
+    @Param('id') id: string,
+  ): Promise<string> {
+    return await this.remoteInboundService.remoteRefuseTransfer(req.domain, id);
   }
 
   // endpoint to delete a transfer by ID
   @Post('delete/transfer/:id')
-  deleteTransfer(@Req() req: RemoteRequest, @Param('id') id: string): string {
-    return this.remoteInboundService.remoteDeleteTransfer(req.domain, id);
+  async deleteTransfer(
+    @Req() req: RemoteRequest,
+    @Param('id') id: string,
+  ): Promise<string> {
+    return await this.remoteInboundService.remoteDeleteTransfer(req.domain, id);
   }
 }

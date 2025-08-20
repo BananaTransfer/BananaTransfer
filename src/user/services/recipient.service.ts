@@ -122,26 +122,28 @@ export class RecipientService {
     return await this.getRecipientUser(parsedRecipient);
   }
 
-  public async getOrCreateUser(recipient: string): Promise<User> {
-    const parsedRecipient = this.parseRecipient(recipient);
-    // this method returns null if user is remote and doesn't exist
-    const user = await this.getRecipientUser(parsedRecipient);
-    if (user) {
-      return user;
-    }
-    // if user is remote and doesn't exist, create a new one
-    return await this.remoteUserService.createRemoteUser(
-      parsedRecipient.username,
-      parsedRecipient.domain,
-    );
-  }
-
   private async getRecipientUser(recipient: Recipient): Promise<User | null> {
     if (recipient.isLocal) {
       return await this.userService.getLocalUser(recipient.username);
     } else {
       // returns null if remote user doesn't exist
       return await this.remoteUserService.getRemoteUser(
+        recipient.username,
+        recipient.domain,
+      );
+    }
+  }
+
+  public async getOrCreateUser(recipient: string): Promise<User> {
+    const parsedRecipient = this.parseRecipient(recipient);
+    return await this.getOrCreateRecipientUser(parsedRecipient);
+  }
+
+  private async getOrCreateRecipientUser(recipient: Recipient): Promise<User> {
+    if (recipient.isLocal) {
+      return await this.userService.getLocalUser(recipient.username);
+    } else {
+      return await this.remoteUserService.getOrCreateRemoteUser(
         recipient.username,
         recipient.domain,
       );

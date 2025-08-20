@@ -20,6 +20,17 @@ export class RemoteUserService {
     });
   }
 
+  async getOrCreateRemoteUser(
+    username: string,
+    domain: string,
+  ): Promise<RemoteUser> {
+    let user = await this.getRemoteUser(username, domain);
+    if (!user) {
+      user = await this.createRemoteUser(username, domain);
+    }
+    return user;
+  }
+
   async createRemoteUser(
     username: string,
     domain: string,
