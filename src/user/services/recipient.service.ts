@@ -101,40 +101,46 @@ export class RecipientService {
           .publicKey;
     const publicKeyHash = this.hashKeyService.hashKey({ publicKey });
 
-    const result = {
+    const recipientUser = await this.getRecipientUser(parsedRecipient);
+    const isKnownRecipient =
+      !!recipientUser && (await this.isKnownRecipient(userId, recipientUser));
+    const isTrustedRecipientKey =
+      isKnownRecipient &&
+      (await this.isTrustedRecipientKey(userId, recipientUser, publicKeyHash));
+
+    return {
       publicKey,
       publicKeyHash,
-      isKnownRecipient: false,
-      isTrustedRecipientKey: false,
+      isKnownRecipient,
+      isTrustedRecipientKey,
     };
-    try {
-      const recipientUser = await this.getRecipientUser(parsedRecipient);
-      result.isKnownRecipient = await this.isKnownRecipient(
-        userId,
-        recipientUser,
-      );
-      result.isTrustedRecipientKey = result.isKnownRecipient
-        ? await this.isTrustedRecipientKey(userId, recipientUser, publicKeyHash)
-        : false;
-    } catch (err) {
-      console.debug(err);
-      this.logger.log(
-        'Fetching public key for remote recipient that does not exist in local db',
-      );
-    }
-
-    return result;
   }
 
-  public async getUser(recipient: string): Promise<User> {
+  public async getUser(recipient: string): Promise<User | null> {
     const parsedRecipient = this.parseRecipient(recipient);
+    // returns null if user is remote and doesn't exist
     return await this.getRecipientUser(parsedRecipient);
   }
 
-  private async getRecipientUser(recipient: Recipient): Promise<User> {
+  public async getOrCreateUser(recipient: string): Promise<User> {
+    const parsedRecipient = this.parseRecipient(recipient);
+    // this method returns null if user is remote and doesn't exist
+    const user = await this.getRecipientUser(parsedRecipient);
+    if (user) {
+      return user;
+    }
+    // if user is remote and doesn't exist, create a new one
+    return await this.remoteUserService.createRemoteUser(
+      parsedRecipient.username,
+      parsedRecipient.domain,
+    );
+  }
+
+  private async getRecipientUser(recipient: Recipient): Promise<User | null> {
     if (recipient.isLocal) {
       return await this.userService.getLocalUser(recipient.username);
     } else {
+      // returns null if remote user doesn't exist
       return await this.remoteUserService.getRemoteUser(
         recipient.username,
         recipient.domain,
