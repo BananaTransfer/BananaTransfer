@@ -1,5 +1,6 @@
 import {
   HttpException,
+  Injectable,
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
@@ -16,6 +17,7 @@ export abstract class DnsService {
   abstract getServerIpAddresses(domain: string): Promise<string[]>;
 }
 
+@Injectable()
 export class ProductionDnsService implements DnsService {
   private readonly logger: Logger;
   private readonly resolver: Resolver;
