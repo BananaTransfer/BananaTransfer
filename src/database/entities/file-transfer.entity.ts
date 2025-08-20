@@ -30,6 +30,9 @@ export class FileTransfer {
   @Column({ type: 'text' })
   subject: string;
 
+  @Column({ type: 'bigint', default: 0 })
+  size: string; // size in bytes, using string for bigint in TypeORM/Postgres
+
   @ManyToOne(() => User, (user) => user.sentTransfers)
   sender: User;
 

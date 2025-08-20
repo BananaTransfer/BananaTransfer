@@ -1,6 +1,6 @@
 import { IsBoolean, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
-export default class ChunkDto {
+export class ChunkDto {
   @IsString()
   @IsNotEmpty()
   // base 64 encoded chunk data

@@ -1,12 +1,15 @@
 import {
-  IsBoolean,
-  IsNotEmpty,
+  IsUUID,
   IsString,
+  IsNotEmpty,
   IsEmail,
   IsLowercase,
 } from 'class-validator';
 
-export class CreateTransferDto {
+export class RemoteTransferDto {
+  @IsUUID()
+  id: string;
+
   @IsString()
   @IsNotEmpty()
   symmetric_key_encrypted: string;
@@ -19,15 +22,17 @@ export class CreateTransferDto {
   @IsNotEmpty()
   subject: string;
 
+  @IsString()
+  @IsNotEmpty()
+  size: string;
+
   @IsEmail()
   @IsLowercase()
   @IsNotEmpty()
-  recipient: string;
+  senderAddress: string;
 
-  @IsString()
+  @IsEmail()
+  @IsLowercase()
   @IsNotEmpty()
-  recipient_public_key_hash: string;
-
-  @IsBoolean()
-  trust_recipient_key: boolean;
+  recipientAddress: string;
 }

@@ -9,15 +9,18 @@ import { Repository } from 'typeorm';
 
 import { LogInfo, TransferStatus } from '@database/entities/enums';
 import { User } from '@database/entities/user.entity';
+import { LocalUser } from '@database/entities/local-user.entity';
+import { RemoteUser } from '@database/entities/remote-user.entity';
 import { FileTransfer } from '@database/entities/file-transfer.entity';
 import { TransferLog } from '@database/entities/transfer-log.entity';
 import { BucketService } from '@transfer/services/bucket.service';
-import TransferDto from '@transfer/dto/transfer.dto';
-import CreateTransferDto from '@transfer/dto/create-transfer.dto';
+import { TransferDto } from '@transfer/dto/transfer.dto';
+import { CreateTransferDto } from '@transfer/dto/create-transfer.dto';
 import { UserService } from '@user/services/user.service';
-import ChunkDto from '@transfer/dto/chunk.dto';
+import { ChunkDto } from '@transfer/dto/chunk.dto';
 import * as fs from 'node:fs/promises';
 import { RecipientService } from '@user/services/recipient.service';
+import { RemoteTransferDto } from '@remote/dto/remoteTransfer.dto';
 
 interface BucketChunkData {
   data: string;
@@ -170,6 +173,33 @@ export class TransferService {
     return this.toDTO(transfer);
   }
 
+  async createTransferFromRemote(
+    transferData: RemoteTransferDto,
+    recipient: LocalUser,
+    sender: RemoteUser,
+  ) {
+    const transfer = this.fileTransferRepository.create({
+      symmetric_key_encrypted: transferData.symmetric_key_encrypted,
+      status: TransferStatus.SENT,
+      filename: transferData.filename,
+      subject: transferData.subject,
+      sender: sender,
+      receiver: recipient,
+      size: transferData.size,
+      id: transferData.id,
+    });
+
+    const createdTransfer = await this.fileTransferRepository.save(transfer);
+
+    // Log transfer reception
+    await this.createTransferLog(
+      createdTransfer,
+      LogInfo.TRANSFER_SENT,
+      sender.id,
+    );
+    // TODO: notify local recipient about new transfer
+  }
+
   async uploadChunk(
     transferId: string,
     chunkData: ChunkDto,
@@ -195,8 +225,11 @@ export class TransferService {
 
     if (chunkData.isLastChunk) {
       transfer.status = TransferStatus.UPLOADED;
+      // TODO: compute file size and save it in transfer.size
       await this.fileTransferRepository.save(transfer);
       await this.createTransferLog(transfer, LogInfo.TRANSFER_UPLOADED, userId);
+      // TODO: notify local recipient about new transfer
+      // TODO: notify remote server about new transfer
     }
   }
 
@@ -245,19 +278,25 @@ export class TransferService {
       );
     }
 
+    return this.acceptTransferLocally(transfer);
+    // TODO: Retrieve file from remote server if transfer is not local
+  }
+
+  async acceptTransferLocally(transfer: FileTransfer) {
+    // TODO: check if can be accepted
     if (transfer.status !== TransferStatus.SENT) {
       throw new BadRequestException(
         'Transfer is not pending acceptance or refusal',
       );
     }
 
-    // TODO: Retrieve file from remote server if transfer is not local
-
-    transfer.status = TransferStatus.RETRIEVED;
+    transfer.status = TransferStatus.ACCEPTED;
     await this.fileTransferRepository.save(transfer);
-
-    await this.createTransferLog(transfer, LogInfo.TRANSFER_RETRIEVED, userId);
-
+    await this.createTransferLog(
+      transfer,
+      LogInfo.TRANSFER_ACCEPTED,
+      transfer.receiver.id,
+    );
     return transfer;
   }
 
@@ -270,6 +309,12 @@ export class TransferService {
       );
     }
 
+    return this.refuseTransferLocally(transfer);
+    // TODO: Notify remote server about refusal if needed
+  }
+
+  async refuseTransferLocally(transfer: FileTransfer) {
+    // TODO: checks if can be refused
     if (transfer.status !== TransferStatus.SENT) {
       throw new BadRequestException(
         'Transfer is not pending acceptance or refusal',
@@ -278,14 +323,31 @@ export class TransferService {
 
     transfer.status = TransferStatus.REFUSED;
     await this.fileTransferRepository.save(transfer);
-
-    await this.createTransferLog(transfer, LogInfo.TRANSFER_REFUSED, userId);
-
+    await this.createTransferLog(
+      transfer,
+      LogInfo.TRANSFER_REFUSED,
+      transfer.receiver.id,
+    );
     return transfer;
   }
 
   deleteTransfer(id: string): string {
     // TODO: implement logic to delete a transfer by ID
+    // delete transfer local
+    // notify remote about it if needed
     return `Transfer with ID ${id} deleted`;
+  }
+
+  async deleteTransferLocally(transfer: FileTransfer) {
+    // TODO: check status of transfer if can be deleted
+
+    transfer.status = TransferStatus.DELETED;
+    await this.fileTransferRepository.save(transfer);
+    await this.createTransferLog(
+      transfer,
+      LogInfo.TRANSFER_DELETED,
+      transfer.receiver.id,
+    );
+    return transfer;
   }
 }

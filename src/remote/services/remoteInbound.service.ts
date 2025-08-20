@@ -2,6 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { TransferService } from '@transfer/services/transfer.service';
+import { RecipientService } from '@user/services/recipient.service';
+import { UserService } from '@user/services/user.service';
+import { RemoteUserService } from '@user/services/remoteUser.service';
+import { RemoteTransferDto } from '@remote/dto/remoteTransfer.dto';
 
 @Injectable()
 export class RemoteInboundService {
@@ -10,6 +14,9 @@ export class RemoteInboundService {
 
   constructor(
     private readonly configService: ConfigService,
+    private readonly recipientService: RecipientService,
+    private readonly userService: UserService,
+    private readonly remoteUserService: RemoteUserService,
     private readonly transferService: TransferService,
   ) {
     this.logger = new Logger(RemoteInboundService.name);
@@ -17,50 +24,95 @@ export class RemoteInboundService {
   }
 
   // remote transfer handling methods
-  remoteNewTransfer(domain: string, transferData: any): string {
-    // TODO: implement logic to handle a new remote transfer notification
-    // check if sender domain is correct
-    // check if sender exist as remote user, if not create it
-    // check if recipient does exist, send back a NotFoundException if not
-    // create sender if it doesn't exist
-    // create transfer in database with the status "SENT"
-    // notify user about new transfer
-    return `New transfer notification received by ${domain}: ${JSON.stringify(transferData)}`;
+  public async remoteNewTransfer(
+    domain: string,
+    remoteTransfer: RemoteTransferDto,
+  ): Promise<string> {
+    // check if sender domain matches to the domain of the remote server
+    const parsedSender = this.recipientService.parseRecipient(
+      remoteTransfer.senderAddress,
+    );
+    if (parsedSender.isLocal || parsedSender.domain !== domain) {
+      throw new Error(
+        `Sender domain ${parsedSender.domain} does not match expected domain ${domain}`,
+      );
+    }
+    // check if recipient is local and matches to the local domain
+    const parsedRecipient = this.recipientService.parseRecipient(
+      remoteTransfer.recipientAddress,
+    );
+    if (!parsedRecipient.isLocal || parsedRecipient.domain !== this.envDomain) {
+      throw new Error(
+        `Recipient domain ${parsedRecipient.domain} does not match expected domain ${this.envDomain}`,
+      );
+    }
+    // get local user that is the recipient, throws an error if not found
+    const recipientUser = await this.userService.getLocalUser(
+      parsedRecipient.username,
+    );
+    // get or create remote user that is the sender
+    const senderUser = await this.remoteUserService.getOrCreateRemoteUser(
+      parsedSender.username,
+      parsedSender.domain,
+    );
+    await this.transferService.createTransferFromRemote(
+      remoteTransfer,
+      recipientUser,
+      senderUser,
+    );
+    return `New transfer created`;
   }
 
-  remoteFetchTransfer(domain: string, transferId: string): string {
-    // TODO: update the transfer status
-    this.logger.log(`Fetching transfer ${transferId} for domain ${domain}`);
-    const transfer = this.transferService.getTransferOfSenderDomain(
+  public async remoteAcceptTransfer(
+    domain: string,
+    transferId: string,
+  ): Promise<string> {
+    this.logger.log(`Accepting transfer ${transferId} for domain ${domain}`);
+    const transfer = await this.transferService.getTransferOfSenderDomain(
       transferId,
       domain,
     );
+    await this.transferService.acceptTransferLocally(transfer);
+    return `Transfer accepted`;
+  }
+
+  public async remoteFetchTransfer(
+    domain: string,
+    transferId: string,
+  ): Promise<string> {
+    this.logger.log(`Fetching transfer ${transferId} for domain ${domain}`);
+    const transfer = await this.transferService.getTransferOfSenderDomain(
+      transferId,
+      domain,
+    );
+    // TODO: create logic to fetch transfer data chunks
     console.log(transfer);
     return `Transfer data for ID ${transferId} fetched by ${domain}`;
   }
 
-  remoteRefuseTransfer(domain: string, transferId: string): string {
-    // TODO: implement logic to refuse a transfer by ID
+  public async remoteRefuseTransfer(
+    domain: string,
+    transferId: string,
+  ): Promise<string> {
     this.logger.log(`Refusing transfer ${transferId} for domain ${domain}`);
-    const transfer = this.transferService.getTransferOfSenderDomain(
+    const transfer = await this.transferService.getTransferOfSenderDomain(
       transferId,
       domain,
     );
-    console.log(transfer);
-    // update the transfer status to "REFUSED"
-    return `Transfer with ID ${transferId} refused by ${domain}`;
+    await this.transferService.refuseTransferLocally(transfer);
+    return `Transfer refused`;
   }
 
-  remoteDeleteTransfer(domain: string, transferId: string): string {
-    // TODO: implement logic to delete a transfer by ID
+  public async remoteDeleteTransfer(
+    domain: string,
+    transferId: string,
+  ): Promise<string> {
     this.logger.log(`Deleting transfer ${transferId} for domain ${domain}`);
-    const transfer = this.transferService.getTransferOfSenderDomain(
+    const transfer = await this.transferService.getTransferOfSenderDomain(
       transferId,
       domain,
     );
-    console.log(transfer);
-    // check if transfer status is "SENT", send back a BadRequestException if not
-    // mark the transfer as DELETED in the database
-    return `Transfer with ID ${transferId} deleted by ${domain}`;
+    await this.transferService.deleteTransferLocally(transfer);
+    return `Transfer deleted`;
   }
 }
