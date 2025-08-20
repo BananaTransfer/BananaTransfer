@@ -24,7 +24,7 @@ import { ConfigService } from '@nestjs/config';
     {
       provide: DnsService,
       useFactory: (configService: ConfigService, resolver: Resolver) => {
-        const isDev = configService.getOrThrow('NODE_ENV') == 'dev';
+        const isDev = configService.get('NODE_ENV') == 'dev';
 
         if (isDev) {
           return new DevDnsService(configService);
