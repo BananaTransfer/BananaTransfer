@@ -46,28 +46,11 @@ export class TransferService {
   // local transfer handling methods
   async getTransferList(userId: number): Promise<TransferDto[]> {
     const list = await this.fileTransferRepository.find({
-      where: [
-        {
-          sender: { id: userId },
-          status: In([
-            TransferStatus.UPLOADED,
-            TransferStatus.SENT,
-            TransferStatus.ACCEPTED,
-            TransferStatus.RETRIEVED,
-            TransferStatus.REFUSED,
-          ]),
-        },
-        {
-          receiver: { id: userId },
-          status: In([
-            TransferStatus.SENT,
-            TransferStatus.ACCEPTED,
-            TransferStatus.RETRIEVED,
-            TransferStatus.REFUSED,
-          ]),
-        },
-      ],
+      where: [{ sender: { id: userId } }, { receiver: { id: userId } }],
       relations: ['sender', 'receiver'],
+      order: {
+        created_at: 'DESC',
+      },
     });
 
     return await Promise.all(
