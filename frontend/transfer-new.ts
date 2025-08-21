@@ -1,5 +1,5 @@
 import { FileEncryption, StreamChunk } from './crypto/encryption.js';
-import { callApi, copyToClipboard } from './utils/common.js';
+import { callApi, copyToClipboard, formatFileSize } from './utils/common.js';
 import {
   SecurityUtils,
   RecipientPublicKeyData,
@@ -199,7 +199,7 @@ class TransferNewPage {
 
       if (fileIcon && fileText) {
         fileIcon.className = 'bi bi-file-earmark display-4 mb-3';
-        fileText.textContent = `Selected: ${this.selectedFile.name} (${this.formatFileSize(this.selectedFile.size)})`;
+        fileText.textContent = `Selected: ${this.selectedFile.name} (${formatFileSize(this.selectedFile.size)})`;
       }
 
       // Auto-fill subject if empty
@@ -208,14 +208,6 @@ class TransferNewPage {
       }
     }
     this.updateSendButtonState();
-  }
-
-  private formatFileSize(bytes: number): string {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
 
   private showSendError(error: string) {

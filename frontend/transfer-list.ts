@@ -1,6 +1,6 @@
 import { SecurityUtils } from './crypto/security-utils.js';
 import { FileDownloader } from './utils/file-downloader.js';
-import { callApi, BootstrapModal } from './utils/common.js';
+import { callApi, BootstrapModal, formatFileSize } from './utils/common.js';
 
 async function viewTransferDetails(id: string) {
   try {
@@ -24,7 +24,9 @@ async function viewTransferDetails(id: string) {
       transfer.subject || 'N/A';
     document.getElementById('modalCreatedAt')!.textContent =
       transfer.created_at || 'N/A';
-    document.getElementById('modalSize')!.textContent = transfer.size || 'N/A';
+    document.getElementById('modalSize')!.textContent = transfer.size
+      ? formatFileSize(Number(transfer.size))
+      : 'N/A';
 
     const logsTableBody = document.getElementById('modalLogs')!;
     logsTableBody.innerHTML = '';

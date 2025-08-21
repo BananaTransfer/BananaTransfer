@@ -46,7 +46,27 @@ export class TransferService {
   // local transfer handling methods
   async getTransferList(userId: number): Promise<TransferDto[]> {
     const list = await this.fileTransferRepository.find({
-      where: [{ sender: { id: userId } }, { receiver: { id: userId } }],
+      where: [
+        {
+          sender: { id: userId },
+          status: In([
+            TransferStatus.UPLOADED,
+            TransferStatus.SENT,
+            TransferStatus.ACCEPTED,
+            TransferStatus.RETRIEVED,
+            TransferStatus.REFUSED,
+          ]),
+        },
+        {
+          receiver: { id: userId },
+          status: In([
+            TransferStatus.SENT,
+            TransferStatus.ACCEPTED,
+            TransferStatus.RETRIEVED,
+            TransferStatus.REFUSED,
+          ]),
+        },
+      ],
       relations: ['sender', 'receiver'],
     });
 
@@ -216,6 +236,14 @@ export class TransferService {
     // TODO: notify local recipient about new transfer
   }
 
+  /**
+   * @param chunk
+   * @return the size in bytes of the chunk payload
+   */
+  private getChunkSize(chunk: BucketChunkData): number {
+    return new Blob([JSON.stringify(chunk)]).size;
+  }
+
   async uploadChunk(
     transferId: string,
     chunkData: ChunkDto,
@@ -234,6 +262,10 @@ export class TransferService {
       iv: chunkData.iv,
     };
 
+    const chunkSize = this.getChunkSize(bucketData);
+    // Number.MAX_VALUE > BigInt max value
+    transfer.size = String(Number(transfer.size) + chunkSize);
+
     await this.bucketService.putObject(
       transfer.id + '/' + chunkData.chunkIndex,
       Buffer.from(JSON.stringify(bucketData)),
@@ -241,12 +273,12 @@ export class TransferService {
 
     if (chunkData.isLastChunk) {
       transfer.status = TransferStatus.UPLOADED;
-      // TODO: compute file size and save it in transfer.size
-      await this.fileTransferRepository.save(transfer);
       await this.createTransferLog(transfer, LogInfo.TRANSFER_UPLOADED, userId);
       // TODO: notify local recipient about new transfer
       // TODO: notify remote server about new transfer
     }
+
+    await this.fileTransferRepository.save(transfer);
   }
 
   async getChunk(
@@ -384,9 +416,7 @@ export class TransferService {
   private async deleteTransferChunks(transferId: string): Promise<void> {
     this.logger.log(`Removing all chunks from transfer ${transferId}`);
     const files = await this.bucketService.listFiles(transferId);
-    for (const file of files) {
-      await this.bucketService.deleteFile(file);
-    }
+    await Promise.all(files.map((f) => this.bucketService.deleteFile(f)));
     this.logger.debug('All chunks successfully deleted');
   }
 
