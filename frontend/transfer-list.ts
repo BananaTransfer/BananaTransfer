@@ -66,7 +66,7 @@ function formatLogInfo(logInfo: string): string {
 }
 
 function acceptTransfer(id: string) {
-  callApi('POST', `/transfer/accept/${id}`)
+  callApi('POST', `/transfer/accept/${id}`, {})
     .then(() => {
       console.log(`Accepted transfer with ID: ${id}`);
       location.reload();
@@ -78,7 +78,7 @@ function acceptTransfer(id: string) {
 }
 
 function rejectTransfer(id: string) {
-  callApi('POST', `/transfer/refuse/${id}`)
+  callApi('POST', `/transfer/refuse/${id}`, {})
     .then(() => {
       console.log(`Rejected transfer with ID: ${id}`);
       location.reload();

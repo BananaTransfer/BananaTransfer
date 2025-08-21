@@ -257,7 +257,12 @@ export class TransferService {
     if (chunkData.isLastChunk) {
       transfer.status = TransferStatus.UPLOADED;
       await this.createTransferLog(transfer, LogInfo.TRANSFER_UPLOADED, userId);
-      // TODO: notify local recipient about new transfer
+
+      if (transfer.receiver instanceof LocalUser) {
+        // TODO: notify local recipient about new transfer
+        transfer.status = TransferStatus.SENT;
+        await this.createTransferLog(transfer, LogInfo.TRANSFER_SENT, userId);
+      }
       // TODO: notify remote server about new transfer
     }
 
