@@ -96,8 +96,15 @@ async function downloadTransfer(id: string) {
 }
 
 function deleteTransfer(id: string) {
-  // TODO:
-  console.log(`Deleted transfer with ID: ${id}`);
+  callApi('DELETE', `/transfer/delete/${id}`, {})
+    .then(() => {
+      console.log(`Deleted transfer with ID: ${id}`);
+      location.reload();
+    })
+    .catch((err) => {
+      console.error(`Error deleting transfer with ID: ${id}`, err);
+      alert('Failed to delete transfer.');
+    });
 }
 
 export function setupListPage() {

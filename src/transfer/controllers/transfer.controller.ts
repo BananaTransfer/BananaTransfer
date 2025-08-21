@@ -8,6 +8,7 @@ import {
   Param,
   Body,
   UseGuards,
+  Delete,
 } from '@nestjs/common';
 import { Response } from 'express';
 
@@ -129,8 +130,11 @@ export class TransferController {
   }
 
   // endpoint to delete a transfer by ID
-  @Post('delete/:id')
-  deleteTransfer(@Param('id') id: string): void {
-    this.transferService.deleteTransfer(id);
+  @Delete('delete/:id')
+  async deleteTransfer(
+    @Param('id') id: string,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    await this.transferService.deleteTransfer(id, req.user.id);
   }
 }

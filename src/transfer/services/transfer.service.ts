@@ -28,6 +28,18 @@ interface BucketChunkData {
   iv: string;
 }
 
+const STATUS_DELETABLE_BY_SENDER_LOCALY = [
+  TransferStatus.CREATED.valueOf(),
+  TransferStatus.UPLOADED.valueOf(),
+  TransferStatus.SENT.valueOf(),
+];
+
+const STATUS_DELETABLE_BY_RECEIVER_LOCALY = [
+  TransferStatus.ACCEPTED.valueOf(),
+  TransferStatus.RETRIEVED.valueOf(),
+  TransferStatus.REFUSED.valueOf(),
+];
+
 @Injectable()
 export class TransferService {
   private readonly logger = new Logger(TransferService.name);
@@ -383,11 +395,26 @@ export class TransferService {
     return transfer;
   }
 
-  deleteTransfer(id: string): string {
-    // TODO: implement logic to delete a transfer by ID
-    // delete transfer local
-    // notify remote about it if needed
-    return `Transfer with ID ${id} deleted`;
+  async deleteTransfer(id: string, userId: number) {
+    const transfer = await this.getTransferOfUser(id, userId);
+    const transferStatus = transfer.status.valueOf();
+
+    const isUserSender = transfer.sender.id === userId;
+    const isUserReceiver = transfer.receiver.id === userId;
+
+    const isDeletable =
+      (isUserSender &&
+        STATUS_DELETABLE_BY_SENDER_LOCALY.includes(transferStatus)) ||
+      (isUserReceiver &&
+        STATUS_DELETABLE_BY_RECEIVER_LOCALY.includes(transferStatus));
+
+    if (!isDeletable) {
+      throw new UnauthorizedException(
+        'User is not authorized to do this action',
+      );
+    }
+
+    await this.deleteTransferLocally(transfer);
   }
 
   /**
@@ -395,7 +422,7 @@ export class TransferService {
    * @param transfer
    */
   async deleteTransferLocally(transfer: FileTransfer) {
-    // TODO: check status of transfer if can be deleted
+    // TODO: check status of transfer if can be deleted by remote!
     await this.deleteTransferChunks(transfer.id);
     transfer.status = TransferStatus.DELETED;
     await this.fileTransferRepository.save(transfer);
