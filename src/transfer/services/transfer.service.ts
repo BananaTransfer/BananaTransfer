@@ -398,7 +398,7 @@ export class TransferService {
    */
   async deleteLocalTransferPermanently(transfer: FileTransfer) {
     if (
-      transfer.status.valueOf() !== TransferStatus.EXPIRED.valueOf() ||
+      transfer.status.valueOf() !== TransferStatus.EXPIRED.valueOf() &&
       transfer.status.valueOf() !== TransferStatus.DELETED.valueOf()
     ) {
       this.logger.error(
