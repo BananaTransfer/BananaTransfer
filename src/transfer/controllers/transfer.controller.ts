@@ -77,39 +77,6 @@ export class TransferController {
     }
   }
 
-  // endpoint to fetch transfer details with logs
-  @Get('/:id/details')
-  async getTransferDetails(
-    @Param('id') id: string,
-    @Req() req: AuthenticatedRequest,
-    @Res() res: Response,
-  ): Promise<void> {
-    try {
-      const [transfer, logs] = await this.transferService.getTransferDetails(
-        id,
-        req.user.id,
-      );
-      res.json({
-        transfer: {
-          id: transfer.id,
-          filename: transfer.filename,
-          subject: transfer.subject,
-          status: transfer.status,
-          created_at: transfer.created_at,
-          size: transfer.size,
-        },
-        logs: logs.map((log) => ({
-          id: log.id,
-          info: log.info,
-          created_at: log.created_at,
-        })),
-      });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      res.status(404).json({ error: message });
-    }
-  }
-
   // endpoint to add a new transfer
   @Post('/new')
   async newTransfer(

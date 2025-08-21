@@ -1,37 +1,40 @@
 import { SecurityUtils } from './crypto/security-utils.js';
 import { FileDownloader } from './utils/file-downloader.js';
-import {
-  callApi,
-  BootstrapModal,
-  TransferDetailsResponse,
-} from './utils/common.js';
+import { callApi, BootstrapModal } from './utils/common.js';
 
 async function viewTransferDetails(id: string) {
   try {
-    const data = await callApi<void, TransferDetailsResponse>(
+    const transfer = (await callApi<void, unknown>(
       'GET',
-      `/transfer/${id}/details`,
-    );
+      `/transfer/${id}`,
+    )) as {
+      filename: string;
+      status: string;
+      subject: string;
+      created_at: string;
+      size?: string;
+      logs: Array<{ id: number; info: string; created_at: string }>;
+    };
 
     document.getElementById('modalFilename')!.textContent =
-      data.transfer.filename || 'N/A';
+      transfer.filename || 'N/A';
     document.getElementById('modalStatus')!.textContent =
-      data.transfer.status || 'N/A';
+      transfer.status || 'N/A';
     document.getElementById('modalSubject')!.textContent =
-      data.transfer.subject || 'N/A';
+      transfer.subject || 'N/A';
     document.getElementById('modalCreatedAt')!.textContent =
-      data.transfer.created_at || 'N/A';
-    document.getElementById('modalSize')!.textContent = data.transfer.size;
+      transfer.created_at || 'N/A';
+    document.getElementById('modalSize')!.textContent = transfer.size || 'N/A';
 
     const logsTableBody = document.getElementById('modalLogs')!;
     logsTableBody.innerHTML = '';
 
-    if (data.logs && data.logs.length > 0) {
-      data.logs.forEach((log) => {
+    if (transfer.logs && transfer.logs.length > 0) {
+      transfer.logs.forEach((log) => {
         const row = document.createElement('tr');
         row.innerHTML = `
           <td>${formatLogInfo(log.info)}</td>
-          <td>${new Date(log.created_at).toLocaleString('en-GB', { hour12: false })}</td>
+          <td>${new Date(log.created_at).toLocaleString()}</td>
         `;
         logsTableBody.appendChild(row);
       });
