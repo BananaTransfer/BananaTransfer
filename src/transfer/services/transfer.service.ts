@@ -333,12 +333,22 @@ export class TransferService {
     }
 
     transfer.status = TransferStatus.ACCEPTED;
-    await this.fileTransferRepository.save(transfer);
     await this.createTransferLog(
       transfer,
       LogInfo.TRANSFER_ACCEPTED,
       transfer.receiver.id,
     );
+
+    if (transfer.sender instanceof LocalUser) {
+      transfer.status = TransferStatus.RETRIEVED;
+      await this.createTransferLog(
+        transfer,
+        LogInfo.TRANSFER_RETRIEVED,
+        transfer.receiver.id,
+      );
+    }
+
+    await this.fileTransferRepository.save(transfer);
     return transfer;
   }
 
