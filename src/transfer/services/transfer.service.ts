@@ -89,21 +89,12 @@ export class TransferService {
     );
   }
 
-  // TODO: do we still need this? don't we fetch now only the logs? can we rename the method then getTransferLogs?
-  async getTransferDetails(
-    transferId: string,
-    userId: number,
-  ): Promise<[FileTransfer, TransferLog[]]> {
-    const transfer = await this.getTransferOfUser(transferId, userId);
-
-    const logs = await this.transferLogRepository.find({
-      where: { fileTransfer: { id: transferId } },
-    });
-    return [transfer, logs];
-  }
-
   private async toDTO(transfer: FileTransfer): Promise<TransferDto> {
     const keys = await this.bucketService.listFiles(transfer.id);
+    const logs = await this.transferLogRepository.find({
+      where: { fileTransfer: { id: transfer.id } },
+      order: { created_at: 'ASC' },
+    });
 
     return {
       id: transfer.id,
@@ -119,6 +110,12 @@ export class TransferService {
       receiverAddress: this.recipientService.getRecipientAddress(
         transfer.receiver,
       ),
+      size: transfer.size,
+      logs: logs.map((log) => ({
+        id: log.id,
+        info: log.info,
+        created_at: log.created_at,
+      })),
     };
   }
 

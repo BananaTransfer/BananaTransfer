@@ -1,10 +1,66 @@
 import { SecurityUtils } from './crypto/security-utils.js';
 import { FileDownloader } from './utils/file-downloader.js';
-import { callApi } from './utils/common';
+import { callApi, BootstrapModal } from './utils/common.js';
 
-function viewTransferDetails(id: string) {
-  // TODO:
-  console.log(`Viewing details for transfer with ID: ${id}`);
+async function viewTransferDetails(id: string) {
+  try {
+    const transfer = (await callApi<void, unknown>(
+      'GET',
+      `/transfer/${id}`,
+    )) as {
+      filename: string;
+      status: string;
+      subject: string;
+      created_at: string;
+      size?: string;
+      logs: Array<{ id: number; info: string; created_at: string }>;
+    };
+
+    document.getElementById('modalFilename')!.textContent =
+      transfer.filename || 'N/A';
+    document.getElementById('modalStatus')!.textContent =
+      transfer.status || 'N/A';
+    document.getElementById('modalSubject')!.textContent =
+      transfer.subject || 'N/A';
+    document.getElementById('modalCreatedAt')!.textContent =
+      transfer.created_at || 'N/A';
+    document.getElementById('modalSize')!.textContent = transfer.size || 'N/A';
+
+    const logsTableBody = document.getElementById('modalLogs')!;
+    logsTableBody.innerHTML = '';
+
+    if (transfer.logs && transfer.logs.length > 0) {
+      transfer.logs.forEach((log) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${formatLogInfo(log.info)}</td>
+          <td>${new Date(log.created_at).toLocaleString()}</td>
+        `;
+        logsTableBody.appendChild(row);
+      });
+    } else {
+      const row = document.createElement('tr');
+      row.innerHTML =
+        '<td colspan="2" class="text-center">No logs available</td>';
+      logsTableBody.appendChild(row);
+    }
+
+    const modal = new (
+      window.bootstrap as { Modal: new (el: HTMLElement) => BootstrapModal }
+    ).Modal(document.getElementById('transferDetailsModal')!);
+    modal.show();
+  } catch (error) {
+    console.error('Error fetching transfer details:', error);
+    alert('Failed to load transfer details.');
+  }
+}
+
+function formatLogInfo(logInfo: string): string {
+  return logInfo
+    .replace(/TRANSFER_/, '')
+    .replace(/_/g, ' ')
+    .toLowerCase()
+    .replace(/\b\w/g, (l) => l.toUpperCase());
 }
 
 function acceptTransfer(id: string) {
@@ -53,7 +109,7 @@ export function setupListPage() {
     button.addEventListener('click', () => {
       const id = button.getAttribute('data-id');
       if (!id) return;
-      viewTransferDetails(id);
+      void viewTransferDetails(id);
     });
   });
 
