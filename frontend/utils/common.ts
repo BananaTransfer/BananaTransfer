@@ -4,9 +4,25 @@ declare global {
   }
 }
 
-interface BootstrapModal {
+export interface BootstrapModal {
   show: () => void;
   hide: () => void;
+}
+
+export interface TransferDetailsResponse {
+  transfer: {
+    id: string;
+    filename: string;
+    subject: string;
+    status: string;
+    created_at: string;
+    size: string;
+  };
+  logs: Array<{
+    id: number;
+    info: string;
+    created_at: string;
+  }>;
 }
 
 export function enforceLowerCase(input: HTMLInputElement) {
