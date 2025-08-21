@@ -1,11 +1,12 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, In, LessThan, Repository } from 'typeorm';
 
 import { LogInfo, TransferStatus } from '@database/entities/enums';
 import { User } from '@database/entities/user.entity';
@@ -29,6 +30,8 @@ interface BucketChunkData {
 
 @Injectable()
 export class TransferService {
+  private readonly logger = new Logger(TransferService.name);
+
   constructor(
     private readonly bucketService: BucketService,
     @InjectRepository(FileTransfer)
@@ -37,6 +40,7 @@ export class TransferService {
     private transferLogRepository: Repository<TransferLog>,
     private userService: UserService,
     private recipientService: RecipientService,
+    private dataSource: DataSource,
   ) {}
 
   // local transfer handling methods
@@ -49,6 +53,20 @@ export class TransferService {
     return await Promise.all(
       list.map((fileTransfer) => this.toDTO(fileTransfer)),
     );
+  }
+
+  async getTransferListByStatusAndCreationTime(
+    status: TransferStatus[],
+    createdBefore: Date,
+  ): Promise<FileTransfer[]> {
+    return this.fileTransferRepository.find({
+      where: [
+        {
+          status: In(status),
+          created_at: LessThan(createdBefore),
+        },
+      ],
+    });
   }
 
   private async getTransferOfUser(transferId: string, userId: number) {
@@ -87,19 +105,6 @@ export class TransferService {
     throw new UnauthorizedException(
       `Transfer sender domain does not match remote domain`,
     );
-  }
-
-  // TODO: do we still need this? don't we fetch now only the logs? can we rename the method then getTransferLogs?
-  async getTransferDetails(
-    transferId: string,
-    userId: number,
-  ): Promise<[FileTransfer, TransferLog[]]> {
-    const transfer = await this.getTransferOfUser(transferId, userId);
-
-    const logs = await this.transferLogRepository.find({
-      where: { fileTransfer: { id: transferId } },
-    });
-    return [transfer, logs];
   }
 
   private async toDTO(transfer: FileTransfer): Promise<TransferDto> {
@@ -178,6 +183,7 @@ export class TransferService {
     recipient: LocalUser,
     sender: RemoteUser,
   ) {
+    // TODO refactor this method to use the newTransfer method
     const transfer = this.fileTransferRepository.create({
       symmetric_key_encrypted: transferData.symmetric_key_encrypted,
       status: TransferStatus.SENT,
@@ -259,14 +265,20 @@ export class TransferService {
   private async createTransferLog(
     transfer: FileTransfer,
     info: LogInfo,
-    userId: number,
+    userId?: number,
   ): Promise<TransferLog> {
-    const log = this.transferLogRepository.create({
+    const log = {
       fileTransfer: transfer,
       info,
-      user: { id: userId } as User,
-    });
-    return await this.transferLogRepository.save(log);
+    };
+
+    if (userId) {
+      log['user'] = { id: userId } as User;
+    }
+
+    return await this.transferLogRepository.save(
+      this.transferLogRepository.create(log),
+    );
   }
 
   async acceptTransfer(id: string, userId: number): Promise<FileTransfer> {
@@ -338,9 +350,13 @@ export class TransferService {
     return `Transfer with ID ${id} deleted`;
   }
 
+  /**
+   * Mark a transfer as deleted, but keep it in DB until expiration. Remove all associated chunks
+   * @param transfer
+   */
   async deleteTransferLocally(transfer: FileTransfer) {
     // TODO: check status of transfer if can be deleted
-
+    await this.deleteTransferChunks(transfer.id);
     transfer.status = TransferStatus.DELETED;
     await this.fileTransferRepository.save(transfer);
     await this.createTransferLog(
@@ -349,5 +365,58 @@ export class TransferService {
       transfer.receiver.id,
     );
     return transfer;
+  }
+
+  /**
+   * Delete all chunks related to a transfer
+   * @private
+   */
+  private async deleteTransferChunks(transferId: string): Promise<void> {
+    this.logger.log(`Removing all chunks from transfer ${transferId}`);
+    const files = await this.bucketService.listFiles(transferId);
+    for (const file of files) {
+      await this.bucketService.deleteFile(file);
+    }
+    this.logger.debug('All chunks successfully deleted');
+  }
+
+  /**
+   * Mark a file transfer as expired and remove all associated chunks
+   * @param transfer
+   */
+  async expireLocalTransfer(transfer: FileTransfer) {
+    this.logger.log(`Expire file transfer ${transfer.id}`);
+    await this.deleteTransferChunks(transfer.id);
+    transfer.status = TransferStatus.EXPIRED;
+    await this.fileTransferRepository.save(transfer);
+    await this.createTransferLog(transfer, LogInfo.TRANSFER_EXPIRED);
+  }
+
+  /**
+   * Permanently delete all information related to a local file transfer (logs, chunks and the entity itself)
+   * @param transfer
+   */
+  async deleteLocalTransferPermanently(transfer: FileTransfer) {
+    if (
+      transfer.status.valueOf() !== TransferStatus.EXPIRED.valueOf() ||
+      transfer.status.valueOf() !== TransferStatus.DELETED.valueOf()
+    ) {
+      this.logger.error(
+        `Can't delete file transfer ${transfer.id}. It must first be in a deleted or expired status`,
+      );
+      return;
+    }
+
+    await this.dataSource.transaction(async (transactionalEntityManager) => {
+      await transactionalEntityManager
+        .withRepository(this.transferLogRepository)
+        .delete({
+          fileTransfer: transfer,
+        });
+
+      await transactionalEntityManager
+        .withRepository(this.fileTransferRepository)
+        .delete(transfer);
+    });
   }
 }
