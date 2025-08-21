@@ -6,6 +6,7 @@ import { UserModule } from '@user/user.module';
 
 import { TransferController } from '@transfer/controllers/transfer.controller';
 import { TransferService } from '@transfer/services/transfer.service';
+import { ExpirationService } from '@transfer/services/expiration.service';
 
 import { BucketService } from '@transfer/services/bucket.service';
 
@@ -21,7 +22,7 @@ import { TransferLog } from '@database/entities/transfer-log.entity';
     TypeOrmModule.forFeature([FileTransfer, TransferLog]),
   ],
   controllers: [TransferController],
-  providers: [BucketService, TransferService],
+  providers: [BucketService, TransferService, ExpirationService],
   exports: [TransferService],
 })
 export class TransferModule {}
