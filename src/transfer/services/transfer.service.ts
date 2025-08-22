@@ -438,10 +438,9 @@ export class TransferService {
     this.logger.log(`Expiring transfers for user ${userId} due to key change`);
 
     const activeStatuses = [
-      TransferStatus.CREATED,
-      TransferStatus.UPLOADED,
       TransferStatus.SENT,
       TransferStatus.ACCEPTED,
+      TransferStatus.RETRIEVED,
     ];
 
     const transfersToExpire = await this.fileTransferRepository.find({
