@@ -52,7 +52,10 @@ async function bootstrap() {
 
   // Middleware to verify CSRF token on POST
   app.use((req: CsrfRequest, res: Response, next: NextFunction) => {
-    if (req.method === 'POST') {
+    const skipCsrf =
+      req.path.startsWith('/remote/new/transfer') ||
+      req.path.startsWith('/remote/transfer/retrieved/');
+    if (req.method === 'POST' && !skipCsrf) {
       const token = (req.body as { _csrf: string })?._csrf;
       if (!tokens.verify(req.csrfSecret, token)) {
         throw new ForbiddenException('Invalid CSRF token');

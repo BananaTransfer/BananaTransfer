@@ -33,12 +33,18 @@ export class RemoteInboundService {
   public async remoteNewTransfer(
     domain: string,
     remoteTransfer: RemoteTransferDto,
-  ): Promise<string> {
+  ): Promise<{ message: string }> {
+    this.logger.log(
+      `Creating new transfer ${remoteTransfer.id} from domain ${domain}`,
+    );
     // check if sender domain matches to the domain of the remote server
     const parsedSender = this.recipientService.parseRecipient(
       remoteTransfer.senderAddress,
     );
     if (parsedSender.isLocal || parsedSender.domain !== domain) {
+      this.logger.error(
+        `Sender domain ${parsedSender.domain} does not match expected domain ${domain}`,
+      );
       throw new Error(
         `Sender domain ${parsedSender.domain} does not match expected domain ${domain}`,
       );
@@ -48,6 +54,9 @@ export class RemoteInboundService {
       remoteTransfer.recipientAddress,
     );
     if (!parsedRecipient.isLocal || parsedRecipient.domain !== this.envDomain) {
+      this.logger.error(
+        `Recipient domain ${parsedRecipient.domain} does not match expected domain ${this.envDomain}`,
+      );
       throw new Error(
         `Recipient domain ${parsedRecipient.domain} does not match expected domain ${this.envDomain}`,
       );
@@ -66,7 +75,7 @@ export class RemoteInboundService {
       recipientUser,
       senderUser,
     );
-    return `New transfer ${remoteTransfer.id} created`;
+    return { message: `New transfer ${remoteTransfer.id} created` };
   }
 
   public async remoteFetchTransferInfo(

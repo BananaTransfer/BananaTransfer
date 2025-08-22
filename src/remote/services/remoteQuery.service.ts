@@ -47,13 +47,17 @@ export class RemoteQueryService {
     };
 
     if (body) {
-      request['body'] = JSON.stringify({ body });
+      console.log(body);
+      request['body'] = JSON.stringify(body);
       request.headers['Content-Type'] = 'application/json';
     }
 
     const response = await fetch(url, request);
 
     if (!response.ok) {
+      this.logger.error(
+        `Error calling remote API ${url}: ${response.status} ${response.statusText} ${await response.text()}`,
+      );
       throw new Error(`Request failed with status ${response.status}`);
     }
 
@@ -93,13 +97,13 @@ export class RemoteQueryService {
       recipientAddress: `${recipient.username}@${recipient.domain}`,
     };
 
-    const response = await this.callRemoteApi<RemoteTransferDto, string>(
-      'POST',
-      recipient.domain,
-      `remote/new/transfer`,
-      remoteTransfer,
+    const response = await this.callRemoteApi<
+      RemoteTransferDto,
+      { message: string }
+    >('POST', recipient.domain, `remote/new/transfer`, remoteTransfer);
+    this.logger.log(
+      `Answer from Remote ${recipient.domain}: ${response.message}`,
     );
-    this.logger.log(`Answer from Remote ${recipient.domain}: ${response}`);
   }
 
   // fetch transfer chunks from remote server
@@ -115,6 +119,7 @@ export class RemoteQueryService {
         sender.domain,
         `remote/fetch/transfer/${transfer.id}`,
       );
+      console.log(data);
       const transferInfo = plainToInstance(TransferInfoDto, data);
       await validateOrReject(transferInfo);
 
@@ -126,9 +131,12 @@ export class RemoteQueryService {
           sender.domain,
           `remote/fetch/transfer/${transfer.id}/${chunkId}`,
         );
+        this.logger.debug(
+          `Fetched chunk ${chunkId} for transfer ${transfer.id} from ${sender.domain}`,
+        );
         const chunkData = plainToInstance(ChunkDto, data);
         await validateOrReject(chunkData);
-
+        console.log(chunkData);
         const chunkSize = await this.transferChunkService.saveChunk(
           transfer.id,
           chunkData,
@@ -137,6 +145,9 @@ export class RemoteQueryService {
         // check if the fetched size exceeds the originally indicated transfer size
         fetchedSize += chunkSize;
         if (fetchedSize > Number(transfer.size)) {
+          this.logger.error(
+            `Fetched size ${fetchedSize} exceeds originally indicated transfer size ${transfer.size}`,
+          );
           throw new Error(
             `Fetched size ${fetchedSize} exceeds originally indicated transfer size ${transfer.size}`,
           );
@@ -159,6 +170,9 @@ export class RemoteQueryService {
       await this.transferChunkService.deleteTransferChunks(transfer.id);
       // TODO: log the error in the transfer-logs
       // TODO: return an error response
+      throw new Error(
+        `Error fetching remote transfer ${transfer.id}: ${(error as Error).message}`,
+      );
     }
   }
 }

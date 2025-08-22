@@ -113,6 +113,15 @@ export class TransferController {
     return this.transferService.getChunk(transferId, chunkId, req.user.id);
   }
 
+  // endpoint to send a transfer by ID
+  @Post('send/:id')
+  async sendTransfer(
+    @Param('id') id: string,
+    @Req() req: AuthenticatedRequest,
+  ): Promise<void> {
+    await this.transferService.sendTransfer(id, req.user.id);
+  }
+
   // endpoint to accept a transfer by ID
   @Post('accept/:id')
   async acceptTransfer(
@@ -129,6 +138,15 @@ export class TransferController {
     @Req() req: AuthenticatedRequest,
   ): Promise<void> {
     await this.transferService.refuseTransfer(id, req.user.id);
+  }
+
+  // endpoint to retrieve a transfer by ID
+  @Post('retrieve/:id')
+  async retrieveTransfer(
+    @Param('id') id: string,
+    @Req() req: AuthenticatedRequest,
+  ): Promise<void> {
+    await this.transferService.retrieveTransfer(id, req.user.id);
   }
 
   // endpoint to delete a transfer by ID

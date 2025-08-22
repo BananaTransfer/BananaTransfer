@@ -151,17 +151,22 @@ export class TransferService {
       relations: ['sender', 'receiver'],
     });
     if (!transfer) {
+      this.logger.error(`Transfer with ID ${transferId} not found`);
       throw new NotFoundException(`Transfer with ID ${transferId} not found`);
     }
     if (
       !(transfer.receiver instanceof RemoteUser) ||
       transfer.receiver.domain !== remoteDomain
     ) {
+      this.logger.error(
+        `Transfer recipient domain does not match remote domain ${remoteDomain}`,
+      );
       throw new UnauthorizedException(
         `Transfer recipient domain does not match remote domain`,
       );
     }
     if (transfer.status !== TransferStatus.SENT) {
+      this.logger.error(`Transfer with ID ${transfer.id} is unavailable`);
       throw new NotFoundException(
         `Transfer with ID ${transfer.id} is unavailable`,
       );
@@ -186,15 +191,9 @@ export class TransferService {
     }
   }
 
-  private rejectIfNotStatusCreated(transfer: FileTransfer) {
-    if (transfer.status !== TransferStatus.CREATED) {
-      throw new BadRequestException('Transfer is not in created status');
-    }
-  }
-
-  private rejectIfNotStatusSent(transfer: FileTransfer) {
-    if (transfer.status !== TransferStatus.SENT) {
-      throw new BadRequestException('Transfer is not in sent status');
+  private rejectIfNotStatus(transfer: FileTransfer, status: TransferStatus) {
+    if (transfer.status !== status) {
+      throw new BadRequestException(`Transfer is not in ${status} status`);
     }
   }
 
@@ -205,7 +204,7 @@ export class TransferService {
     subject: string;
     size?: string;
     sender: User;
-    recipient: User;
+    receiver: User;
   }): Promise<FileTransfer> {
     transferData['status'] = TransferStatus.CREATED;
     const transfer = await this.fileTransferRepository.save(
@@ -266,8 +265,8 @@ export class TransferService {
       symmetric_key_encrypted: transferData.symmetric_key_encrypted,
       filename: transferData.filename,
       subject: transferData.subject,
-      sender: sender,
-      recipient,
+      sender,
+      receiver: recipient,
     });
 
     return this.toTransferDto(transfer);
@@ -283,7 +282,7 @@ export class TransferService {
       filename: transferData.filename,
       subject: transferData.subject,
       sender,
-      recipient,
+      receiver: recipient,
       size: transferData.size,
       id: transferData.id,
     });
@@ -300,7 +299,7 @@ export class TransferService {
   ): Promise<void> {
     const transfer = await this.getTransferOfUser(transferId, userId);
     this.rejectIfNotSender(transfer, userId);
-    this.rejectIfNotStatusCreated(transfer);
+    this.rejectIfNotStatus(transfer, TransferStatus.CREATED);
 
     const chunkSize = await this.transferChunkService.saveChunk(
       transfer.id,
@@ -317,8 +316,7 @@ export class TransferService {
         // TODO: send notification to local recipient about new transfer
         await this.setTransferStatus(transfer, TransferStatus.SENT);
       } else if (transfer.receiver instanceof RemoteUser) {
-        await this.remoteQueryService.newRemoteTransfer(transfer);
-        await this.setTransferStatus(transfer, TransferStatus.SENT);
+        await this.sendTransferToRemote(transfer);
       }
     }
   }
@@ -334,10 +332,32 @@ export class TransferService {
     return this.transferChunkService.fetchChunk(transfer.id, chunkId);
   }
 
+  private async sendTransferToRemote(transfer: FileTransfer) {
+    await this.remoteQueryService.newRemoteTransfer(transfer);
+    await this.setTransferStatus(transfer, TransferStatus.SENT);
+  }
+
+  private async fetchTransferFromRemote(transfer: FileTransfer) {
+    if (transfer.sender instanceof RemoteUser) {
+      await this.remoteQueryService.fetchRemoteTransfer(transfer);
+      await this.setTransferStatus(transfer, TransferStatus.RETRIEVED);
+    }
+  }
+
+  async sendTransfer(id: string, userId: number): Promise<FileTransfer> {
+    const transfer = await this.getTransferOfUser(id, userId);
+    this.rejectIfNotSender(transfer, userId);
+    this.rejectIfNotStatus(transfer, TransferStatus.UPLOADED);
+
+    await this.sendTransferToRemote(transfer);
+
+    return transfer;
+  }
+
   async acceptTransfer(id: string, userId: number): Promise<FileTransfer> {
     const transfer = await this.getTransferOfUser(id, userId);
     this.rejectIfNotReceiver(transfer, userId);
-    this.rejectIfNotStatusSent(transfer);
+    this.rejectIfNotStatus(transfer, TransferStatus.SENT);
 
     await this.setTransferStatus(transfer, TransferStatus.ACCEPTED);
 
@@ -350,20 +370,22 @@ export class TransferService {
     return transfer;
   }
 
-  private async fetchTransferFromRemote(transfer: FileTransfer) {
-    if (transfer.sender instanceof RemoteUser) {
-      await this.remoteQueryService.fetchRemoteTransfer(transfer);
-      await this.setTransferStatus(transfer, TransferStatus.RETRIEVED);
-    }
-  }
-
   async refuseTransfer(id: string, userId: number): Promise<FileTransfer> {
     const transfer = await this.getTransferOfUser(id, userId);
 
     this.rejectIfNotReceiver(transfer, userId);
-    this.rejectIfNotStatusSent(transfer);
+    this.rejectIfNotStatus(transfer, TransferStatus.SENT);
 
     await this.setTransferStatus(transfer, TransferStatus.REFUSED);
+    return transfer;
+  }
+
+  async retrieveTransfer(id: string, userId: number): Promise<FileTransfer> {
+    const transfer = await this.getTransferOfUser(id, userId);
+    this.rejectIfNotReceiver(transfer, userId);
+    this.rejectIfNotStatus(transfer, TransferStatus.ACCEPTED);
+
+    await this.fetchTransferFromRemote(transfer);
     return transfer;
   }
 

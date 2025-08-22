@@ -50,7 +50,7 @@ export class RemoteController {
   async newTransfer(
     @Req() req: RemoteRequest,
     @Body() remoteTransfer: RemoteTransferDto,
-  ): Promise<string> {
+  ): Promise<{ message: string }> {
     return await this.remoteInboundService.remoteNewTransfer(
       req.domain,
       remoteTransfer,
