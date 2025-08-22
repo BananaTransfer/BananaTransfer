@@ -60,20 +60,7 @@ export class RemoteInboundService {
       recipientUser,
       senderUser,
     );
-    return `New transfer created`;
-  }
-
-  public async remoteAcceptTransfer(
-    domain: string,
-    transferId: string,
-  ): Promise<string> {
-    this.logger.log(`Accepting transfer ${transferId} for domain ${domain}`);
-    const transfer = await this.transferService.getTransferOfSenderDomain(
-      transferId,
-      domain,
-    );
-    await this.transferService.acceptTransferLocally(transfer);
-    return `Transfer accepted`;
+    return `New transfer ${remoteTransfer.id} created`;
   }
 
   public async remoteFetchTransfer(
@@ -90,6 +77,19 @@ export class RemoteInboundService {
     return `Transfer data for ID ${transferId} fetched by ${domain}`;
   }
 
+  /* public async remoteAcceptTransfer(
+    domain: string,
+    transferId: string,
+  ): Promise<string> {
+    this.logger.log(`Accepting transfer ${transferId} for domain ${domain}`);
+    const transfer = await this.transferService.getTransferOfSenderDomain(
+      transferId,
+      domain,
+    );
+    await this.transferService.acceptTransferLocally(transfer);
+    return `Transfer ${transfer.id} accepted`;
+  }
+
   public async remoteRefuseTransfer(
     domain: string,
     transferId: string,
@@ -100,7 +100,7 @@ export class RemoteInboundService {
       domain,
     );
     await this.transferService.refuseTransferLocally(transfer);
-    return `Transfer refused`;
+    return `Transfer ${transfer.id} refused`;
   }
 
   public async remoteDeleteTransfer(
@@ -113,6 +113,6 @@ export class RemoteInboundService {
       domain,
     );
     await this.transferService.deleteTransferLocally(transfer);
-    return `Transfer deleted`;
-  }
+    return `Transfer ${transfer.id} deleted`;
+  }*/
 }

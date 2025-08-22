@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, In, LessThan, Repository } from 'typeorm';
+import * as fs from 'node:fs/promises';
 
 import { LogInfo, TransferStatus } from '@database/entities/enums';
 import { User } from '@database/entities/user.entity';
@@ -14,13 +15,15 @@ import { LocalUser } from '@database/entities/local-user.entity';
 import { RemoteUser } from '@database/entities/remote-user.entity';
 import { FileTransfer } from '@database/entities/file-transfer.entity';
 import { TransferLog } from '@database/entities/transfer-log.entity';
+
 import { BucketService } from '@transfer/services/bucket.service';
+import { RemoteQueryService } from '@remote/services/remoteQuery.service';
+import { UserService } from '@user/services/user.service';
+import { RecipientService } from '@user/services/recipient.service';
+
 import { TransferDto } from '@transfer/dto/transfer.dto';
 import { CreateTransferDto } from '@transfer/dto/create-transfer.dto';
-import { UserService } from '@user/services/user.service';
 import { ChunkDto } from '@transfer/dto/chunk.dto';
-import * as fs from 'node:fs/promises';
-import { RecipientService } from '@user/services/recipient.service';
 import { RemoteTransferDto } from '@remote/dto/remoteTransfer.dto';
 
 interface BucketChunkData {
@@ -53,6 +56,7 @@ export class TransferService {
     private userService: UserService,
     private recipientService: RecipientService,
     private dataSource: DataSource,
+    private remoteQueryService: RemoteQueryService,
   ) {}
 
   // local transfer handling methods
@@ -274,8 +278,10 @@ export class TransferService {
         // TODO: notify local recipient about new transfer
         transfer.status = TransferStatus.SENT;
         await this.createTransferLog(transfer, LogInfo.TRANSFER_SENT, userId);
+      } else if (transfer.receiver instanceof RemoteUser) {
+        this.remoteQueryService.newRemoteTransfer(transfer);
+        // TODO: notify remote server about new transfer
       }
-      // TODO: notify remote server about new transfer
     }
 
     await this.fileTransferRepository.save(transfer);

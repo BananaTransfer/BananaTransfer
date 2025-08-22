@@ -55,15 +55,6 @@ export class RemoteController {
     );
   }
 
-  // endpoint to accept a transfer by ID
-  @Post('accept/transfer/:id')
-  async acceptTransfer(
-    @Req() req: RemoteRequest,
-    @Param('id') id: string,
-  ): Promise<string> {
-    return await this.remoteInboundService.remoteAcceptTransfer(req.domain, id);
-  }
-
   // endpoint to fetch a transfer chunk by ID
   @Post('fetch/transfer/:id')
   async fetchTransfer(
@@ -71,6 +62,15 @@ export class RemoteController {
     @Param('id') id: string,
   ): Promise<string> {
     return await this.remoteInboundService.remoteFetchTransfer(req.domain, id);
+  }
+
+  // endpoint to accept a transfer by ID
+  /*@Post('accept/transfer/:id')
+  async acceptTransfer(
+    @Req() req: RemoteRequest,
+    @Param('id') id: string,
+  ): Promise<string> {
+    return await this.remoteInboundService.remoteAcceptTransfer(req.domain, id);
   }
 
   // endpoint to refuse a transfer by ID
@@ -89,5 +89,5 @@ export class RemoteController {
     @Param('id') id: string,
   ): Promise<string> {
     return await this.remoteInboundService.remoteDeleteTransfer(req.domain, id);
-  }
+  }*/
 }
