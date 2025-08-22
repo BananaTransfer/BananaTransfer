@@ -444,10 +444,10 @@ export class TransferService {
     ];
 
     const transfersToExpire = await this.fileTransferRepository.find({
-      where: [
-        { sender: { id: userId }, status: In(activeStatuses) },
-        { receiver: { id: userId }, status: In(activeStatuses) },
-      ],
+      where: {
+        receiver: { id: userId },
+        status: In(activeStatuses),
+      },
     });
 
     this.logger.debug(

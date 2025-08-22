@@ -3,6 +3,8 @@ import {
   ConflictException,
   NotFoundException,
   UnauthorizedException,
+  forwardRef,
+  Inject,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -10,6 +12,7 @@ import { Repository } from 'typeorm';
 import { PasswordService } from '@user/services/password.service';
 import { UserStatus } from '@database/entities/enums';
 import { LocalUser } from '@database/entities/local-user.entity';
+import { ExpirationService } from '@transfer/services/expiration.service';
 
 @Injectable()
 export class UserService {
@@ -17,6 +20,8 @@ export class UserService {
     private readonly passwordService: PasswordService,
     @InjectRepository(LocalUser)
     private localUserRepository: Repository<LocalUser>,
+    @Inject(forwardRef(() => ExpirationService))
+    private readonly expirationService: ExpirationService,
   ) {}
 
   async findByUserId(userId: number): Promise<LocalUser | null> {
@@ -101,6 +106,9 @@ export class UserService {
     if (!(await this.passwordService.validatePassword(user, password))) {
       throw new UnauthorizedException('Invalid password');
     }
+
+    await this.expirationService.expireTransfersForUserKeyChange(userId);
+
     user.private_key_encrypted = privateKeyEncrypted;
     user.private_key_salt = privateKeySalt;
     user.private_key_iv = privateKeyIv;
