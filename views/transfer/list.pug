@@ -1,6 +1,7 @@
 extends ../layout
 
 block content
+  input(type="hidden" id="_csrf" value=csrfToken)
   .row.justify-content-center.mb-3.mt-3
     .col-0.col-md-4
     .col-8.col-md-4.col-xl-2.text-center
@@ -56,19 +57,23 @@ block content
                     )
                       i.bi.bi-info-lg.text-primary
                   td.text-center
-                    // TODO: only show the buttons depending on the state of the transfer
-                    if transfer.status == "SENT" && transfer.receiverId === currentUser.id
-                        button.btn.btn-sm.btn-success.ms.accept-btn(type="button" data-id=transfer.id) Accept
-                        button.btn.btn-sm.btn-danger.ms-1.reject-btn(type="button" data-id=transfer.id) Reject
-                    if transfer.status == "ACCEPTED" && transfer.receiverId === currentUser.id
-                      button.btn.btn-sm.btn-primary.ms-1.download-btn(type="button" data-id=transfer.id) Download
-                    if transfer.status != "RETRIEVED" && transfer.status != "REFUSED" && transfer.status != "DELETED" && transfer.senderId === currentUser.id
-                      button.btn.btn-sm.btn-danger.ms-1.delete-btn(type="button" data-id=transfer.id) Delete
+                    .d-flex.flex-column
+                      .btn-group
+                        // TODO: only show the buttons depending on the state of the transfer
+                          a.btn.btn-sm.btn-success.ms(href=`/transfer/accept/${transfer.id}`) Accept
+                        if transfer.status == "SENT" && transfer.receiverId === currentUser.id
+                            button.btn.btn-sm.btn-success.accept-btn(type="button" data-id=transfer.id) Accept
+                            button.btn.btn-sm.btn-warning.reject-btn(type="button" data-id=transfer.id) Reject
+                        // TODO fix once real status are implemented
+                        if transfer.status == "RETRIEVED" && transfer.receiverId === currentUser.id
+                          button.btn.btn-sm.btn-primary.download-btn(type="button" data-id=transfer.id) Download
+                        if transfer.status != "RETRIEVED" && transfer.status != "REFUSED" && transfer.status != "DELETED" && transfer.senderId === currentUser.id
+                          button.btn.btn-sm.btn-danger.delete-btn(type="button" data-id=transfer.id) Delete
             else
               tr
                 td(colspan="8" class="text-center") No transfers found.
+
       // List for mobile
-      //- List for mobile
       .d-block.d-md-none
         each transfer in transfers
           .card.mb-2
@@ -109,11 +114,12 @@ block content
                   if transfer.status == "SENT" && transfer.receiverId === currentUser.id
                       button.btn.btn-sm.btn-success.ms.accept-btn(type="button" data-id=transfer.id) Accept
                       button.btn.btn-sm.btn-danger.ms-1.reject-btn(type="button" data-id=transfer.id) Reject
-                  if transfer.status == "ACCEPTED" && transfer.receiverId === currentUser.id
+                  if transfer.status == "RETRIEVED" && transfer.receiverId === currentUser.id
                     button.btn.btn-sm.btn-primary.ms-1.download-btn(type="button" data-id=transfer.id) Download
                   if transfer.status != "RETRIEVED" && transfer.status != "REFUSED" && transfer.status != "DELETED" && transfer.senderId === currentUser.id
                     button.btn.btn-sm.btn-danger.ms-1.delete-btn(type="button" data-id=transfer.id) Delete
   include ../modals/master-password.pug
+  include ../modals/transfer-details.pug
 
                   
 

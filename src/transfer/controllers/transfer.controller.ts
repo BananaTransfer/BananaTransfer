@@ -8,6 +8,7 @@ import {
   Param,
   Body,
   UseGuards,
+  Delete,
 } from '@nestjs/common';
 import { Response } from 'express';
 
@@ -38,6 +39,7 @@ export class TransferController {
     return {
       transfers: transfers,
       currentUser: req.user,
+      csrfToken: req.csrfToken(),
     };
   }
 
@@ -114,10 +116,8 @@ export class TransferController {
   async acceptTransfer(
     @Param('id') id: string,
     @Req() req: AuthenticatedRequest,
-    @Res() res: Response,
   ): Promise<void> {
     await this.transferService.acceptTransfer(id, req.user.id);
-    res.redirect('/transfer/list');
   }
 
   // endpoint to refuse a transfer by ID
@@ -125,16 +125,16 @@ export class TransferController {
   async refuseTransfer(
     @Param('id') id: string,
     @Req() req: AuthenticatedRequest,
-    @Res() res: Response,
   ): Promise<void> {
     await this.transferService.refuseTransfer(id, req.user.id);
-    res.redirect('/transfer/list');
   }
 
   // endpoint to delete a transfer by ID
-  @Post('delete/:id')
-  deleteTransfer(@Param('id') id: string, @Res() res: Response): void {
-    this.transferService.deleteTransfer(id);
-    res.redirect('/transfer/list');
+  @Delete('delete/:id')
+  async deleteTransfer(
+    @Param('id') id: string,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    await this.transferService.deleteTransfer(id, req.user.id);
   }
 }

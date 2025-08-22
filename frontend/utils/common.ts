@@ -4,9 +4,25 @@ declare global {
   }
 }
 
-interface BootstrapModal {
+export interface BootstrapModal {
   show: () => void;
   hide: () => void;
+}
+
+export interface TransferDetailsResponse {
+  transfer: {
+    id: string;
+    filename: string;
+    subject: string;
+    status: string;
+    created_at: string;
+    size: string;
+  };
+  logs: Array<{
+    id: number;
+    info: string;
+    created_at: string;
+  }>;
 }
 
 export function enforceLowerCase(input: HTMLInputElement) {
@@ -115,4 +131,12 @@ export async function callApi<R, T>(
   } catch {
     return {} as T;
   }
+}
+
+export function formatFileSize(bytes: number): string {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }

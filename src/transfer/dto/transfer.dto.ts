@@ -1,4 +1,10 @@
-import { TransferStatus } from '@database/entities/enums';
+import { TransferStatus, LogInfo } from '@database/entities/enums';
+
+export class TransferLogDto {
+  id: number;
+  info: LogInfo;
+  created_at: Date;
+}
 
 export class TransferDto {
   id: string;
@@ -12,4 +18,6 @@ export class TransferDto {
   receiverId: number;
   senderAddress: string;
   receiverAddress: string;
+  size?: string;
+  logs: TransferLogDto[];
 }

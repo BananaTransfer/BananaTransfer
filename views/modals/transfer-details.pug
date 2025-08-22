@@ -1,0 +1,36 @@
+div.modal.fade(id="transferDetailsModal", tabindex="-1", aria-labelledby="transferDetailsModalTitle", aria-hidden="true")
+  div.modal-dialog.modal-dialog-centered.modal-lg
+    div.modal-content
+      div.modal-header
+        h5.modal-title(id="transferDetailsModalTitle") Transfer Details
+        button.btn-close(type="button", data-bs-dismiss="modal", aria-label="Close")
+      div.modal-body
+        div.row.mb-3
+          div.col-md-6
+            strong Filename:
+            span.ms-2(id="modalFilename")
+          div.col-md-6
+            strong Status:
+            span.ms-2(id="modalStatus")
+        div.row.mb-3
+          div.col-md-6
+            strong Subject:
+            span.ms-2(id="modalSubject")
+          div.col-md-6
+            strong Created:
+            span.ms-2(id="modalCreatedAt")
+        div.row.mb-3
+          div.col-md-6
+            strong Size:
+            span.ms-2(id="modalSize")
+        hr
+        h6 Transfer Logs
+        div.table-responsive
+          table.table.table-sm.table-striped
+            thead
+              tr
+                th Event
+                th Date & Time
+            tbody(id="modalLogs")
+      div.modal-footer
+        button.btn.btn-secondary(type="button", data-bs-dismiss="modal") Close
