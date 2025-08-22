@@ -21,11 +21,11 @@ block content
         .mb-3
           label.form-label(for="username") Username
           .input-group
-            input.form-control(type="text" name="username" id="username" placeholder="username" value=username required)
+            input.form-control(type="text" name="username" id="username" placeholder="username" value=username required minlength=4 maxlength=32 pattern="^[a-zA-Z0-9]*$")
             span.input-group-text @#{domain}
         .mb-3
           label.form-label(for="password") Password
-          input.form-control(type="password" name="password" id="password" placeholder="password" required)
+          input.form-control(type="password" name="password" id="password" placeholder="password" required minlength=12 maxlength=256)
         .d-flex.justify-content-between.align-items-center.mb-3
           span No account yet? 
             a.ms-1(href="/auth/register") Register
