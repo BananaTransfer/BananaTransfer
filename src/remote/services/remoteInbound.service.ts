@@ -55,7 +55,7 @@ export class RemoteInboundService {
       parsedSender.username,
       parsedSender.domain,
     );
-    await this.transferService.createTransferFromRemote(
+    await this.transferService.newTransferFromRemote(
       remoteTransfer,
       recipientUser,
       senderUser,

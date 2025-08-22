@@ -60,8 +60,46 @@ export class TransferService {
     private remoteQueryService: RemoteQueryService,
   ) {}
 
-  // local transfer handling methods
-  async getTransferList(userId: number): Promise<TransferDto[]> {
+  // method to convert a FileTransfer object into a TransferDto object (which is sent to frontend)
+  private async toTransferDto(transfer: FileTransfer): Promise<TransferDto> {
+    const keys = await this.bucketService.listFiles(transfer.id);
+
+    return {
+      id: transfer.id,
+      symmetric_key_encrypted: transfer.symmetric_key_encrypted,
+      status: transfer.status,
+      created_at: transfer.created_at,
+      filename: transfer.filename,
+      subject: transfer.subject,
+      chunks: keys.map((key) => Number(key.split('/')[1])),
+      senderId: transfer.sender.id,
+      receiverId: transfer.receiver.id,
+      senderAddress: this.recipientService.getRecipientAddress(transfer.sender),
+      receiverAddress: this.recipientService.getRecipientAddress(
+        transfer.receiver,
+      ),
+      size: transfer.size,
+    };
+  }
+
+  // method to get a transfer by id and check if user can access it
+  private async getTransferOfUser(transferId: string, userId: number) {
+    const transfer = await this.fileTransferRepository.findOne({
+      where: [
+        { id: transferId, sender: { id: userId } },
+        { id: transferId, receiver: { id: userId } },
+      ],
+      relations: ['sender', 'receiver'],
+    });
+
+    if (!transfer) {
+      throw new NotFoundException(`Transfer with ID ${transferId} not found`);
+    }
+    return transfer;
+  }
+
+  // method go get a list of all transfers of a user
+  async getTransferListOfUser(userId: number): Promise<TransferDto[]> {
     const list = await this.fileTransferRepository.find({
       where: [{ sender: { id: userId } }, { receiver: { id: userId } }],
       relations: ['sender', 'receiver'],
@@ -73,6 +111,23 @@ export class TransferService {
     return await Promise.all(
       list.map((fileTransfer) => this.toTransferDto(fileTransfer)),
     );
+  }
+
+  // method to get a transfer and logs of a user
+  async getTransferOfUserDetails(
+    id: string,
+    userId: number,
+  ): Promise<TransferDto> {
+    const transfer = await this.getTransferOfUser(id, userId);
+    const transferDto = await this.toTransferDto(transfer);
+    const transferLogs =
+      await this.transferLogService.getTransferLogs(transfer);
+    transferDto.logs = transferLogs.map((log) => ({
+      id: log.id,
+      info: log.info,
+      created_at: log.created_at,
+    }));
+    return transferDto;
   }
 
   async getTransferListByStatusAndCreationTime(
@@ -87,21 +142,6 @@ export class TransferService {
         },
       ],
     });
-  }
-
-  private async getTransferOfUser(transferId: string, userId: number) {
-    const transfer = await this.fileTransferRepository.findOne({
-      where: [
-        { id: transferId, sender: { id: userId } },
-        { id: transferId, receiver: { id: userId } },
-      ],
-      relations: ['sender', 'receiver'],
-    });
-
-    if (!transfer) {
-      throw new NotFoundException(`Transfer with ID ${transferId} not found`);
-    }
-    return transfer;
   }
 
   async getTransferOfSenderDomain(
@@ -127,40 +167,7 @@ export class TransferService {
     );
   }
 
-  private async toTransferDto(transfer: FileTransfer): Promise<TransferDto> {
-    const keys = await this.bucketService.listFiles(transfer.id);
-
-    return {
-      id: transfer.id,
-      symmetric_key_encrypted: transfer.symmetric_key_encrypted,
-      status: transfer.status,
-      created_at: transfer.created_at,
-      filename: transfer.filename,
-      subject: transfer.subject,
-      chunks: keys.map((key) => Number(key.split('/')[1])),
-      senderId: transfer.sender.id,
-      receiverId: transfer.receiver.id,
-      senderAddress: this.recipientService.getRecipientAddress(transfer.sender),
-      receiverAddress: this.recipientService.getRecipientAddress(
-        transfer.receiver,
-      ),
-      size: transfer.size,
-    };
-  }
-
-  async getTransferInfo(id: string, userId: number): Promise<TransferDto> {
-    const transfer = await this.getTransferOfUser(id, userId);
-    const transferDto = await this.toTransferDto(transfer);
-    const transferLogs =
-      await this.transferLogService.getTransferLogs(transfer);
-    transferDto.logs = transferLogs.map((log) => ({
-      id: log.id,
-      info: log.info,
-      created_at: log.created_at,
-    }));
-    return transferDto;
-  }
-
+  // methods to manipulate transfers from frontend
   async newTransfer(
     transferData: CreateTransferDto,
     senderId: number,
@@ -212,7 +219,7 @@ export class TransferService {
     return this.toTransferDto(transfer);
   }
 
-  async createTransferFromRemote(
+  async newTransferFromRemote(
     transferData: RemoteTransferDto,
     recipient: LocalUser,
     sender: RemoteUser,
@@ -323,26 +330,26 @@ export class TransferService {
     }
   }
 
-  async acceptTransfer(id: string, userId: number): Promise<FileTransfer> {
-    const transfer = await this.getTransferOfUser(id, userId);
-
+  private rejectIfNotReceiver(transfer: FileTransfer, userId: number) {
     if (transfer.receiver.id !== userId) {
       throw new UnauthorizedException(
-        'Only the receiver of a transfer can accept it',
+        'Only the receiver of a transfer can perform this action',
       );
     }
-
-    return this.acceptTransferLocally(transfer);
-    // TODO: Retrieve file from remote server if transfer is not local
   }
-
-  async acceptTransferLocally(transfer: FileTransfer) {
-    // TODO: check if can be accepted
+  private rejectIfNotStatusSent(transfer: FileTransfer) {
     if (transfer.status !== TransferStatus.SENT) {
       throw new BadRequestException(
         'Transfer is not pending acceptance or refusal',
       );
     }
+  }
+
+  async acceptTransfer(id: string, userId: number): Promise<FileTransfer> {
+    const transfer = await this.getTransferOfUser(id, userId);
+
+    this.rejectIfNotReceiver(transfer, userId);
+    this.rejectIfNotStatusSent(transfer);
 
     transfer.status = TransferStatus.ACCEPTED;
     await this.transferLogService.createTransferLog(
@@ -358,32 +365,25 @@ export class TransferService {
         LogInfo.TRANSFER_RETRIEVED,
         transfer.receiver.id,
       );
+    } else if (transfer.sender instanceof RemoteUser) {
+      this.fetchTransferFromRemote(transfer);
     }
 
     await this.fileTransferRepository.save(transfer);
     return transfer;
   }
 
+  private fetchTransferFromRemote(transfer: FileTransfer) {
+    if (transfer.sender instanceof RemoteUser) {
+      // TODO: Implement fetching transfer from remote server
+    }
+  }
+
   async refuseTransfer(id: string, userId: number): Promise<FileTransfer> {
     const transfer = await this.getTransferOfUser(id, userId);
 
-    if (transfer.receiver.id !== userId) {
-      throw new UnauthorizedException(
-        'Only the receiver of a transfer can refuse it',
-      );
-    }
-
-    return this.refuseTransferLocally(transfer);
-    // TODO: Notify remote server about refusal if needed
-  }
-
-  async refuseTransferLocally(transfer: FileTransfer) {
-    // TODO: checks if can be refused
-    if (transfer.status !== TransferStatus.SENT) {
-      throw new BadRequestException(
-        'Transfer is not pending acceptance or refusal',
-      );
-    }
+    this.rejectIfNotReceiver(transfer, userId);
+    this.rejectIfNotStatusSent(transfer);
 
     transfer.status = TransferStatus.REFUSED;
     await this.fileTransferRepository.save(transfer);

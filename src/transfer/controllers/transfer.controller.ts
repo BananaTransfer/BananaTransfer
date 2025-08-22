@@ -35,7 +35,9 @@ export class TransferController {
   @Get('')
   @Render('transfer/list')
   async renderTransfersList(@Req() req: AuthenticatedRequest) {
-    const transfers = await this.transferService.getTransferList(req.user.id);
+    const transfers = await this.transferService.getTransferListOfUser(
+      req.user.id,
+    );
     return {
       transfers: transfers,
       currentUser: req.user,
@@ -68,7 +70,7 @@ export class TransferController {
     @Res() res: Response,
   ): Promise<void> {
     try {
-      const result = await this.transferService.getTransferInfo(
+      const result = await this.transferService.getTransferOfUserDetails(
         id,
         req.user.id,
       );
