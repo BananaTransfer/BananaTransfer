@@ -105,4 +105,13 @@ export class ExpirationService {
       await this.transferService.deleteLocalTransferPermanently(transfer);
     }
   }
+
+  /**
+   * Expire all active transfers for a user when their public key changes
+   * @param userId
+   */
+  async expireTransfersForUserKeyChange(userId: number): Promise<number> {
+    this.logger.log(`Expiring transfers for user ${userId} due to key change`);
+    return await this.transferService.expireTransfersForUser(userId);
+  }
 }

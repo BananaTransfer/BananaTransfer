@@ -23,6 +23,6 @@ import { TransferLog } from '@database/entities/transfer-log.entity';
   ],
   controllers: [TransferController],
   providers: [BucketService, TransferService, ExpirationService],
-  exports: [TransferService],
+  exports: [TransferService, ExpirationService],
 })
 export class TransferModule {}

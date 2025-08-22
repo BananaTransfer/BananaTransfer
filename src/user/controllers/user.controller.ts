@@ -16,6 +16,7 @@ import { Response } from 'express';
 import { UserService } from '@user/services/user.service';
 import { HashKeyService } from '@user/services/hashKey.service';
 import { RecipientService } from '@user/services/recipient.service';
+import { ExpirationService } from '@transfer/services/expiration.service';
 import { JwtAuthGuard } from '@auth/jwt/guards/jwt-auth.guard';
 import { AuthenticatedRequest } from '@auth/types/authenticated-request.interface';
 import { ChangePasswordDto } from '@user/dto/changePassword.dto';
@@ -33,6 +34,7 @@ export class UserController {
     private readonly userService: UserService,
     private readonly hashKeyService: HashKeyService,
     private readonly recipientService: RecipientService,
+    private readonly expirationService: ExpirationService,
   ) {}
 
   private async renderUserSettingsPage(
@@ -180,6 +182,24 @@ export class UserController {
         throw new Error('Failed to set user keys');
       }
       this.logger.log(`Keys set for user ${user.username}`);
+
+      // Expire all active transfers for this user
+      try {
+        const expiredCount = await this.expirationService.expireTransfersForUserKeyChange(
+          req.user.id,
+        );
+        if (expiredCount > 0) {
+          this.logger.log(
+            `Expired ${expiredCount} transfers due to key change for user ${user.username}`,
+          );
+        }
+      } catch (expireError) {
+        this.logger.error(
+          'Error expiring transfers after key change',
+          expireError,
+        );
+      }
+
       return res.json({
         redirect: '/user?setKeysSuccess=true',
       });
