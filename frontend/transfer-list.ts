@@ -65,6 +65,17 @@ function formatLogInfo(logInfo: string): string {
     .replace(/\b\w/g, (l) => l.toUpperCase());
 }
 
+function sendTransfer(id: string) {
+  callApi('POST', `/transfer/send/${id}`, {})
+    .then(() => {
+      console.log(`Sent transfer with ID: ${id}`);
+    })
+    .catch((err) => {
+      console.error(`Error sending transfer with ID: ${id}`, err);
+      alert('Failed to send transfer.');
+    });
+}
+
 function acceptTransfer(id: string) {
   callApi('POST', `/transfer/accept/${id}`, {})
     .then(() => {
@@ -89,6 +100,18 @@ function rejectTransfer(id: string) {
     });
 }
 
+function retrieveTransfer(id: string) {
+  callApi('POST', `/transfer/retrieve/${id}`, {})
+    .then(() => {
+      console.log(`Retrieved transfer with ID: ${id}`);
+      location.reload();
+    })
+    .catch((err) => {
+      console.error(`Error retrieving transfer with ID: ${id}`, err);
+      alert('Failed to retrieve transfer.');
+    });
+}
+
 async function downloadTransfer(id: string) {
   const userPrivateKey = await SecurityUtils.useUserPrivateKey();
   const downloader = FileDownloader.createDownloader(userPrivateKey);
@@ -109,8 +132,10 @@ function deleteTransfer(id: string) {
 
 export function setupListPage() {
   const viewDetails = document.querySelectorAll('.view-details');
+  const sendButtons = document.querySelectorAll('.send-btn');
   const acceptButtons = document.querySelectorAll('.accept-btn');
   const rejectButtons = document.querySelectorAll('.reject-btn');
+  const retrieveButtons = document.querySelectorAll('.retrieve-btn');
   const downloadButtons = document.querySelectorAll('.download-btn');
   const deleteButtons = document.querySelectorAll('.delete-btn');
 
@@ -119,6 +144,14 @@ export function setupListPage() {
       const id = button.getAttribute('data-id');
       if (!id) return;
       void viewTransferDetails(id);
+    });
+  });
+
+  sendButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const id = button.getAttribute('data-id');
+      if (!id) return;
+      sendTransfer(id);
     });
   });
 
@@ -135,6 +168,14 @@ export function setupListPage() {
       const id = button.getAttribute('data-id');
       if (!id) return;
       rejectTransfer(id);
+    });
+  });
+
+  retrieveButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const id = button.getAttribute('data-id');
+      if (!id) return;
+      retrieveTransfer(id);
     });
   });
 

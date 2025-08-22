@@ -14,7 +14,7 @@ import { RemoteQueryService } from '@remote/services/remoteQuery.service';
 import { ConfigService } from '@nestjs/config';
 
 @Module({
-  imports: [forwardRef(() => UserModule), TransferModule],
+  imports: [forwardRef(() => UserModule), forwardRef(() => TransferModule)],
   controllers: [RemoteController],
   providers: [
     {

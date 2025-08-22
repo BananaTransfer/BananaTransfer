@@ -15,6 +15,8 @@ import { UserService } from '@user/services/user.service';
 import { RemoteRequest } from '@remote/types/remote-request.type';
 import { RemoteTransferDto } from '@remote/dto/remoteTransfer.dto';
 import { PublicKeyDto } from '@user/dto/publicKey.dto';
+import { ChunkDto } from '@transfer/dto/chunk.dto';
+import { TransferInfoDto } from '@remote/dto/transferInfo.dto';
 
 // RemoteController is responsible for handling transfer-related requests from and to other remote servers
 
@@ -28,13 +30,13 @@ export class RemoteController {
 
   // endpoint to get server information
   // this is used to check if the server is reachable
-  @Get('get/server-info')
+  @Get('server-info')
   getServerInfo(): string {
     return 'hi';
   }
 
   // endpoint to get the public key of a user
-  @Get('get/publickey/:username')
+  @Get('publickey/:username')
   async getPublicKey(
     @Param('username') username: string,
   ): Promise<PublicKeyDto> {
@@ -45,49 +47,51 @@ export class RemoteController {
 
   // endpoint to notify server about a new transfer
   @Post('new/transfer')
-  async notifyTransfer(
+  async newTransfer(
     @Req() req: RemoteRequest,
     @Body() remoteTransfer: RemoteTransferDto,
-  ): Promise<string> {
+  ): Promise<{ message: string }> {
     return await this.remoteInboundService.remoteNewTransfer(
       req.domain,
       remoteTransfer,
     );
   }
 
-  // endpoint to accept a transfer by ID
-  @Post('accept/transfer/:id')
-  async acceptTransfer(
+  // endpoint to fetch a transfer chunk info
+  @Get('fetch/transfer/:id')
+  async fetchTransferInfo(
     @Req() req: RemoteRequest,
     @Param('id') id: string,
-  ): Promise<string> {
-    return await this.remoteInboundService.remoteAcceptTransfer(req.domain, id);
+  ): Promise<TransferInfoDto> {
+    return await this.remoteInboundService.remoteFetchTransferInfo(
+      req.domain,
+      id,
+    );
   }
 
   // endpoint to fetch a transfer chunk by ID
-  @Post('fetch/transfer/:id')
-  async fetchTransfer(
+  @Get('fetch/transfer/:id/:chunk')
+  async fetchTransferChunk(
     @Req() req: RemoteRequest,
     @Param('id') id: string,
-  ): Promise<string> {
-    return await this.remoteInboundService.remoteFetchTransfer(req.domain, id);
+    @Param('chunk') chunk: number,
+  ): Promise<ChunkDto> {
+    return await this.remoteInboundService.remoteFetchTransferChunk(
+      req.domain,
+      id,
+      chunk,
+    );
   }
 
-  // endpoint to refuse a transfer by ID
-  @Post('refuse/transfer/:id')
-  async refuseTransfer(
+  // endpoint to notify a server that the transfer was retrieved
+  @Post('transfer/retrieved/:id')
+  async setTransferRetrieved(
     @Req() req: RemoteRequest,
     @Param('id') id: string,
-  ): Promise<string> {
-    return await this.remoteInboundService.remoteRefuseTransfer(req.domain, id);
-  }
-
-  // endpoint to delete a transfer by ID
-  @Post('delete/transfer/:id')
-  async deleteTransfer(
-    @Req() req: RemoteRequest,
-    @Param('id') id: string,
-  ): Promise<string> {
-    return await this.remoteInboundService.remoteDeleteTransfer(req.domain, id);
+  ): Promise<{ message: string }> {
+    return await this.remoteInboundService.remoteTransferRetrieved(
+      req.domain,
+      id,
+    );
   }
 }

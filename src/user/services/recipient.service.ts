@@ -14,6 +14,7 @@ import { MalformedRecipientException } from '@user/types/malformed-recipient-exc
 
 import { User } from '@database/entities/user.entity';
 import { LocalUser } from '@database/entities/local-user.entity';
+import { RemoteUser } from '@database/entities/remote-user.entity';
 import { TrustedRecipient } from '@database/entities/trusted-recipient.entity';
 
 @Injectable()
@@ -176,7 +177,7 @@ export class RecipientService {
   }
 
   public getRecipientAddress(recipient: User): string {
-    if ('domain' in recipient && typeof recipient.domain === 'string') {
+    if (recipient instanceof RemoteUser) {
       return `${recipient.username}@${recipient.domain}`;
     }
     return `${recipient.username}@${this.envDomain}`;
