@@ -436,7 +436,6 @@ export class TransferService {
       );
     }
 
-    // TODO: check status of transfer if can be deleted by remote!
     await this.transferChunkService.deleteTransferChunks(transfer.id);
     await this.setTransferStatus(transfer, TransferStatus.DELETED);
 
