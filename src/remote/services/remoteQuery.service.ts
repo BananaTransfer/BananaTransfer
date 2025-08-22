@@ -47,7 +47,7 @@ export class RemoteQueryService {
     };
 
     if (body) {
-      console.log(body);
+      this.logger.debug('Request body:', body);
       request['body'] = JSON.stringify(body);
       request.headers['Content-Type'] = 'application/json';
     }
@@ -119,7 +119,6 @@ export class RemoteQueryService {
         sender.domain,
         `remote/fetch/transfer/${transfer.id}`,
       );
-      console.log(data);
       const transferInfo = plainToInstance(TransferInfoDto, data);
       await validateOrReject(transferInfo);
 
