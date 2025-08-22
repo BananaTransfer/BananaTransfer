@@ -104,12 +104,12 @@ export class TransferController {
     res.status(200).send();
   }
 
-  @Get('/:transferId/chunk/:chunkId')
+  @Get('/:id/chunk/:chunkId')
   getChunk(
-    @Param('transferId') transferId: string,
+    @Param('id') transferId: string,
     @Param('chunkId') chunkId: number,
     @Req() req: AuthenticatedRequest,
-  ): Promise<Omit<ChunkDto, 'isLastChunk'>> {
+  ): Promise<ChunkDto> {
     return this.transferService.getChunk(transferId, chunkId, req.user.id);
   }
 

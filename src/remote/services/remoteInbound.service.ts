@@ -2,10 +2,15 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { TransferService } from '@transfer/services/transfer.service';
+import { TransferChunkService } from '@transfer/services/transferChunk.service';
 import { RecipientService } from '@user/services/recipient.service';
 import { UserService } from '@user/services/user.service';
 import { RemoteUserService } from '@user/services/remoteUser.service';
+
+import { TransferStatus } from '@database/entities/enums';
 import { RemoteTransferDto } from '@remote/dto/remoteTransfer.dto';
+import { TransferInfoDto } from '@remote/dto/transferInfo.dto';
+import { ChunkDto } from '@transfer/dto/chunk.dto';
 
 @Injectable()
 export class RemoteInboundService {
@@ -18,6 +23,7 @@ export class RemoteInboundService {
     private readonly userService: UserService,
     private readonly remoteUserService: RemoteUserService,
     private readonly transferService: TransferService,
+    private readonly transferChunkService: TransferChunkService,
   ) {
     this.logger = new Logger(RemoteInboundService.name);
     this.envDomain = this.configService.getOrThrow<string>('DOMAIN');
@@ -63,56 +69,59 @@ export class RemoteInboundService {
     return `New transfer ${remoteTransfer.id} created`;
   }
 
-  public async remoteFetchTransfer(
+  public async remoteFetchTransferInfo(
     domain: string,
     transferId: string,
-  ): Promise<string> {
-    this.logger.log(`Fetching transfer ${transferId} for domain ${domain}`);
-    const transfer = await this.transferService.getTransferOfSenderDomain(
+  ): Promise<TransferInfoDto> {
+    this.logger.log(
+      `Fetching transfer ${transferId} info for domain ${domain}`,
+    );
+    const transfer = await this.transferService.getTransferOfRemoteDomain(
       transferId,
       domain,
     );
-    // TODO: create logic to fetch transfer data chunks
-    console.log(transfer);
-    return `Transfer data for ID ${transferId} fetched by ${domain}`;
+    const chunks = await this.transferChunkService.listChunks(transfer.id);
+
+    return {
+      id: transfer.id,
+      status: transfer.status,
+      chunks,
+    };
   }
 
-  /* public async remoteAcceptTransfer(
+  public async remoteFetchTransferChunk(
     domain: string,
     transferId: string,
-  ): Promise<string> {
-    this.logger.log(`Accepting transfer ${transferId} for domain ${domain}`);
-    const transfer = await this.transferService.getTransferOfSenderDomain(
+    chunk: number,
+  ): Promise<ChunkDto> {
+    this.logger.log(
+      `Fetching transfer chunk ${transferId}/${chunk} for domain ${domain}`,
+    );
+    const transfer = await this.transferService.getTransferOfRemoteDomain(
       transferId,
       domain,
     );
-    await this.transferService.acceptTransferLocally(transfer);
-    return `Transfer ${transfer.id} accepted`;
+
+    return await this.transferChunkService.fetchChunk(transfer.id, chunk);
   }
 
-  public async remoteRefuseTransfer(
+  public async remoteTransferRetrieved(
     domain: string,
     transferId: string,
   ): Promise<string> {
-    this.logger.log(`Refusing transfer ${transferId} for domain ${domain}`);
-    const transfer = await this.transferService.getTransferOfSenderDomain(
+    this.logger.log(
+      `Setting transfer ${transferId} for domain ${domain} to retrieved`,
+    );
+    const transfer = await this.transferService.getTransferOfRemoteDomain(
       transferId,
       domain,
     );
-    await this.transferService.refuseTransferLocally(transfer);
-    return `Transfer ${transfer.id} refused`;
-  }
 
-  public async remoteDeleteTransfer(
-    domain: string,
-    transferId: string,
-  ): Promise<string> {
-    this.logger.log(`Deleting transfer ${transferId} for domain ${domain}`);
-    const transfer = await this.transferService.getTransferOfSenderDomain(
-      transferId,
-      domain,
+    await this.transferService.setTransferStatus(
+      transfer,
+      TransferStatus.RETRIEVED,
     );
-    await this.transferService.deleteTransferLocally(transfer);
-    return `Transfer ${transfer.id} deleted`;
-  }*/
+
+    return `Transfer ${transferId} set to retrieved`;
+  }
 }

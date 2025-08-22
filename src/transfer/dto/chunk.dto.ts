@@ -12,5 +12,5 @@ export class ChunkDto {
   @IsNumber()
   chunkIndex: number;
   @IsBoolean()
-  isLastChunk: boolean;
+  isLastChunk?: boolean;
 }

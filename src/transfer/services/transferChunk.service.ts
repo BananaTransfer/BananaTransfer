@@ -14,12 +14,18 @@ export class TransferChunkService {
   private readonly logger = new Logger(TransferChunkService.name);
 
   constructor(private readonly bucketService: BucketService) {}
+
   /**
    * @param chunk
    * @return the size in bytes of the chunk payload
    */
   private getChunkSize(chunk: BucketChunkData): number {
     return new Blob([JSON.stringify(chunk)]).size;
+  }
+
+  async listChunks(transferId: string): Promise<number[]> {
+    const files = await this.bucketService.listFiles(transferId);
+    return files.map((key) => Number(key.split('/')[1]));
   }
 
   async saveChunk(transferId: string, chunkData: ChunkDto) {
@@ -34,10 +40,7 @@ export class TransferChunkService {
     return this.getChunkSize(bucketData);
   }
 
-  async getChunk(
-    transferId: string,
-    chunkId: number,
-  ): Promise<Omit<ChunkDto, 'isLastChunk'>> {
+  async fetchChunk(transferId: string, chunkId: number): Promise<ChunkDto> {
     const path = await this.bucketService.getFile(transferId + '/' + chunkId);
 
     try {
