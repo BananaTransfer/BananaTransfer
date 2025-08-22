@@ -110,8 +110,6 @@ export class AuthController {
     @Body() registerDto: RegisterDto,
   ) {
     try {
-      // TODO: check if password match.
-
       const user = await this.userService.createUser(
         registerDto.username,
         registerDto.email,
