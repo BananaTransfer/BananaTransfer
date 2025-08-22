@@ -398,6 +398,13 @@ export class TransferService {
     this.rejectIfNotStatus(transfer, TransferStatus.SENT);
 
     await this.setTransferStatus(transfer, TransferStatus.REFUSED);
+
+    // delete transfer if it is local
+    if (transfer.sender instanceof LocalUser) {
+      await this.transferChunkService.deleteTransferChunks(transfer.id);
+      await this.setTransferStatus(transfer, TransferStatus.DELETED);
+    }
+
     return transfer;
   }
 
@@ -431,15 +438,8 @@ export class TransferService {
 
     // TODO: check status of transfer if can be deleted by remote!
     await this.transferChunkService.deleteTransferChunks(transfer.id);
+    await this.setTransferStatus(transfer, TransferStatus.DELETED);
 
-    transfer.status = TransferStatus.DELETED;
-    await this.fileTransferRepository.save(transfer);
-
-    await this.transferLogService.createTransferLog(
-      transfer,
-      LogInfo.TRANSFER_DELETED,
-      transfer.receiver.id,
-    );
     return transfer;
   }
 
