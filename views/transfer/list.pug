@@ -32,7 +32,7 @@ block content
               th Filename
               th Subject
               th Date
-              // th Size TODO add size
+              th Size
               th Status
               th.text-center Details
               th.text-center Actions
@@ -45,7 +45,7 @@ block content
                   td= transfer.filename
                   td= transfer.subject
                   td= transfer.created_at.toLocaleString('en-GB', { hour12: false })
-                  // td= transfer.size TODO add size
+                  td= transfer.size
                   td= transfer.status
                   td
                     span.rounded-circle.bg-light.border.d-inline-flex.align-items-center.justify-content-center.view-details(
@@ -66,7 +66,6 @@ block content
                           button.btn.btn-sm.btn-warning.reject-btn(type="button" data-id=transfer.id) Reject
                         if transfer.status == "ACCEPTED" && transfer.receiverId === currentUser.id
                           button.btn.btn-sm.btn-secondary.retrieve-btn(type="button" data-id=transfer.id) Retrieve
-                        // TODO fix once real status are implemented
                         if transfer.status == "RETRIEVED" && transfer.receiverId === currentUser.id
                           button.btn.btn-sm.btn-primary.download-btn(type="button" data-id=transfer.id) Download
                         if transfer.status != 'DELETED' && !(transfer.status == "SENT" && transfer.receiverId === currentUser.id)
@@ -95,7 +94,7 @@ block content
               .row
                 .col-6.font-weight-bold Date:
                 .col-6= transfer.created_at.toLocaleString('en-GB', { hour12: false })
-              // .row TODO: add size
+              .row TODO: add size
                 .col-6.font-weight-bold Size:
                 .col-6= transfer.size
               .row
@@ -119,16 +118,13 @@ block content
                     button.btn.btn-sm.btn-warning.reject-btn(type="button" data-id=transfer.id) Reject
                   if transfer.status == "ACCEPTED" && transfer.receiverId === currentUser.id
                     button.btn.btn-sm.btn-secondary.retrieve-btn(type="button" data-id=transfer.id) Retrieve
-                  // TODO fix once real status are implemented
                   if transfer.status == "RETRIEVED" && transfer.receiverId === currentUser.id
                     button.btn.btn-sm.btn-primary.download-btn(type="button" data-id=transfer.id) Download
                   if transfer.status != 'DELETED' && !(transfer.status == "SENT" && transfer.receiverId === currentUser.id)
                     button.btn.btn-sm.btn-danger.delete-btn(type="button" data-id=transfer.id) Delete
+
   include ../modals/master-password.pug
   include ../modals/transfer-details.pug
-
-                  
-
 
   script(type="module").
     import { setupListPage } from '/js/transfer-list.js';
