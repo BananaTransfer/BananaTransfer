@@ -10,13 +10,13 @@ import { DataSource, In, LessThan, Repository } from 'typeorm';
 import * as fs from 'node:fs/promises';
 
 import { LogInfo, TransferStatus } from '@database/entities/enums';
-import { User } from '@database/entities/user.entity';
 import { LocalUser } from '@database/entities/local-user.entity';
 import { RemoteUser } from '@database/entities/remote-user.entity';
 import { FileTransfer } from '@database/entities/file-transfer.entity';
 import { TransferLog } from '@database/entities/transfer-log.entity';
 
 import { BucketService } from '@transfer/services/bucket.service';
+import { TransferLogService } from '@transfer/services/transferLog.service';
 import { RemoteQueryService } from '@remote/services/remoteQuery.service';
 import { UserService } from '@user/services/user.service';
 import { RecipientService } from '@user/services/recipient.service';
@@ -49,6 +49,7 @@ export class TransferService {
 
   constructor(
     private readonly bucketService: BucketService,
+    private readonly transferLogService: TransferLogService,
     @InjectRepository(FileTransfer)
     private fileTransferRepository: Repository<FileTransfer>,
     @InjectRepository(TransferLog)
@@ -70,7 +71,7 @@ export class TransferService {
     });
 
     return await Promise.all(
-      list.map((fileTransfer) => this.toDTO(fileTransfer)),
+      list.map((fileTransfer) => this.toTransferDto(fileTransfer)),
     );
   }
 
@@ -126,12 +127,8 @@ export class TransferService {
     );
   }
 
-  private async toDTO(transfer: FileTransfer): Promise<TransferDto> {
+  private async toTransferDto(transfer: FileTransfer): Promise<TransferDto> {
     const keys = await this.bucketService.listFiles(transfer.id);
-    const logs = await this.transferLogRepository.find({
-      where: { fileTransfer: { id: transfer.id } },
-      order: { created_at: 'ASC' },
-    });
 
     return {
       id: transfer.id,
@@ -148,16 +145,20 @@ export class TransferService {
         transfer.receiver,
       ),
       size: transfer.size,
-      logs: logs.map((log) => ({
-        id: log.id,
-        info: log.info,
-        created_at: log.created_at,
-      })),
     };
   }
 
   async getTransferInfo(id: string, userId: number): Promise<TransferDto> {
-    return this.toDTO(await this.getTransferOfUser(id, userId));
+    const transfer = await this.getTransferOfUser(id, userId);
+    const transferDto = await this.toTransferDto(transfer);
+    const transferLogs =
+      await this.transferLogService.getTransferLogs(transfer);
+    transferDto.logs = transferLogs.map((log) => ({
+      id: log.id,
+      info: log.info,
+      created_at: log.created_at,
+    }));
+    return transferDto;
   }
 
   async newTransfer(
@@ -202,9 +203,13 @@ export class TransferService {
     transfer = await this.fileTransferRepository.save(transfer);
 
     // Log transfer creation
-    await this.createTransferLog(transfer, LogInfo.TRANSFER_CREATED, senderId);
+    await this.transferLogService.createTransferLog(
+      transfer,
+      LogInfo.TRANSFER_CREATED,
+      senderId,
+    );
 
-    return this.toDTO(transfer);
+    return this.toTransferDto(transfer);
   }
 
   async createTransferFromRemote(
@@ -227,7 +232,7 @@ export class TransferService {
     const createdTransfer = await this.fileTransferRepository.save(transfer);
 
     // Log transfer reception
-    await this.createTransferLog(
+    await this.transferLogService.createTransferLog(
       createdTransfer,
       LogInfo.TRANSFER_SENT,
       sender.id,
@@ -272,14 +277,22 @@ export class TransferService {
 
     if (chunkData.isLastChunk) {
       transfer.status = TransferStatus.UPLOADED;
-      await this.createTransferLog(transfer, LogInfo.TRANSFER_UPLOADED, userId);
+      await this.transferLogService.createTransferLog(
+        transfer,
+        LogInfo.TRANSFER_UPLOADED,
+        userId,
+      );
 
       if (transfer.receiver instanceof LocalUser) {
         // TODO: notify local recipient about new transfer
         transfer.status = TransferStatus.SENT;
-        await this.createTransferLog(transfer, LogInfo.TRANSFER_SENT, userId);
+        await this.transferLogService.createTransferLog(
+          transfer,
+          LogInfo.TRANSFER_SENT,
+          userId,
+        );
       } else if (transfer.receiver instanceof RemoteUser) {
-        this.remoteQueryService.newRemoteTransfer(transfer);
+        await this.remoteQueryService.newRemoteTransfer(transfer);
         // TODO: notify remote server about new transfer
       }
     }
@@ -310,25 +323,6 @@ export class TransferService {
     }
   }
 
-  private async createTransferLog(
-    transfer: FileTransfer,
-    info: LogInfo,
-    userId?: number,
-  ): Promise<TransferLog> {
-    const log = {
-      fileTransfer: transfer,
-      info,
-    };
-
-    if (userId) {
-      log['user'] = { id: userId } as User;
-    }
-
-    return await this.transferLogRepository.save(
-      this.transferLogRepository.create(log),
-    );
-  }
-
   async acceptTransfer(id: string, userId: number): Promise<FileTransfer> {
     const transfer = await this.getTransferOfUser(id, userId);
 
@@ -351,7 +345,7 @@ export class TransferService {
     }
 
     transfer.status = TransferStatus.ACCEPTED;
-    await this.createTransferLog(
+    await this.transferLogService.createTransferLog(
       transfer,
       LogInfo.TRANSFER_ACCEPTED,
       transfer.receiver.id,
@@ -359,7 +353,7 @@ export class TransferService {
 
     if (transfer.sender instanceof LocalUser) {
       transfer.status = TransferStatus.RETRIEVED;
-      await this.createTransferLog(
+      await this.transferLogService.createTransferLog(
         transfer,
         LogInfo.TRANSFER_RETRIEVED,
         transfer.receiver.id,
@@ -393,7 +387,7 @@ export class TransferService {
 
     transfer.status = TransferStatus.REFUSED;
     await this.fileTransferRepository.save(transfer);
-    await this.createTransferLog(
+    await this.transferLogService.createTransferLog(
       transfer,
       LogInfo.TRANSFER_REFUSED,
       transfer.receiver.id,
@@ -432,7 +426,7 @@ export class TransferService {
     await this.deleteTransferChunks(transfer.id);
     transfer.status = TransferStatus.DELETED;
     await this.fileTransferRepository.save(transfer);
-    await this.createTransferLog(
+    await this.transferLogService.createTransferLog(
       transfer,
       LogInfo.TRANSFER_DELETED,
       transfer.receiver.id,
@@ -460,7 +454,10 @@ export class TransferService {
     await this.deleteTransferChunks(transfer.id);
     transfer.status = TransferStatus.EXPIRED;
     await this.fileTransferRepository.save(transfer);
-    await this.createTransferLog(transfer, LogInfo.TRANSFER_EXPIRED);
+    await this.transferLogService.createTransferLog(
+      transfer,
+      LogInfo.TRANSFER_EXPIRED,
+    );
   }
 
   /**
@@ -478,6 +475,7 @@ export class TransferService {
       return;
     }
 
+    // TODO: separate this somehow, transfer service shouldn't access transfer log repository
     await this.dataSource.transaction(async (transactionalEntityManager) => {
       await transactionalEntityManager
         .withRepository(this.transferLogRepository)

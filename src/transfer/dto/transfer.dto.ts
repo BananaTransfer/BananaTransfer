@@ -19,5 +19,5 @@ export class TransferDto {
   senderAddress: string;
   receiverAddress: string;
   size?: string;
-  logs: TransferLogDto[];
+  logs?: TransferLogDto[];
 }

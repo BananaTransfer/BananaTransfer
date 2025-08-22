@@ -3,11 +3,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { JwtCoreModule } from '@auth/jwt/jwt-core.module';
 import { UserModule } from '@user/user.module';
+import { RemoteModule } from '@remote/remote.module';
 
 import { TransferController } from '@transfer/controllers/transfer.controller';
 import { TransferService } from '@transfer/services/transfer.service';
 import { ExpirationService } from '@transfer/services/expiration.service';
-
+import { TransferLogService } from '@transfer/services/transferLog.service';
 import { BucketService } from '@transfer/services/bucket.service';
 
 import { FileTransfer } from '@database/entities/file-transfer.entity';
@@ -19,10 +20,16 @@ import { TransferLog } from '@database/entities/transfer-log.entity';
   imports: [
     JwtCoreModule,
     forwardRef(() => UserModule),
+    forwardRef(() => RemoteModule),
     TypeOrmModule.forFeature([FileTransfer, TransferLog]),
   ],
   controllers: [TransferController],
-  providers: [BucketService, TransferService, ExpirationService],
+  providers: [
+    BucketService,
+    TransferService,
+    ExpirationService,
+    TransferLogService,
+  ],
   exports: [TransferService],
 })
 export class TransferModule {}
