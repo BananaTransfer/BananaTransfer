@@ -333,14 +333,36 @@ export class TransferService {
   }
 
   private async sendTransferToRemote(transfer: FileTransfer) {
-    await this.remoteQueryService.newRemoteTransfer(transfer);
-    await this.setTransferStatus(transfer, TransferStatus.SENT);
+    try {
+      await this.remoteQueryService.newRemoteTransfer(transfer);
+      await this.setTransferStatus(transfer, TransferStatus.SENT);
+    } catch (error) {
+      this.logger.error(
+        `Error sending transfer ${transfer.id} to remote: ${(error as Error).message}`,
+      );
+      await this.transferLogService.createTransferLog(
+        transfer,
+        LogInfo.TRANSFER_SENT_FAILED,
+        transfer.receiver.id,
+      );
+    }
   }
 
   private async fetchTransferFromRemote(transfer: FileTransfer) {
-    if (transfer.sender instanceof RemoteUser) {
-      await this.remoteQueryService.fetchRemoteTransfer(transfer);
-      await this.setTransferStatus(transfer, TransferStatus.RETRIEVED);
+    try {
+      if (transfer.sender instanceof RemoteUser) {
+        await this.remoteQueryService.fetchRemoteTransfer(transfer);
+        await this.setTransferStatus(transfer, TransferStatus.RETRIEVED);
+      }
+    } catch (error) {
+      this.logger.error(
+        `Error fetching transfer ${transfer.id} from remote: ${(error as Error).message}`,
+      );
+      await this.transferLogService.createTransferLog(
+        transfer,
+        LogInfo.TRANSFER_RETRIEVED_FAILED,
+        transfer.receiver.id,
+      );
     }
   }
 
