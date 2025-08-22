@@ -4,6 +4,7 @@ import {
   IsNotEmpty,
   IsArray,
   IsNumber,
+  IsIn,
 } from 'class-validator';
 import { TransferStatus } from '@database/entities/enums';
 
@@ -13,6 +14,7 @@ export class TransferInfoDto {
 
   @IsString()
   @IsNotEmpty()
+  @IsIn(Object.values(TransferStatus))
   status: TransferStatus;
 
   @IsArray()
