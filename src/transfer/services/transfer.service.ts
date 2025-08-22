@@ -372,7 +372,6 @@ export class TransferService {
 
   async refuseTransfer(id: string, userId: number): Promise<FileTransfer> {
     const transfer = await this.getTransferOfUser(id, userId);
-
     this.rejectIfNotReceiver(transfer, userId);
     this.rejectIfNotStatus(transfer, TransferStatus.SENT);
 

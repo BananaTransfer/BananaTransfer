@@ -88,7 +88,7 @@ export class RemoteController {
   async setTransferRetrieved(
     @Req() req: RemoteRequest,
     @Param('id') id: string,
-  ): Promise<string> {
+  ): Promise<{ message: string }> {
     return await this.remoteInboundService.remoteTransferRetrieved(
       req.domain,
       id,

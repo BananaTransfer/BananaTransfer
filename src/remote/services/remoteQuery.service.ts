@@ -126,7 +126,7 @@ export class RemoteQueryService {
       let fetchedSize: number = 0;
       // loop to fetch and save chunks
       for (const chunkId of transferInfo.chunks) {
-        const data = await this.callRemoteApi<void, ChunkDto>(
+        const chunkData = await this.callRemoteApi<void, ChunkDto>(
           'GET',
           sender.domain,
           `remote/fetch/transfer/${transfer.id}/${chunkId}`,
@@ -134,9 +134,9 @@ export class RemoteQueryService {
         this.logger.debug(
           `Fetched chunk ${chunkId} for transfer ${transfer.id} from ${sender.domain}`,
         );
-        const chunkData = plainToInstance(ChunkDto, data);
-        await validateOrReject(chunkData);
-        console.log(chunkData);
+        //const chunkData = plainToInstance(ChunkDto, data);
+        //await validateOrReject(chunkData);
+
         const chunkSize = await this.transferChunkService.saveChunk(
           transfer.id,
           chunkData,

@@ -117,7 +117,7 @@ export class RemoteInboundService {
   public async remoteTransferRetrieved(
     domain: string,
     transferId: string,
-  ): Promise<string> {
+  ): Promise<{ message: string }> {
     this.logger.log(
       `Setting transfer ${transferId} for domain ${domain} to retrieved`,
     );
@@ -131,6 +131,6 @@ export class RemoteInboundService {
       TransferStatus.RETRIEVED,
     );
 
-    return `Transfer ${transferId} set to retrieved`;
+    return { message: `Transfer ${transferId} set to retrieved` };
   }
 }
