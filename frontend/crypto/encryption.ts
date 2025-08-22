@@ -73,8 +73,6 @@ export class FileEncryption {
     }
   }
 
-  // TODO - Interface for decrypting with parameters: encryptedPrivateKey, password (When are we asking it), wrappedAesKey, encryptedChunks
-
   /**
    * Create streaming encryptor for parallel upload + encryption
    * @param {CryptoKey} key - AES key for file encryption

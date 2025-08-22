@@ -6,7 +6,6 @@ export interface EncryptedPrivateKey {
   iv: Uint8Array;
 }
 
-// TODO - verify that the exported keys are compatible with the server endpoints
 /**
  * Essential key management operations
  */

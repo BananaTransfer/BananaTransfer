@@ -57,7 +57,7 @@ export class TransferService {
 
   // method to convert a FileTransfer object into a TransferDto object (which is sent to frontend)
   private async toTransferDto(transfer: FileTransfer): Promise<TransferDto> {
-    // TODO doesn't make sense to do this every time we load a list of transfers in frontend
+    // TODO: doesn't make sense to do this every time we load a list of transfers in frontend
     // we should fetch the chunk information separately only when downloading
     const chunks = await this.transferChunkService.listChunks(transfer.id);
 
