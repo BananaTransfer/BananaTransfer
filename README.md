@@ -168,7 +168,8 @@ The app will be available on: http://localhost:3000
 ## Run the App locally in development mode
 
 Make sure you did all the steps from the prevous chapter `Install and run the App`
-Instead of running the app in the prod mode you then can run the app in the watch mode to watch any modification and rebuild and restart the server and frontend automatically:
+
+Instead of running the app in the prod mode you can then run the app in the watch mode to watch any modification and rebuild and restart the server and frontend automatically:
 
 ```bash
 # watch mode
