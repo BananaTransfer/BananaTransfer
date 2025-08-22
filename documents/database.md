@@ -16,7 +16,7 @@
 * when a local user rotate it's keys, the hash of the public key changes, changed but the previous one is kept until orphaned.
 * in the TransferLog table, the history and logs of a transfer are saved to be able to track the transfer and its status.
 
-#### TransferStatus descriptions
+### TransferStatus descriptions
 
 * CREATED: Sender created the transfer but didn't already uploaded the file yet
 * UPLOADED: Sender created the transfer and uploaded the file to their server. The remote server wasn't yet notified about it
