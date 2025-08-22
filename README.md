@@ -56,7 +56,11 @@ We are a core team of four bachelor’s students from [HEIG-VD](https://heig-vd.
 
 Any questions? [Open an issue](https://github.com/BananaTransfer/BananaTransfer/issues)
 
-## Install Node.js
+## Install and run the App
+
+### Prerequisites
+
+#### Install Node.js
 
 Make sure to have Node.js 22 installed on the machine.
 
@@ -73,7 +77,11 @@ curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
 sudo apt-get install -y nodejs
 ```
 
-## Project setup for local development
+#### Install Docker and Docker-Compose
+
+Make sure you have Docker and Docker-Compose installed on your machine.
+
+### Setup and install the App
 
 Setup the project git hooks:
 
@@ -87,9 +95,11 @@ Install the required dependencies:
 npm install
 ```
 
+### Create configuration file
+
 Create file `.env` with the configuration variables
 
-```
+```txt
 # .env
 # Environment configuration
 PORT=3000
@@ -97,6 +107,7 @@ PORT=3000
 
 # Application configuration
 DOMAIN=domain.com
+JWT_SECRET=DO_NOT_USE_THIS_VALUE_IN_PRODUCTION_USE_256BIT_KEY
 
 # Database configuration
 DB_HOST=localhost
@@ -116,15 +127,22 @@ S3_BUCKET=bananatransfer
 S3_PORT=9000
 S3_MANAGEMENT_PORT=9001
 
-JWT_SECRET=DO_NOT_USE_THIS_VALUE_IN_PRODUCTION_USE_256BIT_KEY
-
 # Transfer expiration configuration
 TRANSFER_EXPIRY_CREATED_HOURS=24
 TRANSFER_EXPIRY_DAYS=30
 TRANSFER_LOG_EXPIRY_DAYS=60
 ```
 
-Start the local infrastructure with: 
+### Build the frontend
+Build the frontend and copy the bootstrap and htmx files into public
+
+```bash
+npm run build
+```
+
+### Start and setup the Docker infrastructure
+
+Start the local docker infrastructure with:
 
 ```bash
 docker compose up 
@@ -136,35 +154,35 @@ Once the DB is started, you need to execute the migration with
 npm run migration:run
 ```
 
-Build the frontend and copy the bootstrap and htmx files into public
+### Start the App
+
+Then you can run the app (in prod mode) with
 
 ```bash
-npm run build
-```
-
-Then you can run the app in watch mode with
-
-```bash
-npm run start:dev
-```
-The app will be available on: http://localhost:3000
-
-## Compile and run the project
-
-```bash
-# development
-npm run start
-
-# watch mode
-npm run start:dev
-
 # production mode
 npm run start:prod
 ```
 
-## Run tests
+The app will be available on: http://localhost:3000
+
+## Run the App locally in development mode
+
+Make sure you did all the steps from the prevous chapter `Install and run the App`
+Instead of running the app in the prod mode you then can run the app in the watch mode to watch any modification and rebuild and restart the server and frontend automatically:
 
 ```bash
+# watch mode
+npm run start:dev
+```
+
+The app will be available on: http://localhost:3000
+
+### Commands for running the tests locally
+
+```bash
+# run linter to check errors
+npm run lint
+
 # unit tests
 npm run test
 
@@ -175,7 +193,7 @@ npm run test:e2e
 npm run test:cov
 ```
 
-## Other commands
+### Commands concerning the database and database migration
 
 ```bash
 # test db connection manually
@@ -189,11 +207,13 @@ npm run migration:generate src/database/migrations/<name>
 npm run migration:run
 ```
 
-## Run two servers locally for testing the communication between servers
+### Run two servers locally for testing the communication between servers
 
 You can run two instances of the application locally for testing purposes. This can be useful for testing communication between servers.
 
-For this you need to create a .env file for the second server instance: `.env.serverB`:
+#### Create configuration file for serverB
+
+You need to create a .env file for the second server instance: `.env.serverB`:
 the following parameters need to be changed compared to the first server instance:
 
 ```txt
@@ -208,6 +228,8 @@ S3_MANAGEMENT_PORT=10001
 In both env files the parameter `NODE_ENV=dev` needs to be set.
 Set in both env files the parameter `OTHER_SERVER` to point to the other server instance. `OTHER_SERVER=localhost:3001`
 `OTHER_SERVER=localhost:3000`
+
+#### Setup and start both instances
 
 ```bash
 # Install dotenv-cli globally
@@ -231,6 +253,8 @@ npm run start:dev
 # Start the second server instance:
 npm run start:dev:serverB
 ```
+
+## Resources
 
 Check out a few resources that may come in handy when working with NestJS:
 
