@@ -1,31 +1,31 @@
 import {
   IsBoolean,
-  IsNotEmpty,
   IsString,
   IsEmail,
-  IsLowercase,
+  IsBase64,
+  IsByteLength,
+  Length,
 } from 'class-validator';
 
 export class CreateTransferDto {
-  @IsString()
-  @IsNotEmpty()
+  @IsBase64()
+  @IsByteLength(256, 351)
   symmetric_key_encrypted: string;
 
   @IsString()
-  @IsNotEmpty()
+  @Length(3, 256)
   filename: string;
 
   @IsString()
-  @IsNotEmpty()
+  @Length(3, 256)
   subject: string;
 
   @IsEmail()
-  @IsLowercase()
-  @IsNotEmpty()
+  @Length(3, 256)
   recipient: string;
 
   @IsString()
-  @IsNotEmpty()
+  @Length(64, 64)
   recipient_public_key_hash: string;
 
   @IsBoolean()

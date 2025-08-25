@@ -4,26 +4,33 @@ import {
   IsNotEmpty,
   IsEmail,
   IsLowercase,
+  IsBase64,
+  IsByteLength,
+  Length,
+  Matches,
 } from 'class-validator';
 
 export class RemoteTransferDto {
   @IsUUID()
   id: string;
 
-  @IsString()
-  @IsNotEmpty()
+  @IsBase64()
+  @IsByteLength(256, 351)
   symmetric_key_encrypted: string;
 
   @IsString()
-  @IsNotEmpty()
+  @Length(3, 256)
   filename: string;
 
   @IsString()
-  @IsNotEmpty()
+  @Length(3, 256)
   subject: string;
 
   @IsString()
   @IsNotEmpty()
+  @Matches(/^[0-9]*$/, {
+    message: 'size must be number',
+  })
   size: string;
 
   @IsEmail()

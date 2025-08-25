@@ -25,7 +25,7 @@ block content
             span.input-group-text @#{domain}
         .mb-3
           label.form-label(for="email") Email address
-          input.form-control(type="email" name="email" id="email" placeholder="email (username by default)" value=email required)
+          input.form-control(type="email" name="email" id="email" placeholder="email (username by default)" value=email required maxlength=256)
         .mb-3
           label.form-label(for="password") Password
           input.form-control(type="password" name="password" id="password" placeholder="password" required minlength=12 maxlength=256)
