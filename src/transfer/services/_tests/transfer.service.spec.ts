@@ -86,7 +86,7 @@ describe('TransferService', () => {
 
       await expect(
         transferService.acceptTransfer('transfer-id', 2),
-      ).rejects.toThrow('Transfer is not pending acceptance or refusal');
+      ).rejects.toThrow('Transfer is not in SENT status');
     });
   });
 
@@ -127,7 +127,7 @@ describe('TransferService', () => {
 
       await expect(
         transferService.refuseTransfer('transfer-id', 2),
-      ).rejects.toThrow('Transfer is not pending acceptance or refusal');
+      ).rejects.toThrow('Transfer is not in SENT status');
     });
   });
 });

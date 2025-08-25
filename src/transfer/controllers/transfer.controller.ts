@@ -8,6 +8,7 @@ import {
   Param,
   Body,
   UseGuards,
+  Delete,
 } from '@nestjs/common';
 import { Response } from 'express';
 
@@ -34,10 +35,13 @@ export class TransferController {
   @Get('')
   @Render('transfer/list')
   async renderTransfersList(@Req() req: AuthenticatedRequest) {
-    const transfers = await this.transferService.getTransferList(req.user.id);
+    const transfers = await this.transferService.getTransferListOfUser(
+      req.user.id,
+    );
     return {
       transfers: transfers,
       currentUser: req.user,
+      csrfToken: req.csrfToken(),
     };
   }
 
@@ -66,7 +70,7 @@ export class TransferController {
     @Res() res: Response,
   ): Promise<void> {
     try {
-      const result = await this.transferService.getTransferInfo(
+      const result = await this.transferService.getTransferOfUserDetails(
         id,
         req.user.id,
       );
@@ -100,13 +104,22 @@ export class TransferController {
     res.status(200).send();
   }
 
-  @Get('/:transferId/chunk/:chunkId')
+  @Get('/:id/chunk/:chunkId')
   getChunk(
-    @Param('transferId') transferId: string,
+    @Param('id') transferId: string,
     @Param('chunkId') chunkId: number,
     @Req() req: AuthenticatedRequest,
-  ): Promise<Omit<ChunkDto, 'isLastChunk'>> {
+  ): Promise<ChunkDto> {
     return this.transferService.getChunk(transferId, chunkId, req.user.id);
+  }
+
+  // endpoint to send a transfer by ID
+  @Post('send/:id')
+  async sendTransfer(
+    @Param('id') id: string,
+    @Req() req: AuthenticatedRequest,
+  ): Promise<void> {
+    await this.transferService.sendTransfer(id, req.user.id);
   }
 
   // endpoint to accept a transfer by ID
@@ -114,10 +127,8 @@ export class TransferController {
   async acceptTransfer(
     @Param('id') id: string,
     @Req() req: AuthenticatedRequest,
-    @Res() res: Response,
   ): Promise<void> {
     await this.transferService.acceptTransfer(id, req.user.id);
-    res.redirect('/transfer/list');
   }
 
   // endpoint to refuse a transfer by ID
@@ -125,16 +136,25 @@ export class TransferController {
   async refuseTransfer(
     @Param('id') id: string,
     @Req() req: AuthenticatedRequest,
-    @Res() res: Response,
   ): Promise<void> {
     await this.transferService.refuseTransfer(id, req.user.id);
-    res.redirect('/transfer/list');
+  }
+
+  // endpoint to retrieve a transfer by ID
+  @Post('retrieve/:id')
+  async retrieveTransfer(
+    @Param('id') id: string,
+    @Req() req: AuthenticatedRequest,
+  ): Promise<void> {
+    await this.transferService.retrieveTransfer(id, req.user.id);
   }
 
   // endpoint to delete a transfer by ID
-  @Post('delete/:id')
-  deleteTransfer(@Param('id') id: string, @Res() res: Response): void {
-    this.transferService.deleteTransfer(id);
-    res.redirect('/transfer/list');
+  @Delete('delete/:id')
+  async deleteTransfer(
+    @Param('id') id: string,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    await this.transferService.deleteTransfer(id, req.user.id);
   }
 }
