@@ -4,6 +4,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -17,6 +18,7 @@ export class UserService {
     private readonly passwordService: PasswordService,
     @InjectRepository(LocalUser)
     private localUserRepository: Repository<LocalUser>,
+    private eventEmitter: EventEmitter2,
   ) {}
 
   async findByUserId(userId: number): Promise<LocalUser | null> {
@@ -107,6 +109,11 @@ export class UserService {
     user.private_key_iv = privateKeyIv;
     user.public_key = publicKey;
     user.key_created_at = new Date();
+
+    // emit event about settings the user keys
+    // this will be listened by the expiration service to expire the current user transfers
+    this.eventEmitter.emit('user.set-keys', userId);
+
     return await this.localUserRepository.save(user);
   }
 }
