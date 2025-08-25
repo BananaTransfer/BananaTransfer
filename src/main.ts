@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe, ForbiddenException } from '@nestjs/common';
+import { ValidationPipe, ForbiddenException, Logger } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { Request, Response, NextFunction, urlencoded, json } from 'express';
 import { join } from 'path';
@@ -20,6 +20,7 @@ const tokens = new csrf();
 // This is the entry point of the NestJS application. It bootstraps the application, sets up the view engine, and serves static assets.
 
 async function bootstrap() {
+  const logger = new Logger('main.ts-Bootstrap');
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.useStaticAssets(join(__dirname, 'public')); // serve static assets (bootstrap CSS)
@@ -55,6 +56,7 @@ async function bootstrap() {
     if (req.method === 'POST' && !req.path.startsWith('/remote/')) {
       const token = (req.body as { _csrf: string })?._csrf;
       if (!tokens.verify(req.csrfSecret, token)) {
+        logger.warn(`Invalid CSRF token for ${req.path}`);
         throw new ForbiddenException('Invalid CSRF token');
       }
     }

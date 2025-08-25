@@ -9,13 +9,14 @@ import {
   Body,
   UseGuards,
   Delete,
+  Logger,
 } from '@nestjs/common';
 import { Response } from 'express';
 
 import { TransferService } from '@transfer/services/transfer.service';
 import { RecipientService } from '@user/services/recipient.service';
 import { JwtAuthGuard } from '@auth/jwt/guards/jwt-auth.guard';
-import { AuthenticatedRequest } from '@auth/types/authenticated-request.interface';
+import { AuthenticatedRequest } from '@auth/types/authenticated-request.type';
 import { CreateTransferDto } from '@transfer/dto/create-transfer.dto';
 import { ChunkDto } from '@transfer/dto/chunk.dto';
 import { UserStatusGuard } from '@transfer/guards/userStatus.guard';
@@ -24,6 +25,7 @@ import { UserStatusGuard } from '@transfer/guards/userStatus.guard';
 @UseGuards(JwtAuthGuard, UserStatusGuard)
 @Controller('transfer')
 export class TransferController {
+  private readonly logger = new Logger(TransferController.name);
   private readonly envDomain: string;
 
   constructor(
@@ -35,6 +37,7 @@ export class TransferController {
   @Get('')
   @Render('transfer/list')
   async renderTransfersList(@Req() req: AuthenticatedRequest) {
+    this.logger.debug(`Rendering transfers list for user ${req.user.id}`);
     const transfers = await this.transferService.getTransferListOfUser(
       req.user.id,
     );
@@ -51,6 +54,7 @@ export class TransferController {
     @Req() req: AuthenticatedRequest,
     @Res() res: Response,
   ): Promise<void> {
+    this.logger.debug(`Rendering new transfer page for user ${req.user.id}`);
     const knownRecipients = await this.recipientService.getKnownRecipients(
       req.user.id,
     );
@@ -69,6 +73,7 @@ export class TransferController {
     @Req() req: AuthenticatedRequest,
     @Res() res: Response,
   ): Promise<void> {
+    this.logger.debug(`Fetching transfer info for user ${req.user.id}`);
     try {
       const result = await this.transferService.getTransferOfUserDetails(
         id,
@@ -88,6 +93,7 @@ export class TransferController {
     @Req() req: AuthenticatedRequest,
     @Res() res: Response,
   ): Promise<void> {
+    this.logger.debug(`Creating new transfer for user ${req.user.id}`);
     const userId = req.user.id;
     res.json(await this.transferService.newTransfer(transferData, userId));
   }
@@ -99,6 +105,9 @@ export class TransferController {
     @Req() req: AuthenticatedRequest,
     @Res() res: Response,
   ) {
+    this.logger.debug(
+      `Uploading chunk for transfer ${transferId} for user ${req.user.id}`,
+    );
     const userId = req.user.id;
     await this.transferService.uploadChunk(transferId, chunkData, userId);
     res.status(200).send();
@@ -110,6 +119,9 @@ export class TransferController {
     @Param('chunkId') chunkId: number,
     @Req() req: AuthenticatedRequest,
   ): Promise<ChunkDto> {
+    this.logger.debug(
+      `Fetching chunk ${chunkId} for transfer ${transferId} for user ${req.user.id}`,
+    );
     return this.transferService.getChunk(transferId, chunkId, req.user.id);
   }
 
@@ -119,6 +131,7 @@ export class TransferController {
     @Param('id') id: string,
     @Req() req: AuthenticatedRequest,
   ): Promise<void> {
+    this.logger.debug(`Sending transfer ${id} for user ${req.user.id}`);
     await this.transferService.sendTransfer(id, req.user.id);
   }
 
@@ -128,6 +141,7 @@ export class TransferController {
     @Param('id') id: string,
     @Req() req: AuthenticatedRequest,
   ): Promise<void> {
+    this.logger.debug(`Accepting transfer ${id} for user ${req.user.id}`);
     await this.transferService.acceptTransfer(id, req.user.id);
   }
 
@@ -137,6 +151,7 @@ export class TransferController {
     @Param('id') id: string,
     @Req() req: AuthenticatedRequest,
   ): Promise<void> {
+    this.logger.debug(`Refusing transfer ${id} for user ${req.user.id}`);
     await this.transferService.refuseTransfer(id, req.user.id);
   }
 
@@ -146,6 +161,7 @@ export class TransferController {
     @Param('id') id: string,
     @Req() req: AuthenticatedRequest,
   ): Promise<void> {
+    this.logger.debug(`Retrieving transfer ${id} for user ${req.user.id}`);
     await this.transferService.retrieveTransfer(id, req.user.id);
   }
 
@@ -155,6 +171,7 @@ export class TransferController {
     @Param('id') id: string,
     @Req() req: AuthenticatedRequest,
   ) {
+    this.logger.debug(`Deleting transfer ${id} for user ${req.user.id}`);
     await this.transferService.deleteTransfer(id, req.user.id);
   }
 }

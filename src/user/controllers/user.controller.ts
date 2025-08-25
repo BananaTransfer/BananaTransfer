@@ -18,7 +18,7 @@ import { HashKeyService } from '@user/services/hashKey.service';
 import { RecipientService } from '@user/services/recipient.service';
 
 import { JwtAuthGuard } from '@auth/jwt/guards/jwt-auth.guard';
-import { AuthenticatedRequest } from '@auth/types/authenticated-request.interface';
+import { AuthenticatedRequest } from '@auth/types/authenticated-request.type';
 
 import { ChangePasswordDto } from '@user/dto/changePassword.dto';
 import { SetKeysDto } from '@user/dto/setKeys.dto';
@@ -183,6 +183,7 @@ export class UserController {
       }
       this.logger.log(`Keys set for user ${user.username}`);
 
+      res.clearCookie('noKeysSet');
       return res.json({
         redirect: '/user?setKeysSuccess=true',
       });
