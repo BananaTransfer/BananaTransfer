@@ -1,5 +1,10 @@
 import { FileEncryption, StreamChunk } from './crypto/encryption.js';
-import { callApi, copyToClipboard, formatFileSize } from './utils/common.js';
+import {
+  callApi,
+  copyToClipboard,
+  enforceLowerCase,
+  formatFileSize,
+} from './utils/common.js';
 import {
   SecurityUtils,
   RecipientPublicKeyData,
@@ -80,6 +85,8 @@ class TransferNewPage {
 
   private attachEventListeners(): void {
     this.formElements.recipientInput.addEventListener('input', () => {
+      enforceLowerCase(this.formElements.recipientInput);
+
       this.resetRecipientPublicKey();
     });
 
@@ -148,6 +155,11 @@ class TransferNewPage {
 
   private async handleRecipientPublicKeyFetch() {
     try {
+      // if invalid recipient value, prevent API call
+      if (!this.formElements.recipientInput.reportValidity()) {
+        return;
+      }
+
       this.formElements.publicKeyHashField.value = '';
 
       this.recipientPublicKey = await SecurityUtils.useRecipientPublicKey(
@@ -217,6 +229,11 @@ class TransferNewPage {
 
   private async handleSubmit(): Promise<void> {
     // Validation
+
+    // if invalid subject input, prevent submit
+    if (!this.formElements.subjectInput.reportValidity()) {
+      return;
+    }
 
     // check that recipient is entered
     const recipientAddress = this.formElements.recipientInput.value.trim();
