@@ -119,21 +119,19 @@ export class FileDownloader {
         `File System Access API available: ${'showSaveFilePicker' in window}`,
       );
 
-      // For browsers with File System Access API
-      if ('showSaveFilePicker' in window) {
-        if (this.shouldUseStreaming(transfer)) {
+      // Check if file is too large
+      if (this.shouldUseStreaming(transfer)) {
+        // For browsers with File System Access API
+        if ('showSaveFilePicker' in window) {
           console.log('Using File System Access API (direct streaming)');
           await this.downloadWithFileSystemAPI(transfer);
         } else {
-          console.log('Using blob download for small file');
-          await this.downloadWithBlob(transfer);
+          throw new Error(
+            'File too large for this browser. Please use a modern chromium based browser that supports File System Access API.',
+          );
         }
       } else {
-        // For browsers without File System Access API use old download method
-        console.log(
-          'Using old download method (File System Access API not supported)',
-        );
-        await this.downloadWithBlob(transfer, false); // enforceLimit = false
+        await this.downloadWithBlob(transfer, false);
       }
 
       console.log(`Downloaded file: ${transfer.filename}`);
