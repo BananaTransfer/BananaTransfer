@@ -6,7 +6,7 @@ import { Repository } from 'typeorm';
 import { UserService } from '@user/services/user.service';
 import { RemoteUserService } from '@user/services/remoteUser.service';
 import { HashKeyService } from './hashKey.service';
-import { RemoteQueryService } from '@remote/services/remoteQuery.service';
+import { RemoteOutboundService } from '@remote/services/remoteOutbound.service';
 
 import { GetPubKeyDto } from '@user/dto/getPubKey.dto';
 import { Recipient } from '@user/types/recipient.type';
@@ -27,7 +27,7 @@ export class RecipientService {
     private readonly userService: UserService,
     private readonly remoteUserService: RemoteUserService,
     private readonly hashKeyService: HashKeyService,
-    private readonly remoteQueryService: RemoteQueryService,
+    private readonly remoteOutboundService: RemoteOutboundService,
     @InjectRepository(TrustedRecipient)
     private trustedRecipientRepository: Repository<TrustedRecipient>,
   ) {
@@ -98,8 +98,11 @@ export class RecipientService {
     const publicKey = parsedRecipient.isLocal
       ? (await this.userService.getLocalUser(parsedRecipient.username))
           .public_key
-      : (await this.remoteQueryService.getRemoteUserPublicKey(parsedRecipient))
-          .publicKey;
+      : (
+          await this.remoteOutboundService.getRemoteUserPublicKey(
+            parsedRecipient,
+          )
+        ).publicKey;
     const publicKeyHash = this.hashKeyService.hashKey({ publicKey });
 
     const recipientUser = await this.getRecipientUser(parsedRecipient);

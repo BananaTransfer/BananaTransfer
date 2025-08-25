@@ -4,7 +4,6 @@ import { ConfigService } from '@nestjs/config';
 import { plainToInstance } from 'class-transformer';
 
 import { DnsService } from '@remote/services/dns.service';
-import { TransferChunkService } from '@transfer/services/transferChunk.service';
 
 import { RemoteTransferDto } from '@remote/dto/remoteTransfer.dto';
 import { Recipient } from '@user/types/recipient.type';
@@ -16,7 +15,7 @@ import { FileTransfer } from '@database/entities/file-transfer.entity';
 import { RemoteUser } from '@database/entities/remote-user.entity';
 
 @Injectable()
-export class RemoteQueryService {
+export class RemoteOutboundService {
   private readonly envDomain: string;
   private readonly nodeEnv?: string;
   private readonly logger: Logger;
@@ -24,9 +23,8 @@ export class RemoteQueryService {
   constructor(
     private readonly configService: ConfigService,
     private readonly dnsService: DnsService,
-    private readonly transferChunkService: TransferChunkService,
   ) {
-    this.logger = new Logger(RemoteQueryService.name);
+    this.logger = new Logger(RemoteOutboundService.name);
     this.envDomain = this.configService.getOrThrow<string>('DOMAIN');
     this.nodeEnv = this.configService.get<string>('NODE_ENV');
   }
@@ -106,72 +104,49 @@ export class RemoteQueryService {
     );
   }
 
-  // fetch transfer chunks from remote server
-  async fetchRemoteTransfer(transfer: FileTransfer): Promise<void> {
+  // fetch transfer and chunk info from remote server
+  async fetchRemoteTransferInfo(
+    transfer: FileTransfer,
+  ): Promise<TransferInfoDto> {
     const sender = transfer.sender as RemoteUser;
     this.logger.debug(
-      `Fetching remote transfer ${transfer.id} of sender ${sender.username}@${sender.domain}`,
+      `Fetching remote transfer info ${transfer.id} of sender ${sender.username}@${sender.domain}`,
     );
-    try {
-      // fetch chunk information of transfer from remote server
-      const data = await this.callRemoteApi<void, TransferInfoDto>(
-        'GET',
-        sender.domain,
-        `remote/fetch/transfer/${transfer.id}`,
-      );
-      const transferInfo = plainToInstance(TransferInfoDto, data);
-      await validateOrReject(transferInfo);
 
-      let fetchedSize: number = 0;
-      // loop to fetch and save chunks
-      for (const chunkId of transferInfo.chunks) {
-        const chunkData = await this.callRemoteApi<void, ChunkDto>(
-          'GET',
-          sender.domain,
-          `remote/fetch/transfer/${transfer.id}/${chunkId}`,
-        );
-        this.logger.debug(
-          `Fetched chunk ${chunkId} for transfer ${transfer.id} from ${sender.domain}`,
-        );
-        //const chunkData = plainToInstance(ChunkDto, data);
-        //await validateOrReject(chunkData);
+    const data = await this.callRemoteApi<void, TransferInfoDto>(
+      'GET',
+      sender.domain,
+      `remote/fetch/transfer/${transfer.id}/info`,
+    );
+    const transferInfo = plainToInstance(TransferInfoDto, data);
+    await validateOrReject(transferInfo);
+    return transferInfo;
+  }
 
-        const chunkSize = await this.transferChunkService.saveChunk(
-          transfer.id,
-          chunkData,
-        );
+  // fetch transfer chunk from remote server
+  async fetchRemoteTransferChunk(transfer: FileTransfer, chunkId: number) {
+    const sender = transfer.sender as RemoteUser;
+    this.logger.debug(
+      `Fetching remote transfer chunk ${chunkId} of transfer ${transfer.id} of sender ${sender.username}@${sender.domain}`,
+    );
 
-        // check if the fetched size exceeds the originally indicated transfer size
-        fetchedSize += chunkSize;
-        if (fetchedSize > Number(transfer.size)) {
-          this.logger.error(
-            `Fetched size ${fetchedSize} exceeds originally indicated transfer size ${transfer.size}`,
-          );
-          throw new Error(
-            `Fetched size ${fetchedSize} exceeds originally indicated transfer size ${transfer.size}`,
-          );
-        }
-      }
+    const chunkData = await this.callRemoteApi<void, ChunkDto>(
+      'GET',
+      sender.domain,
+      `remote/fetch/transfer/${transfer.id}/${chunkId}`,
+    );
+    // const chunkData = plainToInstance(ChunkDto, data);
+    // await validateOrReject(chunkData);
+    return chunkData;
+  }
 
-      // inform remote server that transfer has been retrieved
-      await this.callRemoteApi<void, void>(
-        'POST',
-        sender.domain,
-        `remote/transfer/retrieved/${transfer.id}`,
-      );
-    } catch (error) {
-      this.logger.error(
-        `Error fetching remote transfer ${transfer.id}: ${
-          (error as Error).message
-        }`,
-      );
-      // delete the already fetched chunks
-      await this.transferChunkService.deleteTransferChunks(transfer.id);
-      // TODO: log the error in the transfer-logs
-      // TODO: return an error response
-      throw new Error(
-        `Error fetching remote transfer ${transfer.id}: ${(error as Error).message}`,
-      );
-    }
+  // inform remote server that transfer has been retrieved
+  async informRemoteTransferRetrieved(transfer: FileTransfer) {
+    const sender = transfer.sender as RemoteUser;
+    await this.callRemoteApi<void, void>(
+      'POST',
+      sender.domain,
+      `remote/transfer/retrieved/${transfer.id}`,
+    );
   }
 }

@@ -1,9 +1,9 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { JwtCoreModule } from '@auth/jwt/jwt-core.module';
 import { UserModule } from '@user/user.module';
-import { RemoteModule } from '@remote/remote.module';
+import { RemoteOutboundModule } from '@remote/remoteOutbound.module';
 
 import { TransferController } from '@transfer/controllers/transfer.controller';
 import { TransferService } from '@transfer/services/transfer.service';
@@ -20,8 +20,8 @@ import { TransferLog } from '@database/entities/transfer-log.entity';
 @Module({
   imports: [
     JwtCoreModule,
-    forwardRef(() => UserModule),
-    forwardRef(() => RemoteModule),
+    UserModule,
+    RemoteOutboundModule,
     TypeOrmModule.forFeature([FileTransfer, TransferLog]),
   ],
   controllers: [TransferController],
