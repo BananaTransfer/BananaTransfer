@@ -9,7 +9,7 @@ const HOUR_TO_MS_MULTIPLIER = 60 * 60 * 1000;
 const DAY_TO_MS_MULTIPLIER = 24 * HOUR_TO_MS_MULTIPLIER;
 
 /**
- * Responsible to organise the scheduling of all expiration related task
+ * Responsible to organize the scheduling of all expiration related task
  */
 @Injectable()
 export class ExpirationService {
@@ -104,14 +104,5 @@ export class ExpirationService {
     for (const transfer of transferListToDeletePermanently) {
       await this.transferService.deleteLocalTransferPermanently(transfer);
     }
-  }
-
-  /**
-   * Expire all active transfers for a user when their public key changes
-   * @param userId
-   */
-  async expireTransfersForUserKeyChange(userId: number): Promise<number> {
-    this.logger.log(`Expiring transfers for user ${userId} due to key change`);
-    return await this.transferService.expireTransfersForUser(userId);
   }
 }
