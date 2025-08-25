@@ -29,7 +29,7 @@ export class RemoteTransferDto {
   @IsString()
   @IsNotEmpty()
   @Matches(/^[0-9]*$/, {
-    message: 'size must be number',
+    message: 'size must be a number',
   })
   size: string;
 
