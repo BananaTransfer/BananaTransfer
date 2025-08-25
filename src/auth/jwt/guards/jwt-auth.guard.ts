@@ -1,10 +1,17 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request, Response } from 'express';
 import { UserPayload } from '@auth/types/user-payload.interface';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
+  private readonly logger = new Logger(JwtAuthGuard.name);
+
   constructor(private readonly jwtService: JwtService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -13,6 +20,7 @@ export class JwtAuthGuard implements CanActivate {
     const cookies = req.cookies as Record<string, string> | undefined;
     const token = cookies?.jwt;
     if (!token) {
+      this.logger.debug('No JWT token found, redirect to login');
       res.redirect('/auth/login');
       return false;
     }
@@ -21,7 +29,7 @@ export class JwtAuthGuard implements CanActivate {
       req.user = await this.jwtService.verifyAsync<UserPayload>(token);
       return true;
     } catch (err) {
-      console.error('JWT verification failed:', err);
+      this.logger.warn('JWT verification failed, redirect to login', err);
       res.redirect('/auth/login');
       return false;
     }
