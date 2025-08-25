@@ -13,7 +13,12 @@ async function viewTransferDetails(id: string) {
       subject: string;
       created_at: string;
       size?: string;
-      logs: Array<{ id: number; info: string; created_at: string }>;
+      logs: Array<{
+        id: number;
+        info: string;
+        created_at: string;
+        user: string;
+      }>;
     };
 
     document.getElementById('modalFilename')!.textContent =
@@ -37,6 +42,7 @@ async function viewTransferDetails(id: string) {
         row.innerHTML = `
           <td>${formatLogInfo(log.info)}</td>
           <td>${new Date(log.created_at).toLocaleString()}</td>
+          <td>${log.user}</td>
         `;
         logsTableBody.appendChild(row);
       });
@@ -138,6 +144,7 @@ export function setupListPage() {
   const retrieveButtons = document.querySelectorAll('.retrieve-btn');
   const downloadButtons = document.querySelectorAll('.download-btn');
   const deleteButtons = document.querySelectorAll('.delete-btn');
+  const sizeElements = document.querySelectorAll('.size');
 
   viewDetails.forEach((button) => {
     button.addEventListener('click', () => {
@@ -193,5 +200,11 @@ export function setupListPage() {
       if (!id) return;
       deleteTransfer(id);
     });
+  });
+
+  sizeElements.forEach((element) => {
+    const size = element.getAttribute('data-size');
+    if (!size) return;
+    element.textContent = formatFileSize(Number(size));
   });
 }

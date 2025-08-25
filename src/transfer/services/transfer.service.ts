@@ -57,12 +57,11 @@ export class TransferService {
   ) {}
 
   // method to convert a FileTransfer object into a TransferDto object (which is sent to frontend)
-  private async toTransferDto(transfer: FileTransfer): Promise<TransferDto> {
-    // TODO: doesn't make sense to do this every time we load a list of transfers in frontend
-    // we should fetch the chunk information separately only when downloading
-    const chunks = await this.transferChunkService.listChunks(transfer.id);
-
-    return {
+  private async toTransferDto(
+    transfer: FileTransfer,
+    includeDetails: boolean,
+  ): Promise<TransferDto> {
+    const dto: TransferDto = {
       id: transfer.id,
       symmetric_key_encrypted: transfer.symmetric_key_encrypted,
       status: transfer.status,
@@ -76,8 +75,23 @@ export class TransferService {
         transfer.receiver,
       ),
       size: transfer.size,
-      chunks,
     };
+
+    if (includeDetails) {
+      dto.chunks = await this.transferChunkService.listChunks(transfer.id);
+      dto.logs = (await this.transferLogService.getTransferLogs(transfer)).map(
+        (log) => ({
+          id: log.id,
+          info: log.info,
+          created_at: log.created_at,
+          user: log.user
+            ? this.recipientService.getRecipientAddress(log.user)
+            : 'system',
+        }),
+      );
+    }
+
+    return dto;
   }
 
   // method to get a transfer by id and check if user can access it
@@ -94,6 +108,7 @@ export class TransferService {
       this.logger.warn(`Transfer with ID ${transferId} not found`);
       throw new NotFoundException(`Transfer with ID ${transferId} not found`);
     }
+
     return transfer;
   }
 
@@ -108,7 +123,7 @@ export class TransferService {
     });
 
     return await Promise.all(
-      list.map((fileTransfer) => this.toTransferDto(fileTransfer)),
+      list.map((fileTransfer) => this.toTransferDto(fileTransfer, false)),
     );
   }
 
@@ -118,14 +133,7 @@ export class TransferService {
     userId: number,
   ): Promise<TransferDto> {
     const transfer = await this.getTransferOfUser(id, userId);
-    const transferDto = await this.toTransferDto(transfer);
-    const transferLogs =
-      await this.transferLogService.getTransferLogs(transfer);
-    transferDto.logs = transferLogs.map((log) => ({
-      id: log.id,
-      info: log.info,
-      created_at: log.created_at,
-    }));
+    const transferDto = await this.toTransferDto(transfer, true);
     return transferDto;
   }
 
@@ -274,7 +282,7 @@ export class TransferService {
       receiver: recipient,
     });
 
-    return this.toTransferDto(transfer);
+    return this.toTransferDto(transfer, false);
   }
 
   async newTransferFromRemote(
