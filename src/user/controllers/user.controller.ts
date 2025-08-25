@@ -180,6 +180,7 @@ export class UserController {
         throw new Error('Failed to set user keys');
       }
       this.logger.log(`Keys set for user ${user.username}`);
+
       return res.json({
         redirect: '/user?setKeysSuccess=true',
       });

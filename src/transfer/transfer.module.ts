@@ -32,6 +32,6 @@ import { TransferLog } from '@database/entities/transfer-log.entity';
     TransferLogService,
     TransferChunkService,
   ],
-  exports: [TransferService, TransferChunkService],
+  exports: [TransferService, TransferChunkService, ExpirationService],
 })
 export class TransferModule {}
