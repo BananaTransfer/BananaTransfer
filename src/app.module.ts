@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { join } from 'path';
 
 import { AuthModule } from '@auth/auth.module';
@@ -23,6 +24,7 @@ import { AppController } from './app.controller';
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
     }),
+    EventEmitterModule.forRoot(),
     AuthModule,
     JwtCoreModule,
     DatabaseModule,

@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { OnEvent } from '@nestjs/event-emitter';
 
 import { TransferStatus } from '@database/entities/enums';
 import { TransferService } from '@transfer/services/transfer.service';
@@ -104,5 +105,11 @@ export class ExpirationService {
     for (const transfer of transferListToDeletePermanently) {
       await this.transferService.deleteLocalTransferPermanently(transfer);
     }
+  }
+
+  @OnEvent('user.set-keys')
+  async expireTransfersForUser(userId: number): Promise<number> {
+    this.logger.log(`Expiring transfers for user ${userId} due to key change`);
+    return await this.transferService.expireTransfersForUser(userId);
   }
 }
