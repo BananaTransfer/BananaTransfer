@@ -41,10 +41,12 @@ interface Transfer {
   symmetric_key_encrypted: string;
   chunks: number[];
   filename: string;
+  size: string;
 }
 
 export class FileDownloader {
-  private static readonly MAX_BLOB_CHUNKS = 100; // ~500MB
+  private static readonly MAX_BLOB_SIZE_BYTES = 500 * 1024 * 1024; // 500MB
+  private static readonly STREAMING_THRESHOLD_BYTES = 50 * 1024 * 1024; // 50MB
   private userPrivateKey: CryptoKey;
 
   constructor(userPrivateKey: CryptoKey) {
@@ -110,7 +112,9 @@ export class FileDownloader {
     try {
       const transfer = await this.getTransfer(transferId);
 
-      console.log(`Transfer has ${transfer.chunks.length} chunks`);
+      console.log(
+        `Transfer: ${transfer.chunks.length} chunks, ${Math.round(Number(transfer.size) / (1024 * 1024))}MB`,
+      );
       console.log(
         `File System Access API available: ${'showSaveFilePicker' in window}`,
       );
@@ -141,8 +145,8 @@ export class FileDownloader {
   }
 
   private shouldUseStreaming(transfer: Transfer): boolean {
-    // Use streaming for files with many chunks (>50MB estimated)
-    return transfer.chunks.length > 10;
+    // Use streaming for files larger than 50MB
+    return Number(transfer.size) > FileDownloader.STREAMING_THRESHOLD_BYTES;
   }
 
   private async downloadWithFileSystemAPI(transfer: Transfer): Promise<void> {
@@ -150,11 +154,7 @@ export class FileDownloader {
       console.log('Using File System Access API for streaming download');
 
       // Ask user where to save the file
-      if (!window.showSaveFilePicker) {
-        throw new Error('File System Access API not supported');
-      }
-
-      const fileHandle = await window.showSaveFilePicker({
+      const fileHandle = await window.showSaveFilePicker!({
         suggestedName: transfer.filename,
         types: [
           {
@@ -224,7 +224,7 @@ export class FileDownloader {
     // Only enforce size limits for modern browsers
     if (
       enforceLimit &&
-      transfer.chunks.length > FileDownloader.MAX_BLOB_CHUNKS
+      Number(transfer.size) > FileDownloader.MAX_BLOB_SIZE_BYTES
     ) {
       throw new Error(
         'File too large for blob download. Please use a browser that supports File System Access API.',
