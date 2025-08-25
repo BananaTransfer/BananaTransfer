@@ -24,7 +24,7 @@ export class RemoteGuard implements CanActivate {
     const req = context.switchToHttp().getRequest<RemoteRequest>();
     const remoteDomain = req.headers['x-bananatransfer-domain'];
     if (!remoteDomain || typeof remoteDomain !== 'string') {
-      this.logger.error('Missing or invalid BananaTransfer-domain in header');
+      this.logger.warn('Missing or invalid BananaTransfer-domain in header');
       throw new ForbiddenException(
         'Missing or invalid BananaTransfer-domain in header',
       );
@@ -38,7 +38,7 @@ export class RemoteGuard implements CanActivate {
       : req.ip;
 
     if (!remoteServerIp) {
-      this.logger.error('Missing or invalid sender IP in header');
+      this.logger.warn('Missing or invalid sender IP in header');
       throw new ForbiddenException('Missing or invalid sender IP in header');
     }
 
@@ -47,7 +47,7 @@ export class RemoteGuard implements CanActivate {
     try {
       ipAddresses = await this.dnsService.getServerIpAddresses(remoteDomain);
     } catch (err) {
-      this.logger.error(
+      this.logger.warn(
         (err as Error)?.message || 'Could not resolve ip addresses of domain',
       );
       throw new ForbiddenException(
@@ -57,7 +57,7 @@ export class RemoteGuard implements CanActivate {
 
     // Compare the request IP to the resolved IPs
     if (!ipAddresses.includes(remoteServerIp)) {
-      this.logger.error(
+      this.logger.warn(
         `Sender IP ${remoteServerIp} does not match resolved ip addresses of remote domain`,
       );
       throw new ForbiddenException(

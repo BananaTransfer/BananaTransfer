@@ -91,6 +91,7 @@ export class TransferService {
     });
 
     if (!transfer) {
+      this.logger.warn(`Transfer with ID ${transferId} not found`);
       throw new NotFoundException(`Transfer with ID ${transferId} not found`);
     }
     return transfer;
@@ -152,14 +153,14 @@ export class TransferService {
       relations: ['sender', 'receiver'],
     });
     if (!transfer) {
-      this.logger.error(`Transfer with ID ${transferId} not found`);
+      this.logger.warn(`Transfer with ID ${transferId} not found`);
       throw new NotFoundException(`Transfer with ID ${transferId} not found`);
     }
     if (
       !(transfer.receiver instanceof RemoteUser) ||
       transfer.receiver.domain !== remoteDomain
     ) {
-      this.logger.error(
+      this.logger.warn(
         `Transfer recipient domain does not match remote domain ${remoteDomain}`,
       );
       throw new UnauthorizedException(
@@ -167,7 +168,7 @@ export class TransferService {
       );
     }
     if (transfer.status !== TransferStatus.SENT) {
-      this.logger.error(`Transfer with ID ${transfer.id} is unavailable`);
+      this.logger.warn(`Transfer with ID ${transfer.id} is unavailable`);
       throw new NotFoundException(
         `Transfer with ID ${transfer.id} is unavailable`,
       );
@@ -257,6 +258,9 @@ export class TransferService {
           transferData.recipient_public_key_hash,
         );
       } else {
+        this.logger.warn(
+          `User ${sender.id} (${sender.username}) must trust recipient key`,
+        );
         throw new BadRequestException('User must trust recipient key');
       }
     }
@@ -472,6 +476,9 @@ export class TransferService {
         STATUS_DELETABLE_BY_RECEIVER_LOCALY.includes(transferStatus));
 
     if (!isDeletable) {
+      this.logger.warn(
+        `User ${userId} is not authorized to delete transfer ${id}`,
+      );
       throw new UnauthorizedException(
         'User is not authorized to do this action',
       );
