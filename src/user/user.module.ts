@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtCoreModule } from '@auth/jwt/jwt-core.module';
 import { RemoteOutboundModule } from '@remote/remoteOutbound.module';
@@ -15,6 +15,8 @@ import { LocalUser } from '@database/entities/local-user.entity';
 import { RemoteUser } from '@database/entities/remote-user.entity';
 import { TrustedRecipient } from '@database/entities/trusted-recipient.entity';
 
+import { TransferModule } from '@transfer/transfer.module';
+
 // This module handles all user related operations that are done by the authenticated users
 
 @Module({
@@ -22,6 +24,7 @@ import { TrustedRecipient } from '@database/entities/trusted-recipient.entity';
     JwtCoreModule,
     RemoteOutboundModule,
     TypeOrmModule.forFeature([User, LocalUser, RemoteUser, TrustedRecipient]),
+    forwardRef(() => TransferModule),
   ],
   controllers: [UserController],
   providers: [

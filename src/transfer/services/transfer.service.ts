@@ -530,4 +530,35 @@ export class TransferService {
         .delete(transfer);
     });
   }
+
+  /**
+   * Expire all active transfers for a user when their public key changes
+   * @param userId
+   */
+  async expireTransfersForUser(userId: number): Promise<number> {
+    this.logger.log(`Expiring transfers for user ${userId} due to key change`);
+
+    const activeStatuses = [
+      TransferStatus.SENT,
+      TransferStatus.ACCEPTED,
+      TransferStatus.RETRIEVED,
+    ];
+
+    const transfersToExpire = await this.fileTransferRepository.find({
+      where: {
+        receiver: { id: userId },
+        status: In(activeStatuses),
+      },
+    });
+
+    this.logger.debug(
+      `Found ${transfersToExpire.length} transfers to expire for user ${userId}`,
+    );
+
+    for (const transfer of transfersToExpire) {
+      await this.expireLocalTransfer(transfer);
+    }
+
+    return transfersToExpire.length;
+  }
 }
