@@ -132,6 +132,7 @@ export class AuthController {
   logout(@Req() req: Request, @Res() res: Response) {
     // clear the JWT cookie
     res.clearCookie('jwt');
+    res.clearCookie('noKeysSet');
     res.redirect('/auth/login');
   }
 }

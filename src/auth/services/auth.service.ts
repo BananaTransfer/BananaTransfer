@@ -59,11 +59,15 @@ export class AuthService {
       // secure prevents the cookie to be sent in non https requests, this needs to be disabled in dev
       secure: process.env.NODE_ENV !== 'dev',
     });
-    res.cookie('noKeysSet', !user.private_key_encrypted, {
-      httpOnly: true,
-      sameSite: 'strict',
-      secure: process.env.NODE_ENV !== 'dev',
-    });
+    if (!user.private_key_encrypted) {
+      res.cookie('noKeysSet', true, {
+        httpOnly: true,
+        sameSite: 'strict',
+        secure: process.env.NODE_ENV !== 'dev',
+      });
+    } else {
+      res.clearCookie('noKeysSet');
+    }
     return;
   }
 }

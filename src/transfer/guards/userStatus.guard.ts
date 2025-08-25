@@ -14,7 +14,7 @@ export class UserStatusGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
     const response = context.switchToHttp().getResponse<Response>();
 
-    if (request.cookies.noKeysSet) {
+    if (request.cookies.noKeysSet === 'true' || request.cookies.noKeysSet) {
       this.logger.log(
         `User ${request.user.username} (${request.user.id}) has not set up their keys yet. redirect to /user/set-keys`,
       );
