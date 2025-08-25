@@ -45,7 +45,6 @@ interface Transfer {
 }
 
 export class FileDownloader {
-  private static readonly MAX_BLOB_SIZE_BYTES = 500 * 1024 * 1024; // 500MB
   private static readonly STREAMING_THRESHOLD_BYTES = 50 * 1024 * 1024; // 50MB
   private userPrivateKey: CryptoKey;
 
@@ -131,7 +130,7 @@ export class FileDownloader {
           );
         }
       } else {
-        await this.downloadWithBlob(transfer, false);
+        await this.downloadWithBlob(transfer);
       }
 
       console.log(`Downloaded file: ${transfer.filename}`);
@@ -208,26 +207,12 @@ export class FileDownloader {
       console.log('File streamed successfully to disk');
     } catch (error) {
       console.error('File System API download failed:', error);
-      // Fallback to blob approach
-      await this.downloadWithBlob(transfer);
+      throw error;
     }
   }
 
-  private async downloadWithBlob(
-    transfer: Transfer,
-    enforceLimit = true,
-  ): Promise<void> {
-    console.log('Using old download method(fallback)');
-
-    // Only enforce size limits for modern browsers
-    if (
-      enforceLimit &&
-      Number(transfer.size) > FileDownloader.MAX_BLOB_SIZE_BYTES
-    ) {
-      throw new Error(
-        'File too large for blob download. Please use a browser that supports File System Access API.',
-      );
-    }
+  private async downloadWithBlob(transfer: Transfer): Promise<void> {
+    console.log('Using blob download (original approach)');
 
     const transferData = await this.downloadAndDecrypt(transfer);
 
