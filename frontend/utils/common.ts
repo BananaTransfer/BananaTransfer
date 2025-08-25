@@ -123,6 +123,9 @@ export async function callApi<R, T>(
   const response = await fetch(path, request);
 
   if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+      location.reload();
+    }
     throw new Error(response.statusText);
   }
 
