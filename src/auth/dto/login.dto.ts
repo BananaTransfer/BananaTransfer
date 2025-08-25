@@ -1,9 +1,4 @@
-import {
-  IsString,
-  IsAlphanumeric,
-  IsLowercase,
-  Length,
-} from 'class-validator';
+import { IsString, IsAlphanumeric, IsLowercase, Length } from 'class-validator';
 
 export class LoginDto {
   @IsAlphanumeric()

@@ -34,12 +34,6 @@ export class ExpirationService {
       'TRANSFER_LOG_EXPIRY_DAYS',
       60,
     );
-
-    this.logger.debug('PLOUGH');
-    this.logger.debug(this.transferLogExpiryDays);
-    this.logger.debug(this.transferExpiryDays);
-    this.logger.debug(this.transferExpiryCreatedHours);
-    this.logger.debug(this.transferExpiryCreatedHours * HOUR_TO_MS_MULTIPLIER);
   }
 
   @Cron(CronExpression.EVERY_HOUR)
