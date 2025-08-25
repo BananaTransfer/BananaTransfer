@@ -32,6 +32,7 @@ block content
               th Filename
               th Subject
               th Date
+              th Size
               th Status
               th.text-center Details
               th.text-center Actions
@@ -44,6 +45,7 @@ block content
                   td= transfer.filename
                   td= transfer.subject
                   td= transfer.created_at.toLocaleString('en-GB', { hour12: false })
+                  td.size(data-size=transfer.size)
                   td= transfer.status
                   td
                     span.rounded-circle.bg-light.border.d-inline-flex.align-items-center.justify-content-center.view-details(
@@ -92,6 +94,9 @@ block content
               .row
                 .col-6.font-weight-bold Date:
                 .col-6= transfer.created_at.toLocaleString('en-GB', { hour12: false })
+              .row
+                .col-6.font-weight-bold Size:
+                .col-6.size(data-size=transfer.size)
               .row
                 .col-6.font-weight-bold Status:
                 .col-6= transfer.status

@@ -1,5 +1,7 @@
 {{ domain }} {
   reverse_proxy server:3000
-
   encode
+  request_body {
+  	max_size 10MB
+  }
 }
