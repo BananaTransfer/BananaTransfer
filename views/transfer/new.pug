@@ -20,7 +20,7 @@ block content
       h4.font-weight-bold Recipient
       hr.mb-3(style="border-top:3px solid #000; width:100%; margin:auto")
       .d-flex.flex-column.flex-md-row.gap-1.mb-2
-        input.form-control.form-control-sm(type="text" name="recipient" id="recipient" placeholder="Recipient address" list="recipients-list" autocomplete="on" required)
+        input.form-control.form-control-sm(type="email" name="recipient" id="recipient" placeholder="Recipient address" list="recipients-list" autocomplete="on" required)
         datalist#recipients-list
           each recipient in knownRecipients
             option(value=recipient)
@@ -66,7 +66,7 @@ block content
       input(type="hidden" id="_csrf" value=csrfToken)
       h4.font-weight-bold Subject
       hr.mb-3(style="border-top:3px solid #000; width:100%; margin:auto")
-      input.form-control(type="text" name="subject" id="subject" placeholder="Transfer Subject (Filename by default)")
+      input.form-control(type="text" name="subject" id="subject" placeholder="Transfer Subject (Filename by default)" required minLength=3 maxlength=256)
 
     // Send button
   .row.justify-content-center.mb-3

@@ -5,6 +5,7 @@ import {
   IsBase64,
   IsByteLength,
   Length,
+  IsLowercase,
 } from 'class-validator';
 
 export class CreateTransferDto {
@@ -22,6 +23,7 @@ export class CreateTransferDto {
 
   @IsEmail()
   @Length(3, 256)
+  @IsLowercase()
   recipient: string;
 
   @IsString()
