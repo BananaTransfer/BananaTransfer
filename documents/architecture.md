@@ -30,21 +30,21 @@ The private key generation, its encryption and decryption of the files directly 
 
 ![create_keys.png](umls/dist/create_keys.png)
 
-The user can generate their private keys in the web-console of the server of their organization. 
+The user can generate their private keys in the web-console of the server of their organization.
 
 The generation of the key directly happens in the browser. The generated private key is a RSA 4096-bit key.
 
 This is achieved by generating an extractable CryptoKeyPair object which only exist in the browser environment.
 
-The private key is then encrypted with a 64-char master-password before stored on the server. 
-The user will store the master-password to decrypt the private key in his password vault.
+The private key is then encrypted with a 64-char master-password before stored on the server.
+The user will store the master-password to decrypt the private key in their password vault.
 
-To encrypt the private key, we use PBKDF2 as a key derivation function to derive an AES256-GCM symmetric key 
-from the master-password (with SHA-256 as the hashing algorithm, 32 bytes for the salt and 100'000 iterations). 
-The symmetric key is then used to encrypt the private key with AES256-GCM. 
+To encrypt the private key, we use PBKDF2 as a key derivation function to derive an AES256-GCM symmetric key
+from the master-password (with SHA-256 as the hashing algorithm, 32 bytes for the salt and 100'000 iterations).
+The symmetric key is then used to encrypt the private key with AES256-GCM.
 
 The encrypted private key and the public keys are exported and stored in the server database with the WrapKey method
-to ensure that the private key isn't available in plaintext in the browser memory. 
+to ensure that the private key isn't available in plaintext in the browser memory.
 The private key and CryptoKeyPair object are then cleared from the browser memory.
 
 ### Send File
@@ -55,7 +55,7 @@ When sending the file the user first specifies the recipient.
 The browser will then communicate with the server of the users organization to fetch the public key of the recipient and
 check if the public key is a trusted recipient key of the user. (If not yet trusted the user has to confirm it).
 
-After receiving the public key value, a hash is created with the method digest and then the key is turn into a CryptoKey object via the method importKey to be able to use it. 
+After receiving the public key value, a hash is created with the method digest and then the key is turn into a CryptoKey object via the method importKey to be able to use it.
 
 The hash of the public key stored in the DB in the table TrustedRecipients is a SHA-256 hash of the recipients public key.
 
@@ -68,12 +68,12 @@ The symmetric CryptoKey is then cleaned from memory.
 
 ![get_file.png](umls/dist/get_file.png)
 
-A user that receives a shared file first needs to accept it. 
+A user that receives a shared file first needs to accept it.
 When accepting the transfer their server fetches the file from the remote server, if it wasn't send locally.
 
-The encrypted file and the encrypted private key of the user is then downloaded to the browser of the user. 
-After the user enters their master-password to derive the symmetric key to decrypt their private key with the unwrapKey method, 
-the private key can be used to decrypt the symmetric key (RSA-OAEP). 
+The encrypted file and the encrypted private key of the user is then downloaded to the browser of the user.
+After the user enters their master-password to derive the symmetric key to decrypt their private key with the unwrapKey method,
+the private key can be used to decrypt the symmetric key (RSA-OAEP).
 As in the sending process the Web Crypto API is used for the decryption.
 With the decrypted symmetric key the browser then decrypts the file itself (using AES256-GCM) and lets the user to download the file to the computer.
 

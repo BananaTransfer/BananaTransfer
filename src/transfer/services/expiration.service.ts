@@ -35,11 +35,11 @@ export class ExpirationService {
       60,
     );
 
-    console.log('PLOUGH');
-    console.log(this.transferLogExpiryDays);
-    console.log(this.transferExpiryDays);
-    console.log(this.transferExpiryCreatedHours);
-    console.log(this.transferExpiryCreatedHours * HOUR_TO_MS_MULTIPLIER);
+    this.logger.debug('PLOUGH');
+    this.logger.debug(this.transferLogExpiryDays);
+    this.logger.debug(this.transferExpiryDays);
+    this.logger.debug(this.transferExpiryCreatedHours);
+    this.logger.debug(this.transferExpiryCreatedHours * HOUR_TO_MS_MULTIPLIER);
   }
 
   @Cron(CronExpression.EVERY_HOUR)
@@ -104,5 +104,14 @@ export class ExpirationService {
     for (const transfer of transferListToDeletePermanently) {
       await this.transferService.deleteLocalTransferPermanently(transfer);
     }
+  }
+
+  /**
+   * Expire all active transfers for a user when their public key changes
+   * @param userId
+   */
+  async expireTransfersForUserKeyChange(userId: number): Promise<number> {
+    this.logger.log(`Expiring transfers for user ${userId} due to key change`);
+    return await this.transferService.expireTransfersForUser(userId);
   }
 }

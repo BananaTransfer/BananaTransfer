@@ -18,6 +18,6 @@ export class TransferDto {
   receiverId: number;
   senderAddress: string;
   receiverAddress: string;
-  size?: string;
-  logs: TransferLogDto[];
+  size: string;
+  logs?: TransferLogDto[];
 }

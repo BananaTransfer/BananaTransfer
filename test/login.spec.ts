@@ -22,7 +22,7 @@ test('login with valid credentials', async ({
   await expect(page).toHaveURL(setKeysPage.URL);
 });
 
-test('user should be redirected to transfer list if logged in', async ({
+test('user should be redirected to app if logged in', async ({
   registerPage,
   loginPage,
   page,
