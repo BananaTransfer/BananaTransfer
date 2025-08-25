@@ -101,6 +101,7 @@ export class UserService {
     if (!(await this.passwordService.validatePassword(user, password))) {
       throw new UnauthorizedException('Invalid password');
     }
+
     user.private_key_encrypted = privateKeyEncrypted;
     user.private_key_salt = privateKeySalt;
     user.private_key_iv = privateKeyIv;

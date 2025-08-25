@@ -9,7 +9,7 @@ const HOUR_TO_MS_MULTIPLIER = 60 * 60 * 1000;
 const DAY_TO_MS_MULTIPLIER = 24 * HOUR_TO_MS_MULTIPLIER;
 
 /**
- * Responsible to organise the scheduling of all expiration related task
+ * Responsible to organize the scheduling of all expiration related task
  */
 @Injectable()
 export class ExpirationService {
@@ -34,12 +34,6 @@ export class ExpirationService {
       'TRANSFER_LOG_EXPIRY_DAYS',
       60,
     );
-
-    this.logger.debug('PLOUGH');
-    this.logger.debug(this.transferLogExpiryDays);
-    this.logger.debug(this.transferExpiryDays);
-    this.logger.debug(this.transferExpiryCreatedHours);
-    this.logger.debug(this.transferExpiryCreatedHours * HOUR_TO_MS_MULTIPLIER);
   }
 
   @Cron(CronExpression.EVERY_HOUR)

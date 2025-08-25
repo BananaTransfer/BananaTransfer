@@ -4,6 +4,7 @@ import {
   Logger,
   NotFoundException,
   UnauthorizedException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, In, LessThan, Repository } from 'typeorm';
@@ -17,7 +18,7 @@ import { TransferLog } from '@database/entities/transfer-log.entity';
 
 import { TransferChunkService } from '@transfer/services/transferChunk.service';
 import { TransferLogService } from '@transfer/services/transferLog.service';
-import { RemoteQueryService } from '@remote/services/remoteQuery.service';
+import { RemoteOutboundService } from '@remote/services/remoteOutbound.service';
 import { UserService } from '@user/services/user.service';
 import { RecipientService } from '@user/services/recipient.service';
 
@@ -52,7 +53,7 @@ export class TransferService {
     private userService: UserService,
     private recipientService: RecipientService,
     private dataSource: DataSource,
-    private remoteQueryService: RemoteQueryService,
+    private remoteOutboundService: RemoteOutboundService,
   ) {}
 
   // method to convert a FileTransfer object into a TransferDto object (which is sent to frontend)
@@ -334,7 +335,7 @@ export class TransferService {
 
   private async sendTransferToRemote(transfer: FileTransfer) {
     try {
-      await this.remoteQueryService.newRemoteTransfer(transfer);
+      await this.remoteOutboundService.newRemoteTransfer(transfer);
       await this.setTransferStatus(transfer, TransferStatus.SENT);
     } catch (error) {
       this.logger.error(
@@ -345,14 +346,51 @@ export class TransferService {
         LogInfo.TRANSFER_SENT_FAILED,
         transfer.receiver.id,
       );
+      throw new InternalServerErrorException(
+        'Error sending transfer to remote',
+      );
     }
   }
 
   private async fetchTransferFromRemote(transfer: FileTransfer) {
     try {
       if (transfer.sender instanceof RemoteUser) {
-        await this.remoteQueryService.fetchRemoteTransfer(transfer);
+        // await this.remoteOutboundService.fetchRemoteTransfer(transfer);
+        // fetch chunk information of transfer from remote server
+        const transferInfo =
+          await this.remoteOutboundService.fetchRemoteTransferInfo(transfer);
+
+        let fetchedSize: number = 0;
+        // loop to fetch and save chunks
+        for (const chunkId of transferInfo.chunks) {
+          const chunkData =
+            await this.remoteOutboundService.fetchRemoteTransferChunk(
+              transfer,
+              chunkId,
+            );
+
+          const chunkSize = await this.transferChunkService.saveChunk(
+            transfer.id,
+            chunkData,
+          );
+
+          // check if the fetched size exceeds the originally indicated transfer size
+          fetchedSize += chunkSize;
+          if (fetchedSize > Number(transfer.size)) {
+            this.logger.error(
+              `Fetched size ${fetchedSize} exceeds originally indicated transfer size ${transfer.size}`,
+            );
+            throw new Error(
+              `Fetched size ${fetchedSize} exceeds originally indicated transfer size ${transfer.size}`,
+            );
+          }
+        }
+
         await this.setTransferStatus(transfer, TransferStatus.RETRIEVED);
+        // inform remote server that transfer has been retrieved
+        await this.remoteOutboundService.informRemoteTransferRetrieved(
+          transfer,
+        );
       }
     } catch (error) {
       this.logger.error(
@@ -363,6 +401,9 @@ export class TransferService {
         LogInfo.TRANSFER_RETRIEVED_FAILED,
         transfer.receiver.id,
       );
+      // delete the already fetched chunks
+      await this.transferChunkService.deleteTransferChunks(transfer.id);
+      throw new InternalServerErrorException('Error fetching remote transfer');
     }
   }
 
@@ -488,5 +529,36 @@ export class TransferService {
         .withRepository(this.fileTransferRepository)
         .delete(transfer);
     });
+  }
+
+  /**
+   * Expire all active transfers for a user when their public key changes
+   * @param userId
+   */
+  async expireTransfersForUser(userId: number): Promise<number> {
+    this.logger.log(`Expiring transfers for user ${userId} due to key change`);
+
+    const activeStatuses = [
+      TransferStatus.SENT,
+      TransferStatus.ACCEPTED,
+      TransferStatus.RETRIEVED,
+    ];
+
+    const transfersToExpire = await this.fileTransferRepository.find({
+      where: {
+        receiver: { id: userId },
+        status: In(activeStatuses),
+      },
+    });
+
+    this.logger.debug(
+      `Found ${transfersToExpire.length} transfers to expire for user ${userId}`,
+    );
+
+    for (const transfer of transfersToExpire) {
+      await this.expireLocalTransfer(transfer);
+    }
+
+    return transfersToExpire.length;
   }
 }
