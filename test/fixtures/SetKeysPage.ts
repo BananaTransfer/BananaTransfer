@@ -1,55 +1,56 @@
 import CommonPage from '@test/fixtures/CommonPage';
-import { Page, expect } from '@playwright/test';
+import { Page, Locator, expect } from '@playwright/test';
 
 export default class SetKeysPage extends CommonPage {
-  constructor(page: Page) {
-    super(page, '/user/set-keys');
-  }
-
   // Buttons
-  get generateKeyPairBtn() {
-    return this.PAGE.locator('#generateKeyPairBtn');
-  }
-  get generateMasterPasswordBtn() {
-    return this.PAGE.locator('#generateMasterPasswordBtn');
-  }
-  get encryptAndSaveBtn() {
-    return this.PAGE.locator('#encryptAndSaveBtn');
-  }
+  private generateKeyPairBtn: Locator;
+  private generateMasterPasswordBtn: Locator;
+  private encryptAndSaveBtn: Locator;
 
   // Fields
-  get publicKeyHashField() {
-    return this.PAGE.locator('#publicKeyHashField');
-  }
-  get masterPasswordField() {
-    return this.PAGE.locator('#masterPasswordField');
-  }
+  private publicKeyHashField: Locator;
+  private masterPasswordField: Locator;
 
   // Modals (master password modal)
-  get masterPasswordModal() {
-    return this.PAGE.locator('#masterPasswordModal');
-  }
-  get modalMasterPasswordInput() {
-    return this.PAGE.locator('#modalMasterPasswordInput');
-  }
-  get modalMasterPasswordConfirmBtn() {
-    return this.PAGE.locator('#modalMasterPasswordConfirmBtn');
-  }
+  private masterPasswordModal: Locator;
+  private modalMasterPasswordInput: Locator;
+  private modalMasterPasswordConfirmBtn: Locator;
 
   // Modals (user password modal)
-  get userPasswordModal() {
-    return this.PAGE.locator('#userPasswordModal');
-  }
-  get modalUserPasswordInput() {
-    return this.PAGE.locator('#modalUserPasswordInput');
-  }
-  get modalUserPasswordConfirmBtn() {
-    return this.PAGE.locator('#modalUserPasswordConfirmBtn');
-  }
+  private userPasswordModal: Locator;
+  private modalUserPasswordInput: Locator;
+  private modalUserPasswordConfirmBtn: Locator;
 
   // Error field
-  get setKeyError() {
-    return this.PAGE.locator('#setKeyError');
+  private setKeyError: Locator;
+
+  constructor(page: Page) {
+    super(page, '/user/set-keys');
+    // Buttons
+    this.generateKeyPairBtn = this.PAGE.locator('#generateKeyPairBtn');
+    this.generateMasterPasswordBtn = this.PAGE.locator(
+      '#generateMasterPasswordBtn',
+    );
+    this.encryptAndSaveBtn = this.PAGE.locator('#encryptAndSaveBtn');
+    // Fields
+    this.publicKeyHashField = this.PAGE.locator('#publicKeyHashField');
+    this.masterPasswordField = this.PAGE.locator('#masterPasswordField');
+    // Modals (master password modal)
+    this.masterPasswordModal = this.PAGE.locator('#masterPasswordModal');
+    this.modalMasterPasswordInput = this.PAGE.locator(
+      '#modalMasterPasswordInput',
+    );
+    this.modalMasterPasswordConfirmBtn = this.PAGE.locator(
+      '#modalMasterPasswordConfirmBtn',
+    );
+    // Modals (user password modal)
+    this.userPasswordModal = this.PAGE.locator('#userPasswordModal');
+    this.modalUserPasswordInput = this.PAGE.locator('#modalUserPasswordInput');
+    this.modalUserPasswordConfirmBtn = this.PAGE.locator(
+      '#modalUserPasswordConfirmBtn',
+    );
+    // Error field
+    this.setKeyError = this.PAGE.locator('#setKeyError');
   }
 
   // Actions

@@ -1,4 +1,4 @@
-import { Page } from '@playwright/test';
+import { Page, Locator } from '@playwright/test';
 import CommonPage from '@test/fixtures/CommonPage';
 
 export interface ChangePasswordParams {
@@ -8,15 +8,20 @@ export interface ChangePasswordParams {
 }
 
 export default class ChangePasswordPage extends CommonPage {
+  private currentPasswordInput: Locator;
+  private newPasswordInput: Locator;
+  private confirmPasswordInput: Locator;
+  private submitButton: Locator;
+  private errorAlert: Locator;
+
   constructor(page: Page) {
     super(page, '/user/change-password');
+    this.currentPasswordInput = this.PAGE.locator('#currentPassword');
+    this.newPasswordInput = this.PAGE.locator('#password');
+    this.confirmPasswordInput = this.PAGE.locator('#confirmPassword');
+    this.submitButton = this.PAGE.locator('button[type="submit"]');
+    this.errorAlert = this.PAGE.locator('.alert-danger');
   }
-
-  public currentPasswordInput = this.PAGE.locator('#currentPassword');
-  public newPasswordInput = this.PAGE.locator('#password');
-  public confirmPasswordInput = this.PAGE.locator('#confirmPassword');
-  public submitButton = this.PAGE.locator('button[type="submit"]');
-  public errorAlert = this.PAGE.locator('.alert-danger');
 
   async setCurrentPassword(password: string) {
     await this.currentPasswordInput.fill(password);

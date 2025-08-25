@@ -2,42 +2,31 @@ import CommonPage from '@test/fixtures/CommonPage';
 import { Page, Locator, expect } from '@playwright/test';
 
 export default class SettingsPage extends CommonPage {
+  private changePasswordBtn: Locator;
+  private setKeysBtn: Locator;
+  private logoutBtn: Locator;
+  private userInfoBlock: Locator;
+  private successAlert: Locator;
+  private errorAlert: Locator;
+  private userInfoSection: Locator;
+  private accountDatesSection: Locator;
+
   constructor(page: Page) {
     super(page, '/user');
-  }
-
-  get changePasswordBtn(): Locator {
-    return this.PAGE.locator(
+    this.changePasswordBtn = this.PAGE.locator(
       'a[href="/user/change-password"], #changePasswordBtn',
     );
-  }
-
-  get setKeysBtn(): Locator {
-    return this.PAGE.locator('a[href="/user/set-keys"], #setKeysBtn');
-  }
-
-  get logoutBtn(): Locator {
-    return this.PAGE.locator('a[href="/logout"], #logoutBtn');
-  }
-
-  get userInfoBlock(): Locator {
-    return this.PAGE.locator('#userInfo, .user-info');
-  }
-
-  get successAlert(): Locator {
-    return this.PAGE.locator('.alert-success');
-  }
-
-  get errorAlert(): Locator {
-    return this.PAGE.locator('.alert-danger');
-  }
-
-  get userInfoSection(): Locator {
-    return this.PAGE.locator('#userInfo, .user-info');
-  }
-
-  get accountDatesSection(): Locator {
-    return this.PAGE.locator('#accountDates, .account-dates');
+    this.setKeysBtn = this.PAGE.locator(
+      'a[href="/user/set-keys"], #setKeysBtn',
+    );
+    this.logoutBtn = this.PAGE.locator('a[href="/logout"], #logoutBtn');
+    this.userInfoBlock = this.PAGE.locator('#userInfo, .user-info');
+    this.successAlert = this.PAGE.locator('.alert-success');
+    this.errorAlert = this.PAGE.locator('.alert-danger');
+    this.userInfoSection = this.PAGE.locator('#userInfo, .user-info');
+    this.accountDatesSection = this.PAGE.locator(
+      '#accountDates, .account-dates',
+    );
   }
 
   async gotoChangePassword(): Promise<void> {

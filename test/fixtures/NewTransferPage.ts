@@ -1,4 +1,4 @@
-import { Page } from '@playwright/test';
+import { Page, Locator } from '@playwright/test';
 import CommonPage from '@test/fixtures/CommonPage';
 
 export interface NewTransferParams {
@@ -8,17 +8,24 @@ export interface NewTransferParams {
 }
 
 export default class NewTransferPage extends CommonPage {
+  private recipientInput: Locator;
+  private subjectInput: Locator;
+  private fileInput: Locator;
+  private sendButton: Locator;
+  private publicKeyHashField: Locator;
+  private recipientKeyError: Locator;
+  private sendError: Locator;
+
   constructor(page: Page) {
     super(page, '/transfer/new');
+    this.recipientInput = this.PAGE.locator('#recipient');
+    this.subjectInput = this.PAGE.locator('#subject');
+    this.fileInput = this.PAGE.locator('#fileInput');
+    this.sendButton = this.PAGE.locator('button[type="submit"]');
+    this.publicKeyHashField = this.PAGE.locator('#publicKeyHashField');
+    this.recipientKeyError = this.PAGE.locator('#recipientKeyNotFoundError');
+    this.sendError = this.PAGE.locator('#sendError');
   }
-
-  public recipientInput = this.PAGE.locator('#recipient');
-  public subjectInput = this.PAGE.locator('#subject');
-  public fileInput = this.PAGE.locator('#fileInput');
-  public sendButton = this.PAGE.locator('button[type="submit"]');
-  public publicKeyHashField = this.PAGE.locator('#publicKeyHashField');
-  public recipientKeyError = this.PAGE.locator('#recipientKeyNotFoundError');
-  public sendError = this.PAGE.locator('#sendError');
 
   async setRecipient(recipient: string) {
     await this.recipientInput.fill(recipient);
