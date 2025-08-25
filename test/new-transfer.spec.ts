@@ -5,7 +5,7 @@ import fs from 'fs';
 
 // Utility: ensure a file exists for upload
 // Change to a valid path to a file on your system you want to test with
-const TEST_FILE_PATH = 'C:/Users/dokip/Downloads/logo.png';
+const TEST_FILE_PATH = './test/resources/testfile.txt';
 if (!fs.existsSync(TEST_FILE_PATH)) {
   fs.writeFileSync(TEST_FILE_PATH, 'This is a test file for transfer.');
 }
@@ -17,6 +17,7 @@ test('full transfer flow: register, set keys, send to self, accept, download, lo
   setKeysPage,
   transferListPage,
   newTransferPage,
+  context,
 }) => {
   // 1. Arrive at BananaTransfer
   await page.goto('http://localhost:3000/');
@@ -115,4 +116,13 @@ test('full transfer flow: register, set keys, send to self, accept, download, lo
   // Submit modal form (assume button text "Download" in modal)
   const modalDownloadBtn = page.getByRole('button', { name: /^Confirm$/i });
   await modalDownloadBtn.click();
+
+  // Logout
+  await transferListPage.logout();
+  await expect(page).toHaveURL(loginPage.URL);
+  await expect(page.locator('#username')).toBeVisible();
+
+  // Assert JWT/session cookie is cleared
+  const cookies = await context.cookies();
+  expect(cookies.some((cookie) => cookie.name === 'jwt')).toBeFalsy();
 });
