@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { Repository } from 'typeorm';
 
 import { RecipientService } from '@user/services/recipient.service';
-import { RemoteQueryService } from '@remote/services/remoteQuery.service';
+import { RemoteOutboundService } from '@remote/services/remoteOutbound.service';
 import { UserService } from '@user/services/user.service';
 import { RemoteUserService } from '@user/services/remoteUser.service';
 import { HashKeyService } from '@user/services/hashKey.service';
@@ -26,7 +26,7 @@ describe('RecipientService', () => {
         RecipientService,
         ConfigService,
         {
-          provide: RemoteQueryService,
+          provide: RemoteOutboundService,
           useValue: {
             // mock methods as needed
             someMethod: jest.fn(),

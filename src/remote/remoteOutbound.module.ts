@@ -1,21 +1,17 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { Resolver } from 'dns/promises';
 
-import { UserModule } from '@user/user.module';
-import { TransferModule } from '@transfer/transfer.module';
-import { RemoteController } from '@remote/controllers/remote.controller';
 import {
   DevDnsService,
   DnsService,
   ProductionDnsService,
 } from '@remote/services/dns.service';
-import { RemoteInboundService } from './services/remoteInbound.service';
-import { RemoteQueryService } from '@remote/services/remoteQuery.service';
+import { RemoteOutboundService } from '@remote/services/remoteOutbound.service';
 import { ConfigService } from '@nestjs/config';
 
 @Module({
-  imports: [forwardRef(() => UserModule), forwardRef(() => TransferModule)],
-  controllers: [RemoteController],
+  imports: [],
+  controllers: [],
   providers: [
     {
       provide: Resolver,
@@ -34,9 +30,8 @@ import { ConfigService } from '@nestjs/config';
       },
       inject: [ConfigService, Resolver],
     },
-    RemoteInboundService,
-    RemoteQueryService,
+    RemoteOutboundService,
   ],
-  exports: [RemoteQueryService],
+  exports: [RemoteOutboundService],
 })
-export class RemoteModule {}
+export class RemoteOutboundModule {}
