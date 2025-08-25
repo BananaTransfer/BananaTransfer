@@ -3,27 +3,23 @@ import {
   IsEmail,
   IsNotEmpty,
   IsLowercase,
-  MaxLength,
-  MinLength,
   IsString,
+  Length,
 } from 'class-validator';
 
 export class RegisterDto {
   @IsLowercase()
   @IsAlphanumeric()
-  @IsNotEmpty()
-  @MinLength(4)
-  @MaxLength(32)
+  @Length(4, 32)
   username: string;
 
   @IsEmail()
   @IsLowercase()
-  @IsNotEmpty()
+  @Length(3, 256)
   email: string;
 
   @IsString()
   @IsNotEmpty()
-  @MinLength(12)
-  @MaxLength(256)
+  @Length(12, 256)
   password: string;
 }
