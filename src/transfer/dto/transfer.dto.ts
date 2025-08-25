@@ -4,6 +4,7 @@ export class TransferLogDto {
   id: number;
   info: LogInfo;
   created_at: Date;
+  user: string;
 }
 
 export class TransferDto {
@@ -13,7 +14,7 @@ export class TransferDto {
   created_at: Date;
   filename: string;
   subject: string;
-  chunks: number[];
+  chunks?: number[];
   senderId: number;
   receiverId: number;
   senderAddress: string;
