@@ -24,7 +24,7 @@ import { TransferModule } from '@transfer/transfer.module';
     JwtCoreModule,
     RemoteOutboundModule,
     TypeOrmModule.forFeature([User, LocalUser, RemoteUser, TrustedRecipient]),
-    forwardRef(() => TransferModule),
+    TransferModule,
   ],
   controllers: [UserController],
   providers: [
