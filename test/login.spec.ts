@@ -105,8 +105,8 @@ test('registration, set keys, go to transfer list, and logout', async ({
 
   // Logout
   await transferListPage.logout();
-  await expect(page).toHaveURL(loginPage.URL, { timeout: 5000 });
-  await expect(page.locator('#username')).toBeVisible({ timeout: 5000 });
+  await expect(page).toHaveURL(loginPage.URL);
+  await expect(page.locator('#username')).toBeVisible();
 
   // Assert JWT/session cookie is cleared
   const cookies = await context.cookies();
