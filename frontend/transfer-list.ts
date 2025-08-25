@@ -89,6 +89,10 @@ function acceptTransfer(id: string) {
 }
 
 function rejectTransfer(id: string) {
+  if (!confirm('Are you sure you want to reject this transfer ?')) {
+    return;
+  }
+
   callApi('POST', `/transfer/refuse/${id}`, {})
     .then(() => {
       console.log(`Rejected transfer with ID: ${id}`);
@@ -119,6 +123,10 @@ async function downloadTransfer(id: string) {
 }
 
 function deleteTransfer(id: string) {
+  if (!confirm('Are you sure you want to delete this transfer?')) {
+    return;
+  }
+
   callApi('DELETE', `/transfer/delete/${id}`, {})
     .then(() => {
       console.log(`Deleted transfer with ID: ${id}`);
