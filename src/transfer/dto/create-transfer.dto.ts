@@ -10,7 +10,7 @@ import {
 
 export class CreateTransferDto {
   @IsBase64()
-  @IsByteLength(256, 351)
+  @IsByteLength(600, 700)
   symmetric_key_encrypted: string;
 
   @IsString()
