@@ -3,14 +3,13 @@ import {
   IsString,
   IsEmail,
   IsBase64,
-  IsByteLength,
   Length,
   IsLowercase,
 } from 'class-validator';
 
 export class CreateTransferDto {
   @IsBase64()
-  @IsByteLength(600, 700)
+  @Length(684, 684)
   symmetric_key_encrypted: string;
 
   @IsString()

@@ -3,16 +3,18 @@ import {
   IsBoolean,
   IsByteLength,
   IsNumber,
+  IsString,
+  Length,
   Min,
 } from 'class-validator';
 
 export class ChunkDto {
-  @IsBase64()
+  @IsString() // IsBase64 does not handle huge input well
   @IsByteLength(1, 7182746) // frontend generate 5MB chunk, base64 has at most a 37% overhead
   encryptedData: string;
 
   @IsBase64()
-  @IsByteLength(12, 17) // IV is 12byte length in frontend, base64 has at most a 37% overhead
+  @Length(16, 16)
   iv: string;
 
   @IsNumber()

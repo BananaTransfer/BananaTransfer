@@ -5,7 +5,6 @@ import {
   IsEmail,
   IsLowercase,
   IsBase64,
-  IsByteLength,
   Length,
   Matches,
 } from 'class-validator';
@@ -15,7 +14,7 @@ export class RemoteTransferDto {
   id: string;
 
   @IsBase64()
-  @IsByteLength(600, 700)
+  @Length(684, 684)
   symmetric_key_encrypted: string;
 
   @IsString()
