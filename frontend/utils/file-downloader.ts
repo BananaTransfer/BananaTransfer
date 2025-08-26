@@ -1,6 +1,6 @@
 import { FileEncryption, StreamChunk } from '../crypto/encryption.js';
 import { KeyManager } from '../crypto/key-manager.js';
-import { callApi } from '../utils/common.js';
+import { callApi, createProgressBarHandler } from '../utils/common.js';
 
 interface ChunkData {
   chunkIndex: number;
@@ -27,13 +27,34 @@ export class FileDownloader {
   }
 
   async downloadAndDecrypt(transfer: Transfer): Promise<Uint8Array> {
+    const progressBar = createProgressBarHandler('progress-bar-' + transfer.id);
+    const btnGroupList = document.getElementsByClassName(
+      'action-' + transfer.id,
+    ) as HTMLCollectionOf<HTMLButtonElement>;
+
+    const setBtnGroupDisplay = (display: string | null) => {
+      for (const btn of btnGroupList) {
+        btn.style.setProperty('display', display, 'important');
+      }
+    };
+
     try {
+      progressBar.setVisible(true);
+      progressBar.setProgress(0);
+      setBtnGroupDisplay('none');
+
+      let progress = 0;
+      const chunkCount = transfer.chunks.length;
+
       const chunks: ChunkData[] = await Promise.all(
         transfer.chunks.map((chunk) => {
           return callApi<void, ChunkData>(
             'GET',
             `/transfer/${transfer.id}/chunk/${chunk}`,
-          );
+          ).finally(() => {
+            progress++;
+            progressBar.setProgress((progress / chunkCount) * 100);
+          });
         }),
       );
 
@@ -74,6 +95,9 @@ export class FileDownloader {
       const message = error instanceof Error ? error.message : 'Unknown error';
       console.error(`Download and decryption failed: ${message}`);
       throw error;
+    } finally {
+      progressBar.setVisible(false);
+      setBtnGroupDisplay(null);
     }
   }
 

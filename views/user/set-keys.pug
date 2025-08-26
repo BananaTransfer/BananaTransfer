@@ -63,8 +63,8 @@ block content
       div.text-muted.mt-1
         | Your private key will be encrypted with your master-password and stored on your organizations server.
 
-  include ../modals/master-password.pug
-  include ../modals/user-password.pug
+  include ../components/modals/master-password.pug
+  include ../components/modals/user-password.pug
 
   script(type="module").
     import { generatedKeyPair, generateKeyPair, generateMasterPassword, encryptAndSaveKey } from '/js/set-keys.js';
