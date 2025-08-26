@@ -62,14 +62,14 @@ test('complete registration and set keys flow', async ({
 
   // Encrypt and save keys (this triggers two modals)
   // Get master password from the field, use user password from registration
-  const masterPassword = await setKeysPage.masterPasswordField.inputValue();
+  const masterPassword = await setKeysPage.getMasterPassword();
   await setKeysPage.encryptAndSaveKeys({
     masterPassword,
     userPassword: credentials.password,
   });
 
   // After saving, should be redirected to user settings with success query
-  await expect(page).toHaveURL(/\/user\?setKeysSuccess=true/);
+  await expect(page).toHaveURL('/user?setKeysSuccess=true');
 });
 
 test('registration, set keys, go to transfer list, and logout', async ({
@@ -93,7 +93,7 @@ test('registration, set keys, go to transfer list, and logout', async ({
   await expect(page).toHaveURL(setKeysPage.URL);
   await setKeysPage.generateKeyPair();
   await setKeysPage.generateMasterPassword();
-  const masterPassword = await setKeysPage.masterPasswordField.inputValue();
+  const masterPassword = await setKeysPage.getMasterPassword();
   await setKeysPage.encryptAndSaveKeys({
     masterPassword,
     userPassword: credentials.password,
