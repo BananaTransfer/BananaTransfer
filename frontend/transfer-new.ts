@@ -81,7 +81,7 @@ class TransferNewPage {
       sendButton: document.querySelector(
         'button[type="submit"]',
       ) as HTMLButtonElement,
-      progressBar: createProgressBarHandler('progress-bar'),
+      progressBar: createProgressBarHandler('upload-progress-bar'),
       sendError: document.getElementById('sendError') as HTMLElement,
     };
     this.updateSendButtonState();

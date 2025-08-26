@@ -56,22 +56,28 @@ export class FileDownloader {
     return await callApi('GET', `/transfer/${transferId}`);
   }
 
-  async downloadAndDecrypt(transfer: Transfer): Promise<Uint8Array> {
-    const progressBar = createProgressBarHandler('progress-bar-' + transfer.id);
+  private getBtnGroupDisplayHandler(
+    transferId: string,
+  ): (visible: boolean) => void {
     const btnGroupList = document.getElementsByClassName(
-      'action-' + transfer.id,
+      'action-' + transferId,
     ) as HTMLCollectionOf<HTMLButtonElement>;
 
-    const setBtnGroupDisplay = (display: string | null) => {
+    return (visible: boolean) => {
       for (const btn of btnGroupList) {
-        btn.style.setProperty('display', display, 'important');
+        btn.style.setProperty('display', visible ? null : 'none', 'important');
       }
     };
+  }
+
+  async downloadAndDecrypt(transfer: Transfer): Promise<Uint8Array> {
+    const progressBar = createProgressBarHandler('progress-bar-' + transfer.id);
+    const setBtnGroupDisplay = this.getBtnGroupDisplayHandler(transfer.id);
 
     try {
       progressBar.setVisible(true);
       progressBar.setProgress(0);
-      setBtnGroupDisplay('none');
+      setBtnGroupDisplay(false);
 
       let progress = 0;
       const chunkCount = transfer.chunks.length;
@@ -127,7 +133,7 @@ export class FileDownloader {
       throw error;
     } finally {
       progressBar.setVisible(false);
-      setBtnGroupDisplay(null);
+      setBtnGroupDisplay(true);
     }
   }
 
@@ -171,6 +177,9 @@ export class FileDownloader {
   }
 
   private async downloadWithFileSystemAPI(transfer: Transfer): Promise<void> {
+    const progressBar = createProgressBarHandler('progress-bar-' + transfer.id);
+    const setBtnGroupDisplay = this.getBtnGroupDisplayHandler(transfer.id);
+
     try {
       console.log('Using File System Access API for streaming download');
 
@@ -203,6 +212,10 @@ export class FileDownloader {
         `Streaming ${sortedChunkIndices.length} chunks directly to file`,
       );
 
+      progressBar.setVisible(true);
+      progressBar.setProgress(0);
+      setBtnGroupDisplay(false);
+
       // Process chunks sequentially
       for (let i = 0; i < sortedChunkIndices.length; i++) {
         const chunkIndex = sortedChunkIndices[i];
@@ -225,6 +238,8 @@ export class FileDownloader {
 
         // Stream directly to file
         await writable.write(decryptedChunk);
+
+        progressBar.setProgress((i / sortedChunkIndices.length) * 100);
       }
 
       await writable.close();
@@ -232,6 +247,9 @@ export class FileDownloader {
     } catch (error) {
       console.error('File System API download failed:', error);
       throw error;
+    } finally {
+      progressBar.setVisible(false);
+      setBtnGroupDisplay(true);
     }
   }
 
