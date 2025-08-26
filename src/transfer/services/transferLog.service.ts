@@ -18,6 +18,7 @@ export class TransferLogService {
     return await this.transferLogRepository.find({
       where: { fileTransfer: { id: transfer.id } },
       order: { created_at: 'ASC' },
+      relations: ['user'],
     });
   }
 

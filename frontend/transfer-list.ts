@@ -13,7 +13,12 @@ async function viewTransferDetails(id: string) {
       subject: string;
       created_at: string;
       size?: string;
-      logs: Array<{ id: number; info: string; created_at: string }>;
+      logs: Array<{
+        id: number;
+        info: string;
+        created_at: string;
+        user: string;
+      }>;
     };
 
     document.getElementById('modalFilename')!.textContent =
@@ -37,6 +42,7 @@ async function viewTransferDetails(id: string) {
         row.innerHTML = `
           <td>${formatLogInfo(log.info)}</td>
           <td>${new Date(log.created_at).toLocaleString()}</td>
+          <td>${log.user}</td>
         `;
         logsTableBody.appendChild(row);
       });
@@ -89,6 +95,10 @@ function acceptTransfer(id: string) {
 }
 
 function rejectTransfer(id: string) {
+  if (!confirm('Are you sure you want to reject this transfer ?')) {
+    return;
+  }
+
   callApi('POST', `/transfer/refuse/${id}`, {})
     .then(() => {
       console.log(`Rejected transfer with ID: ${id}`);
@@ -119,6 +129,10 @@ async function downloadTransfer(id: string) {
 }
 
 function deleteTransfer(id: string) {
+  if (!confirm('Are you sure you want to delete this transfer?')) {
+    return;
+  }
+
   callApi('DELETE', `/transfer/delete/${id}`, {})
     .then(() => {
       console.log(`Deleted transfer with ID: ${id}`);
@@ -138,6 +152,7 @@ export function setupListPage() {
   const retrieveButtons = document.querySelectorAll('.retrieve-btn');
   const downloadButtons = document.querySelectorAll('.download-btn');
   const deleteButtons = document.querySelectorAll('.delete-btn');
+  const sizeElements = document.querySelectorAll('.size');
 
   viewDetails.forEach((button) => {
     button.addEventListener('click', () => {
@@ -193,5 +208,11 @@ export function setupListPage() {
       if (!id) return;
       deleteTransfer(id);
     });
+  });
+
+  sizeElements.forEach((element) => {
+    const size = element.getAttribute('data-size');
+    if (!size) return;
+    element.textContent = formatFileSize(Number(size));
   });
 }

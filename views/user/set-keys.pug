@@ -63,15 +63,18 @@ block content
       div.text-muted.mt-1
         | Your private key will be encrypted with your master-password and stored on your organizations server.
 
-  include ../modals/master-password.pug
-  include ../modals/user-password.pug
+  include ../components/modals/master-password.pug
+  include ../components/modals/user-password.pug
 
   script(type="module").
     import { generatedKeyPair, generateKeyPair, generateMasterPassword, encryptAndSaveKey } from '/js/set-keys.js';
     import { copyToClipboard } from '/js/utils/common.js';
+
+    const isFirstTime = !{!user.public_key};
+
     document.getElementById('generateKeyPairBtn').addEventListener('click', generateKeyPair);
     document.getElementById('generateMasterPasswordBtn').addEventListener('click', generateMasterPassword);
-    document.getElementById('encryptAndSaveBtn').addEventListener('click', encryptAndSaveKey);
+    document.getElementById('encryptAndSaveBtn').addEventListener('click', () => encryptAndSaveKey(isFirstTime));
     document.getElementById('copyPublicKeyHashBtn').addEventListener('click', () => copyToClipboard(document.getElementById('publicKeyHashField'), document.getElementById('copyPublicKeyHashBtn')));
     document.getElementById('copyMasterPasswordBtn').addEventListener('click', () => copyToClipboard(document.getElementById('masterPasswordField'), document.getElementById('copyMasterPasswordBtn')));
 

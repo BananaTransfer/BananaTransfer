@@ -25,6 +25,11 @@ export interface TransferDetailsResponse {
   }>;
 }
 
+export interface ProgressBarHandler {
+  setVisible(visible: boolean): void;
+  setProgress(progress: number): void;
+}
+
 export function enforceLowerCase(input: HTMLInputElement) {
   // get current cursor position in the field
   // the property selectionStart isn't supported in some browser for fields with type email
@@ -123,6 +128,9 @@ export async function callApi<R, T>(
   const response = await fetch(path, request);
 
   if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+      location.reload();
+    }
     throw new Error(response.statusText);
   }
 
@@ -139,4 +147,45 @@ export function formatFileSize(bytes: number): string {
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+/**
+ * There may be multiple progress bar on the same page to update at once (device + desktop html).
+ * So it use a class to find them all
+ * @param elementClass
+ */
+export function createProgressBarHandler(
+  elementClass: string,
+): ProgressBarHandler {
+  const elements = document.getElementsByClassName(
+    elementClass,
+  ) as HTMLCollectionOf<HTMLElement>;
+
+  const setVisible = (visible: boolean) => {
+    for (const element of elements) {
+      element.style.display = visible ? 'block' : 'none';
+    }
+  };
+
+  const setProgress = (percentage: number) => {
+    const value = percentage.toFixed(2) + '%';
+
+    for (const element of elements) {
+      const progressBar = element
+        .getElementsByClassName('progress-bar')
+        .item(0)!;
+
+      const progressText = element
+        .getElementsByClassName('progress-text')
+        .item(0)!;
+
+      (progressBar as HTMLElement).style.width = value;
+      progressText.textContent = value;
+    }
+  };
+
+  return {
+    setVisible,
+    setProgress,
+  };
 }

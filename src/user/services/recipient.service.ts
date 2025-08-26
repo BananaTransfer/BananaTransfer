@@ -19,8 +19,8 @@ import { TrustedRecipient } from '@database/entities/trusted-recipient.entity';
 
 @Injectable()
 export class RecipientService {
+  private readonly logger = new Logger(RecipientService.name);
   private readonly envDomain: string;
-  private readonly logger: Logger;
 
   constructor(
     private readonly configService: ConfigService,
@@ -31,7 +31,6 @@ export class RecipientService {
     @InjectRepository(TrustedRecipient)
     private trustedRecipientRepository: Repository<TrustedRecipient>,
   ) {
-    this.logger = new Logger(RecipientService.name);
     this.envDomain = this.configService.getOrThrow<string>('DOMAIN');
   }
 
@@ -39,6 +38,9 @@ export class RecipientService {
     const splitRecipient = recipient.split('@');
 
     if (splitRecipient.length > 2) {
+      this.logger.warn(
+        `Malformed recipient: ${recipient}, contains multiple @`,
+      );
       throw new MalformedRecipientException('Recipient contains multiple @');
     }
 
@@ -50,10 +52,12 @@ export class RecipientService {
     }
 
     if (username.length == 0) {
+      this.logger.warn(`Malformed recipient: ${recipient}, empty username`);
       throw new MalformedRecipientException('Empty username provided');
     }
 
     if (domain.length == 0) {
+      this.logger.warn(`Malformed recipient: ${recipient}, empty domain`);
       throw new MalformedRecipientException('Empty domain provided');
     }
 
@@ -159,6 +163,9 @@ export class RecipientService {
     recipientUser: User,
     publicKeyHash: string,
   ): Promise<void> {
+    this.logger.log(
+      `Adding trusted recipient: ${currentUser.username} > ${recipientUser.username}`,
+    );
     const newTrustedRecipient = this.trustedRecipientRepository.create({
       localUser: currentUser,
       user: recipientUser,
@@ -168,6 +175,7 @@ export class RecipientService {
   }
 
   public async getKnownRecipients(userId: number): Promise<string[]> {
+    this.logger.debug(`Getting known recipients for user ${userId}`);
     const trustedRecipients = await this.trustedRecipientRepository.find({
       where: { localUser: { id: userId } },
       relations: ['user', 'localUser'],

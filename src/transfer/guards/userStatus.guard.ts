@@ -1,20 +1,23 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
-import { UserService } from '@user/services/user.service';
-import { AuthenticatedRequest } from '@auth/types/authenticated-request.interface';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { Response } from 'express';
-
+import { AuthenticatedRequest } from '@auth/types/authenticated-request.type';
 @Injectable()
 export class UserStatusGuard implements CanActivate {
-  constructor(private readonly userService: UserService) {}
+  private readonly logger = new Logger(UserStatusGuard.name);
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
+  canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
     const response = context.switchToHttp().getResponse<Response>();
 
-    const userId = request.user.id;
-    const user = await this.userService.getCurrentUser(userId);
-
-    if (!user.private_key_encrypted) {
+    if (request.cookies.noKeysSet) {
+      this.logger.log(
+        `User ${request.user.username} (${request.user.id}) has not set up their keys yet. redirect to /user/set-keys`,
+      );
       response.redirect('/user/set-keys');
       return false;
     }

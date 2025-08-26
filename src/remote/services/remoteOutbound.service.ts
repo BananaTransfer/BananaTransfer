@@ -16,15 +16,14 @@ import { RemoteUser } from '@database/entities/remote-user.entity';
 
 @Injectable()
 export class RemoteOutboundService {
+  private readonly logger = new Logger(RemoteOutboundService.name);
   private readonly envDomain: string;
   private readonly nodeEnv?: string;
-  private readonly logger: Logger;
 
   constructor(
     private readonly configService: ConfigService,
     private readonly dnsService: DnsService,
   ) {
-    this.logger = new Logger(RemoteOutboundService.name);
     this.envDomain = this.configService.getOrThrow<string>('DOMAIN');
     this.nodeEnv = this.configService.get<string>('NODE_ENV');
   }
@@ -35,6 +34,7 @@ export class RemoteOutboundService {
     path: string,
     body?: R,
   ): Promise<T> {
+    this.logger.debug(`Calling remote API ${method} ${domain}/${path}`);
     const protocol = this.nodeEnv === 'dev' ? 'http' : 'https';
     const serverAddress = await this.dnsService.getServerAddress(domain);
     const url = `${protocol}://${serverAddress}/${path}`;
@@ -53,7 +53,7 @@ export class RemoteOutboundService {
     const response = await fetch(url, request);
 
     if (!response.ok) {
-      this.logger.error(
+      this.logger.warn(
         `Error calling remote API ${url}: ${response.status} ${response.statusText} ${await response.text()}`,
       );
       throw new Error(`Request failed with status ${response.status}`);
@@ -81,7 +81,7 @@ export class RemoteOutboundService {
   // inform remote server about new transfer
   async newRemoteTransfer(transfer: FileTransfer): Promise<void> {
     const recipient = transfer.receiver as RemoteUser;
-    this.logger.debug(
+    this.logger.log(
       `Creating new remote transfer ${transfer.id} for recipient ${recipient.username}@${recipient.domain}`,
     );
 
@@ -109,7 +109,7 @@ export class RemoteOutboundService {
     transfer: FileTransfer,
   ): Promise<TransferInfoDto> {
     const sender = transfer.sender as RemoteUser;
-    this.logger.debug(
+    this.logger.log(
       `Fetching remote transfer info ${transfer.id} of sender ${sender.username}@${sender.domain}`,
     );
 
@@ -143,10 +143,14 @@ export class RemoteOutboundService {
   // inform remote server that transfer has been retrieved
   async informRemoteTransferRetrieved(transfer: FileTransfer) {
     const sender = transfer.sender as RemoteUser;
-    await this.callRemoteApi<void, void>(
+    this.logger.debug(
+      `Informing remote server ${sender.domain} that transfer ${transfer.id} has been retrieved`,
+    );
+    const response = await this.callRemoteApi<void, { message: string }>(
       'POST',
       sender.domain,
       `remote/transfer/retrieved/${transfer.id}`,
     );
+    this.logger.log(`Answer from Remote ${sender.domain}: ${response.message}`);
   }
 }

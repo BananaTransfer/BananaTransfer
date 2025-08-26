@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 
 import { AuthService } from '@auth/services/auth.service';
 import { UserService } from '@user/services/user.service';
-import { CsrfRequest } from '@auth/types/csrf-request.interface';
+import { CsrfRequest } from '@auth/types/csrf-request.type';
 import { LoginDto } from '@auth/dto/login.dto';
 import { RegisterDto } from '@auth/dto/register.dto';
 

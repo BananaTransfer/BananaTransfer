@@ -8,7 +8,7 @@ import { TestBed } from '@suites/unit';
 import { UnauthorizedException } from '@nestjs/common';
 import { LocalUser } from '@database/entities/local-user.entity';
 import { UserStatus } from '@database/entities/enums';
-import { UserPayload } from '@auth/types/user-payload.interface';
+import { UserPayload } from '@auth/types/user-payload.type';
 import { PasswordService } from '@user/services/password.service';
 import { Response } from 'express';
 
@@ -30,7 +30,10 @@ describe('AuthService', () => {
     test('should forward the jwt token to the jwtService', async () => {
       // given
       const token = 'token';
-      const expectedResult: UserPayload = { id: 1, username: 'test' };
+      const expectedResult: UserPayload = {
+        id: 1,
+        username: 'test',
+      };
       jwtService.verifyAsync.mockResolvedValue(expectedResult);
 
       // when
