@@ -187,8 +187,11 @@ npm run lint
 # unit tests
 npm run test
 
-# e2e tests
+# e2e tests - console mode
 npm run test:e2e
+
+# e2e tests - ui mode
+npx playwright test --ui
 
 # test coverage
 npm run test:cov
