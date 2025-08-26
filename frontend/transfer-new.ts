@@ -124,7 +124,7 @@ class TransferNewPage {
       const files = event.dataTransfer?.files;
       if (files && files.length > 0) {
         this.formElements.fileInput.files = files;
-        this.handleFileSelection({ target: { files } } as any);
+        this.handleFileSelection({ target: { files } } as unknown as Event);
       }
     });
 

@@ -1,12 +1,10 @@
+import { InternalServerErrorException } from '@nestjs/common';
 import type { Mocked } from '@suites/doubles.jest';
 import { TestBed } from '@suites/unit';
 import { NOTFOUND, SERVFAIL, Resolver } from 'dns/promises';
-import {
-  DnsService,
-  InvalidDomainException,
-  ProductionDnsService,
-} from '@remote/services/dns.service';
-import { InternalServerErrorException } from '@nestjs/common';
+
+import { DnsService, ProductionDnsService } from '@remote/services/dns.service';
+import { InvalidDomainException } from '@remote/types/invalid-domain-exception.type';
 
 describe('DnsService', () => {
   let authService: DnsService;

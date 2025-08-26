@@ -29,6 +29,9 @@ export class TransferChunkService {
   }
 
   async saveChunk(transferId: string, chunkData: ChunkDto) {
+    this.logger.debug(
+      `Saving chunk ${chunkData.chunkIndex} of transfer ${transferId}`,
+    );
     const bucketData: BucketChunkData = {
       data: chunkData.encryptedData,
       iv: chunkData.iv,
@@ -41,6 +44,7 @@ export class TransferChunkService {
   }
 
   async fetchChunk(transferId: string, chunkId: number): Promise<ChunkDto> {
+    this.logger.debug(`Fetching chunk ${chunkId} of transfer ${transferId}`);
     const path = await this.bucketService.getFile(transferId + '/' + chunkId);
 
     try {

@@ -3,8 +3,8 @@ import { ConfigService } from '@nestjs/config';
 
 import { TransferService } from '@transfer/services/transfer.service';
 import { TransferChunkService } from '@transfer/services/transferChunk.service';
-import { RecipientService } from '@user/services/recipient.service';
 import { UserService } from '@user/services/user.service';
+import { RecipientService } from '@user/services/recipient.service';
 import { RemoteUserService } from '@user/services/remoteUser.service';
 
 import { TransferStatus } from '@database/entities/enums';
@@ -14,18 +14,17 @@ import { ChunkDto } from '@transfer/dto/chunk.dto';
 
 @Injectable()
 export class RemoteInboundService {
+  private readonly logger = new Logger(RemoteInboundService.name);
   private readonly envDomain: string;
-  private readonly logger: Logger;
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly recipientService: RecipientService,
     private readonly userService: UserService,
+    private readonly recipientService: RecipientService,
     private readonly remoteUserService: RemoteUserService,
     private readonly transferService: TransferService,
     private readonly transferChunkService: TransferChunkService,
   ) {
-    this.logger = new Logger(RemoteInboundService.name);
     this.envDomain = this.configService.getOrThrow<string>('DOMAIN');
   }
 
@@ -42,7 +41,7 @@ export class RemoteInboundService {
       remoteTransfer.senderAddress,
     );
     if (parsedSender.isLocal || parsedSender.domain !== domain) {
-      this.logger.error(
+      this.logger.warn(
         `Sender domain ${parsedSender.domain} does not match expected domain ${domain}`,
       );
       throw new Error(
@@ -54,7 +53,7 @@ export class RemoteInboundService {
       remoteTransfer.recipientAddress,
     );
     if (!parsedRecipient.isLocal || parsedRecipient.domain !== this.envDomain) {
-      this.logger.error(
+      this.logger.warn(
         `Recipient domain ${parsedRecipient.domain} does not match expected domain ${this.envDomain}`,
       );
       throw new Error(

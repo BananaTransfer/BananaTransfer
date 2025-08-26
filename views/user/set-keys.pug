@@ -69,9 +69,12 @@ block content
   script(type="module").
     import { generatedKeyPair, generateKeyPair, generateMasterPassword, encryptAndSaveKey } from '/js/set-keys.js';
     import { copyToClipboard } from '/js/utils/common.js';
+
+    const isFirstTime = !{!user.public_key};
+
     document.getElementById('generateKeyPairBtn').addEventListener('click', generateKeyPair);
     document.getElementById('generateMasterPasswordBtn').addEventListener('click', generateMasterPassword);
-    document.getElementById('encryptAndSaveBtn').addEventListener('click', encryptAndSaveKey);
+    document.getElementById('encryptAndSaveBtn').addEventListener('click', () => encryptAndSaveKey(isFirstTime));
     document.getElementById('copyPublicKeyHashBtn').addEventListener('click', () => copyToClipboard(document.getElementById('publicKeyHashField'), document.getElementById('copyPublicKeyHashBtn')));
     document.getElementById('copyMasterPasswordBtn').addEventListener('click', () => copyToClipboard(document.getElementById('masterPasswordField'), document.getElementById('copyMasterPasswordBtn')));
 

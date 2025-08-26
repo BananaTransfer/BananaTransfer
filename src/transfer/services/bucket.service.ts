@@ -1,4 +1,8 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   S3Client,
@@ -17,6 +21,7 @@ import { join } from 'path';
 
 @Injectable()
 export class BucketService {
+  private readonly logger = new Logger(BucketService.name);
   private readonly s3Client: S3Client;
   private readonly bucket: string;
 
@@ -51,6 +56,8 @@ export class BucketService {
         }),
       );
     } catch (error) {
+      this.logger.error('Failed to upload object to S3', error);
+
       throw new InternalServerErrorException(
         `Failed to upload object to S3: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
@@ -91,6 +98,7 @@ export class BucketService {
 
       return keys;
     } catch (error) {
+      this.logger.error('Failed to list files from S3', error);
       const message = (error as { message?: string })?.message;
 
       throw new InternalServerErrorException(
@@ -119,6 +127,7 @@ export class BucketService {
 
       return key;
     } catch (error: any) {
+      this.logger.error('Failed to upload file to S3', error);
       const message = (error as { message?: string })?.message;
 
       throw new InternalServerErrorException(
@@ -178,6 +187,7 @@ export class BucketService {
     } catch (error) {
       await rm(tmpDownloadDir, { recursive: true, force: true });
 
+      this.logger.error('Failed to download file from S3', error);
       const message = (error as { message?: string })?.message;
 
       throw new InternalServerErrorException(
@@ -199,6 +209,7 @@ export class BucketService {
         }),
       );
     } catch (error) {
+      this.logger.error('Failed to delete file from S3', error);
       const message = (error as { message?: string })?.message;
 
       throw new InternalServerErrorException(
@@ -216,7 +227,7 @@ export class BucketService {
       const result = await this.s3Client.send(new ListBucketsCommand({}));
       return !!result.Buckets;
     } catch (error) {
-      console.error('S3 connection error:', error);
+      this.logger.error('S3 connection error:', error);
       return false;
     }
   }

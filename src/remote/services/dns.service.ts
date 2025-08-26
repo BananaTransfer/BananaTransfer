@@ -1,12 +1,13 @@
 import {
-  HttpException,
   Injectable,
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Resolver, NOTFOUND } from 'dns/promises';
 import validator from 'validator';
-import { ConfigService } from '@nestjs/config';
+
+import { InvalidDomainException } from '@remote/types/invalid-domain-exception.type';
 
 export abstract class DnsService {
   /**
@@ -19,12 +20,11 @@ export abstract class DnsService {
 
 @Injectable()
 export class ProductionDnsService implements DnsService {
-  private readonly logger: Logger;
+  private readonly logger = new Logger(ProductionDnsService.name);
   private readonly resolver: Resolver;
 
   constructor(resolver: Resolver) {
     this.resolver = resolver;
-    this.logger = new Logger(ProductionDnsService.name);
   }
 
   private isFQDN(domain: string): boolean {
@@ -44,6 +44,9 @@ export class ProductionDnsService implements DnsService {
       const code = (err as { code: string }).code;
 
       if (code == NOTFOUND) {
+        this.logger.warn(
+          `No TXT record found for domain ${domain}. The domain may not be hosting a BananaTransfer server.`,
+        );
         throw new InvalidDomainException(
           'the provided domain is not hosting a bananantransfer server',
         );
@@ -62,7 +65,7 @@ export class ProductionDnsService implements DnsService {
    */
   public async getServerAddress(domain: string): Promise<string> {
     if (!this.isFQDN(domain)) {
-      this.logger.error(`${domain} is not a valid fQDN`);
+      this.logger.error(`The provided domain ${domain} is not a valid fQDN`);
       throw new InvalidDomainException('The provided domain is invalid.');
     }
 
@@ -74,6 +77,7 @@ export class ProductionDnsService implements DnsService {
       result[0].length != 1 ||
       !this.isFQDN(result[0][0])
     ) {
+      this.logger.warn(`The provided domain ${domain} is misconfigured`);
       throw new InvalidDomainException(
         `The provided domain ${domain} is misconfigured`,
       );
@@ -90,6 +94,7 @@ export class ProductionDnsService implements DnsService {
     const hostname = await this.getServerAddress(domain);
     const addresses = await this.resolver.resolve4(hostname);
     if (addresses.length === 0) {
+      this.logger.warn(`No IP addresses found for hostname ${hostname}`);
       throw new InvalidDomainException(
         `No IP addresses found for hostname ${hostname}`,
       );
@@ -99,11 +104,10 @@ export class ProductionDnsService implements DnsService {
 }
 
 export class DevDnsService implements DnsService {
-  private readonly logger: Logger;
+  private readonly logger = new Logger(DevDnsService.name);
   private readonly otherServer: string;
 
   constructor(private configService: ConfigService) {
-    this.logger = new Logger(DevDnsService.name);
     this.otherServer = this.configService.getOrThrow<string>('OTHER_SERVER');
   }
 
@@ -115,11 +119,5 @@ export class DevDnsService implements DnsService {
   getServerIpAddresses(): Promise<string[]> {
     this.logger.warn(`Using dev server ip address: 127.0.0.1`);
     return Promise.resolve(['127.0.0.1', '::1']);
-  }
-}
-
-export class InvalidDomainException extends HttpException {
-  constructor(message: string) {
-    super(message, 400);
   }
 }

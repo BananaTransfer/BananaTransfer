@@ -3,12 +3,18 @@ import LoginPage from '@test/fixtures/LoginPage';
 import RegisterPage from '@test/fixtures/RegisterPage';
 import TransferListPage from '@test/fixtures/TransferListPage';
 import SetKeysPage from '@test/fixtures/SetKeysPage';
+import SettingsPage from '@test/fixtures/SettingsPage';
+import ChangePasswordPage from '@test/fixtures/ChangePasswordPage';
+import NewTransferPage from '@test/fixtures/NewTransferPage';
 
 export const test = base.extend<{
   loginPage: LoginPage;
   registerPage: RegisterPage;
   transferListPage: TransferListPage;
   setKeysPage: SetKeysPage;
+  settingsPage: SettingsPage;
+  changePasswordPage: ChangePasswordPage;
+  newTransferPage: NewTransferPage;
 }>({
   loginPage: async ({ page }, use) => {
     const loginPage = new LoginPage(page);
@@ -25,5 +31,17 @@ export const test = base.extend<{
   setKeysPage: async ({ page }, use) => {
     const setKeysPage = new SetKeysPage(page);
     await use(setKeysPage);
+  },
+  settingsPage: async ({ page }, use) => {
+    const settingsPage = new SettingsPage(page);
+    await use(settingsPage);
+  },
+  changePasswordPage: async ({ page }, use) => {
+    const changePasswordPage = new ChangePasswordPage(page);
+    await use(changePasswordPage);
+  },
+  newTransferPage: async ({ page }, use) => {
+    const newTransferPage = new NewTransferPage(page);
+    await use(newTransferPage);
   },
 });

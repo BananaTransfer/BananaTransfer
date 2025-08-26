@@ -68,8 +68,15 @@ async function showUserPasswordModal(): Promise<string> {
   return enteredUserPassword;
 }
 
-export async function encryptAndSaveKey() {
+export async function encryptAndSaveKey(isFirstTime: boolean) {
   try {
+    if (
+      !isFirstTime &&
+      !confirm('Are you sure you want to change your keys ?')
+    ) {
+      return;
+    }
+
     if (!generatedKeyPair || !generatedMasterPassword) {
       alert('Generate a key pair and master password first.');
       return;
