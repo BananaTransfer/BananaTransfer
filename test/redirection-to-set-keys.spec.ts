@@ -8,10 +8,7 @@ test('redirect non-keyed user to set keys when accessing transfer list', async (
   transferListPage,
   setKeysPage,
 }) => {
-  // 1. Arrive at BananaTransfer
-  await page.goto('http://localhost:3000/');
-
-  // 2. Go to register page and fill out form
+  // Go to register page and fill out form
   const credentials = {
     username:
       faker.person.firstName().toLowerCase() +
@@ -21,16 +18,16 @@ test('redirect non-keyed user to set keys when accessing transfer list', async (
   await registerPage.goto();
   await registerPage.register(credentials);
 
-  // 3. After registration, should be redirected to set keys page
+  // After registration, should be redirected to set keys page
   await expect(page).toHaveURL(setKeysPage.URL);
 
-  // 4. Simulate manual navigation to transfer list (without setting keys)
+  // Simulate manual navigation to transfer list (without setting keys)
   await transferListPage.goto();
 
-  // 5. User should be redirected back to set keys page
+  // User should be redirected back to set keys page
   await expect(page).toHaveURL(setKeysPage.URL);
 
-  // 6. Extra: Make sure key setup UI is visible
+  // Extra: Make sure key setup UI is visible
   await expect(page.locator('#generateKeyPairBtn')).toBeVisible();
   await expect(page.locator('#generateMasterPasswordBtn')).toBeVisible();
 });

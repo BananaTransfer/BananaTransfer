@@ -2,10 +2,11 @@ import { expect } from '@playwright/test';
 import { test } from '@test/config';
 import { faker } from '@faker-js/faker';
 import fs from 'fs';
+import dotenv from 'dotenv';
 
-// Utility: ensure a file exists for upload
-// Change to a valid path to a file on your system you want to test with
-const TEST_FILE_PATH = './test/resources/testfile.txt';
+dotenv.config();
+const DOMAIN = process.env.DOMAIN ?? '';
+const TEST_FILE_PATH = process.env.TEST_FILE_PATH || 'test.txt';
 if (!fs.existsSync(TEST_FILE_PATH)) {
   fs.writeFileSync(TEST_FILE_PATH, 'This is a test file for transfer.');
 }
@@ -19,10 +20,7 @@ test('full transfer flow: register, set keys, send to self, accept, download, lo
   newTransferPage,
   context,
 }) => {
-  // 1. Arrive at BananaTransfer
-  await page.goto('http://localhost:3000/');
-
-  // 2. Go to register page and fill out form
+  // Go to register page and fill out form
   await registerPage.goto();
   const credentials = {
     username:
@@ -32,7 +30,7 @@ test('full transfer flow: register, set keys, send to self, accept, download, lo
   };
   await registerPage.register(credentials);
 
-  // 3. If username exists, registration fails (stay on /auth/register)
+  // If username exists, registration fails (stay on /auth/register)
   if (page.url().includes('/auth/register')) {
     // Registration failed, go to login
     await loginPage.goto();
@@ -59,11 +57,11 @@ test('full transfer flow: register, set keys, send to self, accept, download, lo
     await expect(page).toHaveURL(transferListPage.URL);
   }
 
-  // 4. Go to new transfer page
+  // Go to new transfer page
   await newTransferPage.goto();
 
   // Fill recipient with own username (send to self)
-  await newTransferPage.setRecipient(credentials.username + '@domain.com');
+  await newTransferPage.setRecipient(credentials.username + DOMAIN);
 
   // Load recipient key if there's a button (simulate click if present)
   const recipientBtn = newTransferPage.PAGE.locator('#recipient-btn');
@@ -71,11 +69,8 @@ test('full transfer flow: register, set keys, send to self, accept, download, lo
     await recipientBtn.click();
   }
 
-  // Wait for trust public key checkbox to appear and tick it if visible
-  const trustCheckbox = newTransferPage.PAGE.locator('#trustKeyCheckbox');
-  // TODO potential improvement: if (await trustCheckbox.isVisible()) {
-  await trustCheckbox.check();
-  //} // else: skip ticking and continue
+  // Click "trust" if checkbox appears
+  await newTransferPage.trustRecipientKey();
 
   // Upload a file
   await newTransferPage.addFiles([TEST_FILE_PATH]);
@@ -92,14 +87,14 @@ test('full transfer flow: register, set keys, send to self, accept, download, lo
   // Send transfer
   await newTransferPage.submit();
 
-  // 5. After sending, redirected to transfer list
+  // After sending, redirected to transfer list
   await expect(page).toHaveURL(transferListPage.URL);
 
   // Find the newly created transfer in the list by subject
   const transferRow = page.locator('tr', { hasText: 'My test transfer' });
   await expect(transferRow).toBeVisible();
 
-  // 6. Accept the transfer
+  // Accept the transfer
   const acceptButton = transferRow.getByRole('button', { name: /accept/i });
   await acceptButton.click();
 
@@ -107,7 +102,7 @@ test('full transfer flow: register, set keys, send to self, accept, download, lo
   const downloadButton = transferRow.getByRole('button', { name: /download/i });
   await expect(downloadButton).toBeVisible();
 
-  // 7. Download: click download, modal opens for master password
+  // Download: click download, modal opens for master password
   await downloadButton.click();
   const masterPasswordInput = page.locator('input[type="password"]');
   await expect(masterPasswordInput).toBeVisible();

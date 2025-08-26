@@ -15,6 +15,7 @@ export default class NewTransferPage extends CommonPage {
   private publicKeyHashField: Locator;
   private recipientKeyError: Locator;
   private sendError: Locator;
+  private trustCheckbox: Locator;
 
   constructor(page: Page) {
     super(page, '/transfer/new');
@@ -25,6 +26,7 @@ export default class NewTransferPage extends CommonPage {
     this.publicKeyHashField = this.PAGE.locator('#publicKeyHashField');
     this.recipientKeyError = this.PAGE.locator('#recipientKeyNotFoundError');
     this.sendError = this.PAGE.locator('#sendError');
+    this.trustCheckbox = this.PAGE.locator('#trustKeyCheckbox');
   }
 
   async setRecipient(recipient: string) {
@@ -56,6 +58,12 @@ export default class NewTransferPage extends CommonPage {
     }
     await this.addFiles(params.files);
     await this.submit();
+  }
+
+  async trustRecipientKey() {
+    if (await this.trustCheckbox.isVisible()) {
+      await this.trustCheckbox.check();
+    }
   }
 
   async getRecipientKeyHash(): Promise<string | null> {
