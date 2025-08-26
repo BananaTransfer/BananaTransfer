@@ -56,13 +56,18 @@ export default class SetKeysPage extends CommonPage {
   // Actions
   async generateKeyPair() {
     await expect(this.generateKeyPairBtn).toBeEnabled();
+    await expect(this.publicKeyHashField).toBeEmpty();
     await this.generateKeyPairBtn.click();
-    await expect(this.publicKeyHashField).not.toHaveValue('');
+    await expect(this.publicKeyHashField).not.toBeEmpty();
   }
 
   async generateMasterPassword() {
     await this.generateMasterPasswordBtn.click();
     await expect(this.masterPasswordField).not.toHaveValue('');
+  }
+
+  async getMasterPassword() {
+    return await this.masterPasswordField.inputValue();
   }
 
   async encryptAndSaveKeys({

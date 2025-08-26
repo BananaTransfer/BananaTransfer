@@ -1,4 +1,5 @@
 extends ../layout
+include ../components/progress-bar
 
 block content
   input(type="hidden" id="_csrf" value=csrfToken)
@@ -57,7 +58,8 @@ block content
                     )
                       i.bi.bi-info-lg.text-primary
                   td.text-center
-                    .d-flex.flex-column
+                    +progressBar("progress-bar-"+transfer.id)
+                    .d-flex.flex-column(class='action-'+transfer.id)
                       .btn-group
                         if transfer.status == "UPLOADED" && transfer.senderId === currentUser.id
                           button.btn.btn-sm.btn-success.send-btn(type="button" data-id=transfer.id) Send
@@ -111,20 +113,22 @@ block content
                   )
                     i.bi.bi-info-lg.text-primary
                 .col-9.text-center.mt-2
-                  if transfer.status == "UPLOADED" && transfer.senderId === currentUser.id
-                    button.btn.btn-sm.btn-success.send-btn(type="button" data-id=transfer.id) Send
-                  if transfer.status == "SENT" && transfer.receiverId === currentUser.id
-                    button.btn.btn-sm.btn-success.accept-btn(type="button" data-id=transfer.id) Accept
-                    button.btn.btn-sm.btn-warning.reject-btn(type="button" data-id=transfer.id) Reject
-                  if transfer.status == "ACCEPTED" && transfer.receiverId === currentUser.id
-                    button.btn.btn-sm.btn-secondary.retrieve-btn(type="button" data-id=transfer.id) Retrieve
-                  if transfer.status == "RETRIEVED" && transfer.receiverId === currentUser.id
-                    button.btn.btn-sm.btn-primary.download-btn(type="button" data-id=transfer.id) Download
-                  if transfer.status != 'DELETED' && !(transfer.status == "SENT" && transfer.receiverId === currentUser.id)
-                    button.btn.btn-sm.btn-danger.delete-btn(type="button" data-id=transfer.id) Delete
+                  +progressBar("progress-bar-" + transfer.id)
+                  div(class='action-'+transfer.id)
+                    if transfer.status == "UPLOADED" && transfer.senderId === currentUser.id
+                      button.btn.btn-sm.btn-success.send-btn(type="button" data-id=transfer.id) Send
+                    if transfer.status == "SENT" && transfer.receiverId === currentUser.id
+                      button.btn.btn-sm.btn-success.accept-btn(type="button" data-id=transfer.id) Accept
+                      button.btn.btn-sm.btn-warning.reject-btn(type="button" data-id=transfer.id) Reject
+                    if transfer.status == "ACCEPTED" && transfer.receiverId === currentUser.id
+                      button.btn.btn-sm.btn-secondary.retrieve-btn(type="button" data-id=transfer.id) Retrieve
+                    if transfer.status == "RETRIEVED" && transfer.receiverId === currentUser.id
+                      button.btn.btn-sm.btn-primary.download-btn(type="button" data-id=transfer.id) Download
+                    if transfer.status != 'DELETED' && !(transfer.status == "SENT" && transfer.receiverId === currentUser.id)
+                      button.btn.btn-sm.btn-danger.delete-btn(type="button" data-id=transfer.id) Delete
 
-  include ../modals/master-password.pug
-  include ../modals/transfer-details.pug
+  include ../components/modals/master-password.pug
+  include ../components/modals/transfer-details.pug
 
   script(type="module").
     import { setupListPage } from '/js/transfer-list.js';

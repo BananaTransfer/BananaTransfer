@@ -1,6 +1,6 @@
 import { FileEncryption, StreamChunk } from '../crypto/encryption.js';
 import { KeyManager } from '../crypto/key-manager.js';
-import { callApi } from '../utils/common.js';
+import { callApi, createProgressBarHandler } from '../utils/common.js';
 
 // File System Access API type definitions
 interface FilePickerAcceptType {
@@ -56,14 +56,41 @@ export class FileDownloader {
     return await callApi('GET', `/transfer/${transferId}`);
   }
 
+  private getBtnGroupDisplayHandler(
+    transferId: string,
+  ): (visible: boolean) => void {
+    const btnGroupList = document.getElementsByClassName(
+      'action-' + transferId,
+    ) as HTMLCollectionOf<HTMLButtonElement>;
+
+    return (visible: boolean) => {
+      for (const btn of btnGroupList) {
+        btn.style.setProperty('display', visible ? null : 'none', 'important');
+      }
+    };
+  }
+
   async downloadAndDecrypt(transfer: Transfer): Promise<Uint8Array> {
+    const progressBar = createProgressBarHandler('progress-bar-' + transfer.id);
+    const setBtnGroupDisplay = this.getBtnGroupDisplayHandler(transfer.id);
+
     try {
+      progressBar.setVisible(true);
+      progressBar.setProgress(0);
+      setBtnGroupDisplay(false);
+
+      let progress = 0;
+      const chunkCount = transfer.chunks.length;
+
       const chunks: ChunkData[] = await Promise.all(
         transfer.chunks.map((chunk) => {
           return callApi<void, ChunkData>(
             'GET',
             `/transfer/${transfer.id}/chunk/${chunk}`,
-          );
+          ).finally(() => {
+            progress++;
+            progressBar.setProgress((progress / chunkCount) * 100);
+          });
         }),
       );
 
@@ -104,6 +131,9 @@ export class FileDownloader {
       const message = error instanceof Error ? error.message : 'Unknown error';
       console.error(`Download and decryption failed: ${message}`);
       throw error;
+    } finally {
+      progressBar.setVisible(false);
+      setBtnGroupDisplay(true);
     }
   }
 
@@ -147,6 +177,9 @@ export class FileDownloader {
   }
 
   private async downloadWithFileSystemAPI(transfer: Transfer): Promise<void> {
+    const progressBar = createProgressBarHandler('progress-bar-' + transfer.id);
+    const setBtnGroupDisplay = this.getBtnGroupDisplayHandler(transfer.id);
+
     try {
       console.log('Using File System Access API for streaming download');
 
@@ -179,6 +212,10 @@ export class FileDownloader {
         `Streaming ${sortedChunkIndices.length} chunks directly to file`,
       );
 
+      progressBar.setVisible(true);
+      progressBar.setProgress(0);
+      setBtnGroupDisplay(false);
+
       // Process chunks sequentially
       for (let i = 0; i < sortedChunkIndices.length; i++) {
         const chunkIndex = sortedChunkIndices[i];
@@ -201,6 +238,8 @@ export class FileDownloader {
 
         // Stream directly to file
         await writable.write(decryptedChunk);
+
+        progressBar.setProgress((i / sortedChunkIndices.length) * 100);
       }
 
       await writable.close();
@@ -208,6 +247,9 @@ export class FileDownloader {
     } catch (error) {
       console.error('File System API download failed:', error);
       throw error;
+    } finally {
+      progressBar.setVisible(false);
+      setBtnGroupDisplay(true);
     }
   }
 

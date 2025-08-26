@@ -1,0 +1,5 @@
+mixin progressBar(progressBarClass)
+  div.progress(class=progressBarClass, style="display: none; position: relative; height: 30px;")
+    div.progress-bar.progress-bar-striped.progress-bar-animated(style="width:25%; height:100%")
+    span.progress-text(style="position:absolute; width:100%; text-align:center; line-height:30px; color:black; font-weight:bold; top: 0; left: 0")
+      | 25%

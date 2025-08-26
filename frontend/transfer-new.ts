@@ -2,8 +2,10 @@ import { FileEncryption, StreamChunk } from './crypto/encryption.js';
 import {
   callApi,
   copyToClipboard,
+  createProgressBarHandler,
   enforceLowerCase,
   formatFileSize,
+  ProgressBarHandler,
 } from './utils/common.js';
 import {
   SecurityUtils,
@@ -24,6 +26,7 @@ interface TransferFormElements {
   fileInput: HTMLInputElement;
   subjectInput: HTMLInputElement;
   sendButton: HTMLButtonElement;
+  progressBar: ProgressBarHandler;
   sendError: HTMLElement;
 }
 
@@ -78,6 +81,7 @@ class TransferNewPage {
       sendButton: document.querySelector(
         'button[type="submit"]',
       ) as HTMLButtonElement,
+      progressBar: createProgressBarHandler('upload-progress-bar'),
       sendError: document.getElementById('sendError') as HTMLElement,
     };
     this.updateSendButtonState();
@@ -271,8 +275,9 @@ class TransferNewPage {
 
     try {
       // Disable send button during processing
-      this.formElements.sendButton.disabled = true;
-      this.formElements.sendButton.textContent = 'Encrypting and uploading...';
+      this.formElements.sendButton.style.display = 'none';
+      this.formElements.progressBar.setVisible(true);
+      this.formElements.progressBar.setProgress(0);
 
       // Step 1: Create the transfer
       const aesKey = await FileEncryption.generateAESKey();
@@ -301,8 +306,8 @@ class TransferNewPage {
       this.showSendError('Failed to create transfer. Please try again.');
     } finally {
       // Re-enable send button
-      this.formElements.sendButton.disabled = false;
-      this.formElements.sendButton.textContent = 'Send file(s)';
+      this.formElements.sendButton.style.display = 'inline-block';
+      this.formElements.progressBar.setVisible(false);
     }
   }
 
@@ -327,7 +332,13 @@ class TransferNewPage {
     encryptedChunks: StreamChunk,
     transferId: string,
   ): Promise<void> {
-    this.formElements.sendButton.textContent = `Uploading chunk ${encryptedChunks.chunkIndex}...`;
+    const totalChunkCount = Math.ceil(
+      (this.selectedFile?.size || 0) / SecurityUtils.CHUNK_SIZE,
+    );
+
+    this.formElements.progressBar.setProgress(
+      (encryptedChunks.chunkIndex / totalChunkCount) * 100,
+    );
 
     const payload = {
       encryptedData: this.arrayBufferToBase64(encryptedChunks.encryptedData),
