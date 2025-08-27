@@ -72,6 +72,8 @@ function formatLogInfo(logInfo: string): string {
 }
 
 function sendTransfer(id: string) {
+  displaySpinner(true);
+
   callApi('POST', `/transfer/send/${id}`, {})
     .then(() => {
       console.log(`Sent transfer with ID: ${id}`);
@@ -79,10 +81,13 @@ function sendTransfer(id: string) {
     .catch((err) => {
       console.error(`Error sending transfer with ID: ${id}`, err);
       alert('Failed to send transfer.');
-    });
+    })
+    .finally(() => displaySpinner(false));
 }
 
 function acceptTransfer(id: string) {
+  displaySpinner(true);
+
   callApi('POST', `/transfer/accept/${id}`, {})
     .then(() => {
       console.log(`Accepted transfer with ID: ${id}`);
@@ -91,7 +96,8 @@ function acceptTransfer(id: string) {
     .catch((err) => {
       console.error(`Error accepting transfer with ID: ${id}`, err);
       alert('Failed to accept transfer.');
-    });
+    })
+    .finally(() => displaySpinner(false));
 }
 
 function rejectTransfer(id: string) {
@@ -99,6 +105,7 @@ function rejectTransfer(id: string) {
     return;
   }
 
+  displaySpinner(true);
   callApi('POST', `/transfer/refuse/${id}`, {})
     .then(() => {
       console.log(`Rejected transfer with ID: ${id}`);
@@ -107,10 +114,13 @@ function rejectTransfer(id: string) {
     .catch((err) => {
       console.error(`Error refusing transfer with ID: ${id}`, err);
       alert('Failed to refuse transfer.');
-    });
+    })
+    .finally(() => displaySpinner(false));
 }
 
 function retrieveTransfer(id: string) {
+  displaySpinner(true);
+
   callApi('POST', `/transfer/retrieve/${id}`, {})
     .then(() => {
       console.log(`Retrieved transfer with ID: ${id}`);
@@ -119,7 +129,8 @@ function retrieveTransfer(id: string) {
     .catch((err) => {
       console.error(`Error retrieving transfer with ID: ${id}`, err);
       alert('Failed to retrieve transfer.');
-    });
+    })
+    .finally(() => displaySpinner(false));
 }
 
 async function downloadTransfer(id: string) {
@@ -133,6 +144,7 @@ function deleteTransfer(id: string) {
     return;
   }
 
+  displaySpinner(true);
   callApi('DELETE', `/transfer/delete/${id}`, {})
     .then(() => {
       console.log(`Deleted transfer with ID: ${id}`);
@@ -141,7 +153,13 @@ function deleteTransfer(id: string) {
     .catch((err) => {
       console.error(`Error deleting transfer with ID: ${id}`, err);
       alert('Failed to delete transfer.');
-    });
+    })
+    .finally(() => displaySpinner(false));
+}
+
+function displaySpinner(enable: boolean) {
+  const main = document.getElementsByTagName('main').item(0)!;
+  main.style.setProperty('cursor', enable ? 'wait' : null);
 }
 
 export function setupListPage() {
