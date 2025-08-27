@@ -60,7 +60,7 @@ export class AuthService {
       secure: process.env.NODE_ENV !== 'dev',
     });
     if (!user.private_key_encrypted) {
-      res.cookie('noKeysSet', true, {
+      res.cookie('noKeysSet', 'true', {
         httpOnly: true,
         sameSite: 'strict',
         secure: process.env.NODE_ENV !== 'dev',

@@ -463,11 +463,7 @@ export class TransferService {
         transfer.receiver,
       );
     } else if (transfer.sender instanceof RemoteUser) {
-      await this.fetchTransferFromRemote(transfer); /*.catch((error) => {
-        this.logger.error(
-          `Error fetching transfer ${transfer.id} from remote: ${(error as Error).message}`,
-        );
-      });*/
+      await this.fetchTransferFromRemote(transfer);
     }
 
     return transfer;
@@ -502,11 +498,7 @@ export class TransferService {
     this.rejectIfNotReceiver(transfer, userId);
     this.rejectIfNotStatus(transfer, TransferStatus.ACCEPTED);
 
-    await this.fetchTransferFromRemote(transfer); /*.catch((error) => {
-      this.logger.error(
-        `Error fetching transfer ${transfer.id} from remote: ${(error as Error).message}`,
-      );
-    });*/
+    await this.fetchTransferFromRemote(transfer);
     return transfer;
   }
 
