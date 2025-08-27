@@ -136,7 +136,12 @@ function retrieveTransfer(id: string) {
 async function downloadTransfer(id: string) {
   const userPrivateKey = await SecurityUtils.useUserPrivateKey();
   const downloader = FileDownloader.createDownloader(userPrivateKey);
-  await downloader.downloadFile(id);
+  try {
+    await downloader.downloadFile(id);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'unexpected error';
+    alert('Failed to download transfer. ' + msg);
+  }
 }
 
 function deleteTransfer(id: string) {
