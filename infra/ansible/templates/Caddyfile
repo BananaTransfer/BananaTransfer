@@ -1,4 +1,4 @@
-{{ domain }} {
+{{ external_hostname }} {
   reverse_proxy server:3000
   encode
   request_body {
