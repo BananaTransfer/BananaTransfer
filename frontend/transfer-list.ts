@@ -72,23 +72,18 @@ function formatLogInfo(logInfo: string): string {
 }
 
 function sendTransfer(id: string) {
-  displaySpinner(true);
-
-  callApi('POST', `/transfer/send/${id}`, {})
+  return callApi('POST', `/transfer/send/${id}`, {})
     .then(() => {
       console.log(`Sent transfer with ID: ${id}`);
     })
     .catch((err) => {
       console.error(`Error sending transfer with ID: ${id}`, err);
       alert('Failed to send transfer.');
-    })
-    .finally(() => displaySpinner(false));
+    });
 }
 
 function acceptTransfer(id: string) {
-  displaySpinner(true);
-
-  callApi('POST', `/transfer/accept/${id}`, {})
+  return callApi('POST', `/transfer/accept/${id}`, {})
     .then(() => {
       console.log(`Accepted transfer with ID: ${id}`);
       location.reload();
@@ -96,17 +91,15 @@ function acceptTransfer(id: string) {
     .catch((err) => {
       console.error(`Error accepting transfer with ID: ${id}`, err);
       alert('Failed to accept transfer.');
-    })
-    .finally(() => displaySpinner(false));
+    });
 }
 
 function rejectTransfer(id: string) {
   if (!confirm('Are you sure you want to reject this transfer ?')) {
-    return;
+    return Promise.resolve();
   }
 
-  displaySpinner(true);
-  callApi('POST', `/transfer/refuse/${id}`, {})
+  return callApi('POST', `/transfer/refuse/${id}`, {})
     .then(() => {
       console.log(`Rejected transfer with ID: ${id}`);
       location.reload();
@@ -114,14 +107,11 @@ function rejectTransfer(id: string) {
     .catch((err) => {
       console.error(`Error refusing transfer with ID: ${id}`, err);
       alert('Failed to refuse transfer.');
-    })
-    .finally(() => displaySpinner(false));
+    });
 }
 
 function retrieveTransfer(id: string) {
-  displaySpinner(true);
-
-  callApi('POST', `/transfer/retrieve/${id}`, {})
+  return callApi('POST', `/transfer/retrieve/${id}`, {})
     .then(() => {
       console.log(`Retrieved transfer with ID: ${id}`);
       location.reload();
@@ -129,8 +119,7 @@ function retrieveTransfer(id: string) {
     .catch((err) => {
       console.error(`Error retrieving transfer with ID: ${id}`, err);
       alert('Failed to retrieve transfer.');
-    })
-    .finally(() => displaySpinner(false));
+    });
 }
 
 async function downloadTransfer(id: string) {
@@ -146,11 +135,10 @@ async function downloadTransfer(id: string) {
 
 function deleteTransfer(id: string) {
   if (!confirm('Are you sure you want to delete this transfer?')) {
-    return;
+    return Promise.resolve();
   }
 
-  displaySpinner(true);
-  callApi('DELETE', `/transfer/delete/${id}`, {})
+  return callApi('DELETE', `/transfer/delete/${id}`, {})
     .then(() => {
       console.log(`Deleted transfer with ID: ${id}`);
       location.reload();
@@ -158,13 +146,39 @@ function deleteTransfer(id: string) {
     .catch((err) => {
       console.error(`Error deleting transfer with ID: ${id}`, err);
       alert('Failed to delete transfer.');
-    })
-    .finally(() => displaySpinner(false));
+    });
 }
 
-function displaySpinner(enable: boolean) {
-  const main = document.getElementsByTagName('main').item(0)!;
-  main.style.setProperty('cursor', enable ? 'wait' : null);
+function addEventListener(
+  button: Element,
+  clickHandler: (id: string) => Promise<void>,
+) {
+  button.addEventListener('click', () => {
+    const id = button.getAttribute('data-id');
+    if (!id) return;
+
+    const disableButtons = (disabled: boolean) => {
+      for (const btn of button.parentElement!.children) {
+        if (disabled) {
+          btn.setAttribute('disabled', 'true');
+        } else {
+          btn.removeAttribute('disabled');
+        }
+      }
+    };
+
+    const previousContent = button.innerHTML;
+    button.innerHTML = `
+      <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+      <span class="sr-only">${previousContent}</span>
+    `;
+
+    disableButtons(true);
+    void clickHandler(id).finally(() => {
+      button.innerHTML = previousContent;
+      disableButtons(false);
+    });
+  });
 }
 
 export function setupListPage() {
@@ -178,46 +192,27 @@ export function setupListPage() {
   const sizeElements = document.querySelectorAll('.size');
 
   viewDetails.forEach((button) => {
-    button.addEventListener('click', () => {
-      const id = button.getAttribute('data-id');
-      if (!id) return;
-      void viewTransferDetails(id);
-    });
+    addEventListener(button, viewTransferDetails);
   });
 
   sendButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-      const id = button.getAttribute('data-id');
-      if (!id) return;
-      sendTransfer(id);
-    });
+    addEventListener(button, sendTransfer);
   });
 
   acceptButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-      const id = button.getAttribute('data-id');
-      if (!id) return;
-      acceptTransfer(id);
-    });
+    addEventListener(button, acceptTransfer);
   });
 
   rejectButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-      const id = button.getAttribute('data-id');
-      if (!id) return;
-      rejectTransfer(id);
-    });
+    addEventListener(button, rejectTransfer);
   });
 
   retrieveButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-      const id = button.getAttribute('data-id');
-      if (!id) return;
-      retrieveTransfer(id);
-    });
+    addEventListener(button, retrieveTransfer);
   });
 
   downloadButtons.forEach((button) => {
+    // handled separately because download has a progress bar
     button.addEventListener('click', () => {
       const id = button.getAttribute('data-id');
       if (!id) return;
@@ -226,11 +221,7 @@ export function setupListPage() {
   });
 
   deleteButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-      const id = button.getAttribute('data-id');
-      if (!id) return;
-      deleteTransfer(id);
-    });
+    addEventListener(button, deleteTransfer);
   });
 
   sizeElements.forEach((element) => {
