@@ -18,6 +18,7 @@ test('login with valid credentials', async ({
 
   await registerPage.goto();
   await registerPage.register(credentials);
+  await page.goto('/');
   await context.clearCookies();
   await loginPage.goto();
   await loginPage.login(credentials);

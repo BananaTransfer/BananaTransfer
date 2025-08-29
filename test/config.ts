@@ -1,4 +1,4 @@
-import { test as base } from '@playwright/test';
+import { Page, test as base } from '@playwright/test';
 import LoginPage from '@test/fixtures/LoginPage';
 import RegisterPage from '@test/fixtures/RegisterPage';
 import TransferListPage from '@test/fixtures/TransferListPage';
@@ -45,3 +45,7 @@ export const test = base.extend<{
     await use(newTransferPage);
   },
 });
+
+export async function waitPageReady(page: Page): Promise<void> {
+  return await page.waitForLoadState('domcontentloaded'); // ensure JS script are loaded
+}

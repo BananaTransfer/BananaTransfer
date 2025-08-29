@@ -1,5 +1,5 @@
 import { expect } from '@playwright/test';
-import { test } from '@test/config';
+import { test, waitPageReady } from '@test/config';
 import { faker } from '@faker-js/faker';
 import fs from 'fs';
 
@@ -31,6 +31,7 @@ test('full transfer flow: register, set keys, send to self, accept, download, lo
 
   // Registration succeeded, redirected to set keys
   await expect(page).toHaveURL(setKeysPage.URL);
+  await waitPageReady(page);
   await setKeysPage.generateKeyPair();
   await setKeysPage.generateMasterPassword();
 
@@ -48,15 +49,17 @@ test('full transfer flow: register, set keys, send to self, accept, download, lo
 
   // Go to new transfer page
   await newTransferPage.goto();
+  await waitPageReady(page);
 
   await newTransferPage.createTransfer({
-    recipient: credentials.username + DOMAIN,
+    recipient: credentials.username + '@' + DOMAIN,
     subject: 'My test transfer',
     files: [TEST_FILE_PATH],
   });
 
   // After sending, redirected to transfer list
   await expect(page).toHaveURL(transferListPage.URL);
+  await waitPageReady(page);
 
   await transferListPage.acceptTransfer('My test transfer');
   await transferListPage.downloadTransfer(
