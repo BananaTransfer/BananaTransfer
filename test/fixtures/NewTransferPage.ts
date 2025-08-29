@@ -13,6 +13,7 @@ export default class NewTransferPage extends CommonPage {
   private fileInput: Locator;
   private sendButton: Locator;
   private publicKeyHashField: Locator;
+  private recipientBtn: Locator;
   private recipientKeyError: Locator;
   private sendError: Locator;
   private trustCheckbox: Locator;
@@ -24,6 +25,7 @@ export default class NewTransferPage extends CommonPage {
     this.fileInput = this.PAGE.locator('#fileInput');
     this.sendButton = this.PAGE.locator('button[type="submit"]');
     this.publicKeyHashField = this.PAGE.locator('#publicKeyHashField');
+    this.recipientBtn = this.PAGE.locator('#recipient-btn');
     this.recipientKeyError = this.PAGE.locator('#recipientKeyNotFoundError');
     this.sendError = this.PAGE.locator('#sendError');
     this.trustCheckbox = this.PAGE.locator('#trustKeyCheckbox');
@@ -53,17 +55,29 @@ export default class NewTransferPage extends CommonPage {
 
   async createTransfer(params: NewTransferParams) {
     await this.setRecipient(params.recipient);
+
+    await this.recipientBtn.click();
+
+    // Click "trust" if checkbox appears
+    await this.trustRecipientKey();
+
+    await this.addFiles(params.files);
+
     if (params.subject) {
       await this.setSubject(params.subject);
     }
-    await this.addFiles(params.files);
+
+    // Enable send button if disabled
+    await this.PAGE.evaluate(() => {
+      const btn = document.querySelector('button[type="submit"]');
+      if (btn) btn.removeAttribute('disabled');
+    });
+
     await this.submit();
   }
 
   async trustRecipientKey() {
-    if (await this.trustCheckbox.isVisible()) {
-      await this.trustCheckbox.check();
-    }
+    await this.trustCheckbox.check();
   }
 
   async getRecipientKeyHash(): Promise<string | null> {

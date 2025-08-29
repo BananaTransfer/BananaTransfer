@@ -63,7 +63,7 @@ export default class SetKeysPage extends CommonPage {
 
   async generateMasterPassword() {
     await this.generateMasterPasswordBtn.click();
-    await expect(this.masterPasswordField).not.toHaveValue('');
+    await expect(this.masterPasswordField).not.toBeEmpty();
   }
 
   async getMasterPassword() {

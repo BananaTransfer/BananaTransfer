@@ -10,7 +10,9 @@ test('login with valid credentials', async ({
   setKeysPage,
 }) => {
   const credentials = {
-    username: faker.person.firstName(),
+    username:
+      faker.person.firstName().toLowerCase() +
+      faker.number.int({ min: 10000, max: 99999 }),
     password: faker.internet.password({ length: 13 }),
   };
 
@@ -29,7 +31,9 @@ test('user should be redirected to app if logged in', async ({
   setKeysPage,
 }) => {
   const credentials = {
-    username: faker.person.firstName(),
+    username:
+      faker.person.firstName().toLowerCase() +
+      faker.number.int({ min: 10000, max: 99999 }),
     password: faker.internet.password({ length: 13 }),
   };
 
