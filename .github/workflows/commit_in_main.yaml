@@ -53,7 +53,7 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
       - name: Run Playwright tests
-        run: BASE_URL=https://alpha.${{ vars.BASE_HOSTNAME }} npm run test:e2e
+        run: BASE_URL=https://alpha.${{ vars.BASE_HOSTNAME }} DOMAIN=alpha.${{ vars.BASE_HOSTNAME }} npm run test:e2e
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:

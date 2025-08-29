@@ -162,6 +162,7 @@ S3_MANAGEMENT_PORT=9001
 TRANSFER_EXPIRY_CREATED_HOURS=24
 TRANSFER_EXPIRY_DAYS=30
 TRANSFER_LOG_EXPIRY_DAYS=60
+
 ```
 
 ### Build the frontend
@@ -218,8 +219,11 @@ npm run lint
 # unit tests
 npm run test
 
-# e2e tests
+# e2e tests - console mode
 npm run test:e2e
+
+# e2e tests - ui mode
+npx playwright test --ui
 
 # test coverage
 npm run test:cov

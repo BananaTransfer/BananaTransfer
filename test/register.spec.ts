@@ -12,7 +12,9 @@ test('registering with username and password works (twice same password and defa
   setKeysPage,
 }) => {
   await registerPage.register({
-    username: faker.person.firstName(),
+    username:
+      faker.person.firstName().toLowerCase() +
+      faker.number.int({ min: 10000, max: 99999 }),
     password: faker.internet.password({ length: 13 }),
   });
   await expect(page).toHaveURL(setKeysPage.URL);
