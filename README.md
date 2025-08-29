@@ -38,30 +38,30 @@ Despite the rise of cloud-based file sharing platforms like SwissTransfer, and W
 
 ## Hosted version
 
-While development of the application is in progress, we have deployed two BananaTransfer instances that you can try at: 
+While development of the application is in progress, we have deployed two BananaTransfer instances that you can try out at: 
 * [https://bananatransfer.saul.ch/](https://bananatransfer.saul.ch/) 
 * [https://bananatransfer.ansermoz.dev/](https://bananatransfer.ansermoz.dev/)
 
 ## Limitations
 
-Currently due to issues in the memory management and the availability of the File System API on Firefox, the app
-only support large file transfer on Chrome based browser.
+Due to memory management-related issues and the availability of the File System API on Firefox, the app currently
+only supports large file transfers on Chrome-based browsers.
 
 ### Memory management issue during upload
 
-As you can see in the following picture, the page parent process does not release the memory between uploaded chunk,
-which lead to browser crashing during large transfer. On Chrome based browser, the memory is correctly released after 
-each uploaded chunk which is coherent with our code. Therefore, we think the issue on Firefox is outside our control, 
+As you can see in the following picture, the page parent process does not release the memory between uploaded chunks,
+which may lead to browser crashs during large transfers. On Chrome-based browsers, the memory is released correctly after 
+each uploaded chunk, which is coherent with our code. Therefore, we think the issue on Firefox is outside our control, 
 and we could not find a workaround.
 
 ![firefox_memory_leak.png](documents/imgs/firefox_memory_leak.png)
 
 ### File System API
 
-During upload, all browser offer an API that allow us to read a file chunk by chunk. But during download, we need
-the File System API to be able to write those chunk directly to disk. And this API is not available on all browser. 
-Not being able to use it forces us to read the whole file in memory before writing it on disk which make 
-large file download impossible. This is why we only support large file retrieval on Chrome based browser.
+During upload, all browsers offer an API that allows us to read a file chunk by chunk. But during download, we need
+the File System API to be able to write those chunks directly to disk. This API is not available for all browsers. 
+Not being able to use it forces us to read the whole file in memory before writing it on disk, which makes 
+large file downloads impossible. This is why we only support large file retrieval on Chrome-based browsers.
 
 ## Mockups
 
