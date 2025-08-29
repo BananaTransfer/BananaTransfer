@@ -4,7 +4,6 @@ title System Architecture
 actor "User" as user
 
 rectangle "Browser" as browser {
-  rectangle "HTMX" as htmx
 }
 
 rectangle "AWS Cloud" as aws {
@@ -34,7 +33,7 @@ rectangle "GitHub" as github {
 
 user -up-> browser: "access the app"
 browser -right-> frontend: "fetch HTML/CSS/JS"
-htmx -right-> backend: "api requests"
+browser -right-> backend: "api requests"
 
 backend -down-> db: "query/save"
 backend -down-> s3: "fetch/save"
@@ -45,5 +44,4 @@ backend_2 -down-> s3_2: "fetch/save"
 
 actions --> repo: "fetch code \n and run tests"
 actions -left-> aws: "deploy servers with \nTerraform and Ansible"
-
 @enduml
