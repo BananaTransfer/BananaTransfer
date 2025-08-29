@@ -1,11 +1,24 @@
 extends ../layout
 include ../components/progress-bar
 
+mixin controlBtn(transfer)
+  if transfer.status == "UPLOADED" && transfer.senderId === currentUser.id
+    button.btn.btn-sm.btn-success.send-btn(type="button" data-id=transfer.id) Send
+  if transfer.status == "SENT" && transfer.receiverId === currentUser.id
+    button.btn.btn-sm.btn-success.accept-btn(type="button" data-id=transfer.id) Accept
+    button.btn.btn-sm.btn-warning.reject-btn(type="button" data-id=transfer.id) Reject
+  if transfer.status == "ACCEPTED" && transfer.receiverId === currentUser.id
+    button.btn.btn-sm.btn-secondary.retrieve-btn(type="button" data-id=transfer.id) Retrieve
+  if transfer.status == "RETRIEVED" && transfer.receiverId === currentUser.id
+    button.btn.btn-sm.btn-primary.download-btn(type="button" data-id=transfer.id) Download
+  if (transfer.senderId === currentUser.id && ['CREATED', 'UPLOADED', 'SENT'].includes(transfer.status)) || (transfer.receiverId === currentUser.id && ['ACCEPTED', 'RETRIEVED', 'REFUSED'].includes(transfer.status))
+    button.btn.btn-sm.btn-danger.delete-btn(type="button" data-id=transfer.id) Delete
+
 block content
   input(type="hidden" id="_csrf" value=csrfToken)
   .row.justify-content-center.mb-3.mt-3
     .col-0.col-md-4
-    .col-8.col-md-4.col-xl-2.text-center
+    .col-8.col-md-4.text-center
       h2.mt-1.text-start.text-md-center Transfers
     .col-4.d-flex.align-items-center.justify-content-end
       a.btn.btn-success.ms-1(href="/transfer/new" style="border-radius:12px;" title="New Transfer")
@@ -17,11 +30,11 @@ block content
     
   if error
     .row.justify-content-center.mb-3
-      .col-12.col-xl-10
+      .col-12
         .alert.alert-danger.text-center= error
 
   .row.justify-content-center
-    .col-12.col-xl-10
+    .col-12
 
       // Table for desktop/tablet
       .d-none.d-md-block
@@ -61,17 +74,7 @@ block content
                     +progressBar("progress-bar-"+transfer.id)
                     .d-flex.flex-column(class='action-'+transfer.id)
                       .btn-group
-                        if transfer.status == "UPLOADED" && transfer.senderId === currentUser.id
-                          button.btn.btn-sm.btn-success.send-btn(type="button" data-id=transfer.id) Send
-                        if transfer.status == "SENT" && transfer.receiverId === currentUser.id
-                          button.btn.btn-sm.btn-success.accept-btn(type="button" data-id=transfer.id) Accept
-                          button.btn.btn-sm.btn-warning.reject-btn(type="button" data-id=transfer.id) Reject
-                        if transfer.status == "ACCEPTED" && transfer.receiverId === currentUser.id
-                          button.btn.btn-sm.btn-secondary.retrieve-btn(type="button" data-id=transfer.id) Retrieve
-                        if transfer.status == "RETRIEVED" && transfer.receiverId === currentUser.id
-                          button.btn.btn-sm.btn-primary.download-btn(type="button" data-id=transfer.id) Download
-                        if transfer.status != 'DELETED' && !(transfer.status == "SENT" && transfer.receiverId === currentUser.id)
-                          button.btn.btn-sm.btn-danger.delete-btn(type="button" data-id=transfer.id) Delete
+                        +controlBtn(transfer)
             else
               tr
                 td(colspan="8" class="text-center") No transfers found.
@@ -115,17 +118,7 @@ block content
                 .col-9.text-center.mt-2
                   +progressBar("progress-bar-" + transfer.id)
                   div(class='action-'+transfer.id)
-                    if transfer.status == "UPLOADED" && transfer.senderId === currentUser.id
-                      button.btn.btn-sm.btn-success.send-btn(type="button" data-id=transfer.id) Send
-                    if transfer.status == "SENT" && transfer.receiverId === currentUser.id
-                      button.btn.btn-sm.btn-success.accept-btn(type="button" data-id=transfer.id) Accept
-                      button.btn.btn-sm.btn-warning.reject-btn(type="button" data-id=transfer.id) Reject
-                    if transfer.status == "ACCEPTED" && transfer.receiverId === currentUser.id
-                      button.btn.btn-sm.btn-secondary.retrieve-btn(type="button" data-id=transfer.id) Retrieve
-                    if transfer.status == "RETRIEVED" && transfer.receiverId === currentUser.id
-                      button.btn.btn-sm.btn-primary.download-btn(type="button" data-id=transfer.id) Download
-                    if transfer.status != 'DELETED' && !(transfer.status == "SENT" && transfer.receiverId === currentUser.id)
-                      button.btn.btn-sm.btn-danger.delete-btn(type="button" data-id=transfer.id) Delete
+                    +controlBtn(transfer)
 
   include ../components/modals/master-password.pug
   include ../components/modals/transfer-details.pug
