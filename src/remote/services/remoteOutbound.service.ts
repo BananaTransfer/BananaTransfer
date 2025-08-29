@@ -116,7 +116,7 @@ export class RemoteOutboundService {
     const data = await this.callRemoteApi<void, TransferInfoDto>(
       'GET',
       sender.domain,
-      `remote/fetch/transfer/${transfer.id}/info`,
+      `remote/fetch/transfer/${transfer.id}`,
     );
     const transferInfo = plainToInstance(TransferInfoDto, data);
     await validateOrReject(transferInfo);

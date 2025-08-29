@@ -229,14 +229,18 @@ export class TransferService {
     return transfer;
   }
 
-  async setTransferStatus(transfer: FileTransfer, status: TransferStatus) {
+  async setTransferStatus(
+    transfer: FileTransfer,
+    status: TransferStatus,
+    user?: User,
+  ) {
     transfer.status = status;
     const logInfoKey = `TRANSFER_${status}` as keyof typeof LogInfo;
     const logInfo = LogInfo[logInfoKey];
     await this.transferLogService.createTransferLog(
       transfer,
       logInfo,
-      transfer.receiver.id,
+      user ? user.id : undefined,
     );
     await this.fileTransferRepository.save(transfer);
   }
@@ -300,7 +304,7 @@ export class TransferService {
       id: transferData.id,
     });
 
-    await this.setTransferStatus(transfer, TransferStatus.SENT);
+    await this.setTransferStatus(transfer, TransferStatus.SENT, sender);
 
     // TODO: send notification to local recipient about new transfer
   }
@@ -323,7 +327,11 @@ export class TransferService {
     await this.fileTransferRepository.save(transfer);
 
     if (chunkData.isLastChunk) {
-      await this.setTransferStatus(transfer, TransferStatus.UPLOADED);
+      await this.setTransferStatus(
+        transfer,
+        TransferStatus.UPLOADED,
+        transfer.sender,
+      );
 
       if (transfer.receiver instanceof LocalUser) {
         // TODO: send notification to local recipient about new transfer
@@ -348,7 +356,11 @@ export class TransferService {
   private async sendTransferToRemote(transfer: FileTransfer) {
     try {
       await this.remoteOutboundService.newRemoteTransfer(transfer);
-      await this.setTransferStatus(transfer, TransferStatus.SENT);
+      await this.setTransferStatus(
+        transfer,
+        TransferStatus.SENT,
+        transfer.sender,
+      );
     } catch (error) {
       this.logger.error(
         `Error sending transfer ${transfer.id} to remote: ${(error as Error).message}`,
@@ -398,7 +410,11 @@ export class TransferService {
           }
         }
 
-        await this.setTransferStatus(transfer, TransferStatus.RETRIEVED);
+        await this.setTransferStatus(
+          transfer,
+          TransferStatus.RETRIEVED,
+          transfer.receiver,
+        );
         // inform remote server that transfer has been retrieved
         await this.remoteOutboundService.informRemoteTransferRetrieved(
           transfer,
@@ -434,10 +450,18 @@ export class TransferService {
     this.rejectIfNotReceiver(transfer, userId);
     this.rejectIfNotStatus(transfer, TransferStatus.SENT);
 
-    await this.setTransferStatus(transfer, TransferStatus.ACCEPTED);
+    await this.setTransferStatus(
+      transfer,
+      TransferStatus.ACCEPTED,
+      transfer.receiver,
+    );
 
     if (transfer.sender instanceof LocalUser) {
-      await this.setTransferStatus(transfer, TransferStatus.RETRIEVED);
+      await this.setTransferStatus(
+        transfer,
+        TransferStatus.RETRIEVED,
+        transfer.receiver,
+      );
     } else if (transfer.sender instanceof RemoteUser) {
       await this.fetchTransferFromRemote(transfer);
     }
@@ -450,12 +474,20 @@ export class TransferService {
     this.rejectIfNotReceiver(transfer, userId);
     this.rejectIfNotStatus(transfer, TransferStatus.SENT);
 
-    await this.setTransferStatus(transfer, TransferStatus.REFUSED);
+    await this.setTransferStatus(
+      transfer,
+      TransferStatus.REFUSED,
+      transfer.receiver,
+    );
 
     // delete transfer if it is local
     if (transfer.sender instanceof LocalUser) {
       await this.transferChunkService.deleteTransferChunks(transfer.id);
-      await this.setTransferStatus(transfer, TransferStatus.DELETED);
+      await this.setTransferStatus(
+        transfer,
+        TransferStatus.DELETED,
+        transfer.receiver,
+      );
     }
 
     return transfer;
@@ -471,6 +503,7 @@ export class TransferService {
   }
 
   async deleteTransfer(id: string, userId: number) {
+    const user = await this.userService.getCurrentUser(userId);
     const transfer = await this.getTransferOfUser(id, userId);
     const transferStatus = transfer.status.valueOf();
 
@@ -493,7 +526,7 @@ export class TransferService {
     }
 
     await this.transferChunkService.deleteTransferChunks(transfer.id);
-    await this.setTransferStatus(transfer, TransferStatus.DELETED);
+    await this.setTransferStatus(transfer, TransferStatus.DELETED, user);
 
     return transfer;
   }

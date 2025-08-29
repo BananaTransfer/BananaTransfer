@@ -18,7 +18,10 @@ describe('UserStatusGuard', () => {
     // mock ExecutionContext with request.user + response
     context = {
       switchToHttp: () => ({
-        getRequest: () => ({ user: { id: 123 }, cookies: { noKeysSet: true } }),
+        getRequest: () => ({
+          user: { id: 123 },
+          cookies: { noKeysSet: 'true' },
+        }),
         getResponse: () => ({ redirect: redirectMock }),
       }),
     } as unknown as ExecutionContext;

@@ -5,7 +5,7 @@ export class SetKeysDto {
   password: string;
 
   @IsString()
-  @Length(3188, 3188)
+  @Length(3000, 3500)
   privateKeyEncrypted: string;
 
   @IsString()
