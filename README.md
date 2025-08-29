@@ -2,7 +2,8 @@
   <img src="public/images/logo.png" alt="Logo" width="200"/>
 </div>
 
-# BananaTransfer  
+# BananaTransfer
+
 ## Decentralized Secure File Sharing with End-to-End Encryption
 Despite the rise of cloud-based file sharing platforms like SwissTransfer, and WeTransfer, or even some services trying to offer better security features like Tresorit, there remains a gap in the market for a truly decentralized, secure, and user-controlled file sharing solution. Existing services often rely on centralized infrastructure, exposing users to risks around privacy, data ownership, and single points of failure. **BananaTransfer** addresses these limitations by introducing an innovative approach allowing users to share files securely and privately, without depending on intermediaries or centralized servers. **BananaTransfer** is the most secure way to share files with your team, featuring zero-knowledge architecture and complete transparency via open-source code. Your files are encrypted before they leave your device - your data remains yours and you don't rely on cloud providers' servers to transfer and store your data.
 
@@ -22,19 +23,50 @@ Despite the rise of cloud-based file sharing platforms like SwissTransfer, and W
 3. Share Files: Drag, drop, and share files instantly. Files are encrypted before upload, recipients are notified immediately.
 4. Receive & Download: Access shared files from any device, anywhere, anytime. Files decrypt automatically upon download.
 
-## Secure by Design:
+## Screenshots
 
-- Military-Grade Encryption: AES-256 and RSA-4096 for file transfer and storage.
-- Self-Managed Keys: Total ownership of your encryption keys and master password.
-- Open Source Trust: Audit, fork, or self-host BananaTransfer.
-- Works Everywhere: Responsive design for desktop, tablet, and mobile.
-- Enterprise Federation: Scalable for partnerships and multi-organization workflows.
-- User-Friendly: 5-minute setup, guided onboarding for end users.
+### Transfer list
 
-## Landing page and mockups
+![list.png](documents/imgs/list.png)
 
-While development of the application is still in progress, we have designed a landing page, which has been deployed online. You can access it at [https://bananatransfer.saul.ch/](https://bananatransfer.saul.ch/) or [https://bananatransfer.ansermoz.dev/](https://bananatransfer.ansermoz.dev/).
-We have also created mockups of the app's interface, which you can find in this repository in the [mockups](https://github.com/BananaTransfer/BananaTransfer/tree/main/documents/mockups/digital) folder.
+### New transfer
+
+![upload.png](documents/imgs/upload.png)
+
+### Key management
+
+![key_management.png](documents/imgs/key_management.png)
+
+## Hosted version
+
+While development of the application is in progress, we have deployed two BananaTransfer instances that you can try at: 
+* [https://bananatransfer.saul.ch/](https://bananatransfer.saul.ch/) 
+* [https://bananatransfer.ansermoz.dev/](https://bananatransfer.ansermoz.dev/)
+
+## Limitations
+
+Currently due to issues in the memory management and the availability of the File System API on Firefox, the app
+only support large file transfer on Chrome based browser.
+
+### Memory management issue during upload
+
+As you can see in the following picture, the page parent process does not release the memory between uploaded chunk,
+which lead to browser crashing during large transfer. On Chrome based browser, the memory is correctly released after 
+each uploaded chunk which is coherent with our code. Therefore, we think the issue on Firefox is outside our control, 
+and we could not find a workaround.
+
+![firefox_memory_leak.png](documents/imgs/firefox_memory_leak.png)
+
+### File System API
+
+During upload, all browser offer an API that allow us to read a file chunk by chunk. But during download, we need
+the File System API to be able to write those chunk directly to disk. And this API is not available on all browser. 
+Not being able to use it forces us to read the whole file in memory before writing it on disk which make 
+large file download impossible. This is why we only support large file retrieval on Chrome based browser.
+
+## Mockups
+
+We have created mockups of the app's interface, which you can find in this repository in the [mockups](https://github.com/BananaTransfer/BananaTransfer/tree/main/documents/mockups/digital) folder.
 
 ## Project guide/contribute
 
