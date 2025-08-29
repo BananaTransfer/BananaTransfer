@@ -29,46 +29,86 @@ Documentation and changes to the infrastructure are considered as features.
 
 ```md
 project-root/
-  ├── src/                           # Backend/server code (NestJS, etc.)
+  ├── src/                           # Backend/server code (NestJS)
   │   ├── auth/                      # Authentication module
   │   │   ├── controllers/           # Auth endpoints (login, register)
-  │   │   ├── services/              # Auth business logic
-  │   │   ├── guards/                # Route protection (JWT auth)
-  │   │   └── dto/                   # Data transfer objects (validation)
+  │   │   ├── services/              # Auth business logic and tests
+  │   │   ├── dto/                   # Data transfer objects (login, register)
+  │   │   ├── jwt/                   # JWT authentication
+  │   │   │   ├── guards/            # JWT auth guards
+  │   │   └── types/                 # TypeScript type definitions
   │   ├── database/                  # Database configuration and entities
   │   │   ├── entities/              # TypeORM entities (User, FileTransfer, etc.)
-  │   │   └── migrations/            # Database schema changes
+  │   │   ├── migrations/            # Database schema changes
+  │   ├── remote/                    # Remote transfer functionality
+  │   │   ├── controllers/           # Remote transfer endpoints
+  │   │   ├── services/              # DNS and remote transfer services
+  │   │   ├── guards/                # Remote transfer guards
+  │   │   ├── dto/                   # Remote transfer DTOs
+  │   │   └── types/                 # Remote-specific types
   │   ├── transfer/                  # File transfer business logic
+  │   │   ├── controllers/           # Transfer endpoints
+  │   │   ├── services/              # Transfer, bucket, expiration services
+  │   │   ├── guards/                # User status guards
+  │   │   └── dto/                   # Transfer-related DTOs
   │   ├── user/                      # User management
+  │   │   ├── controllers/           # User endpoints
+  │   │   ├── services/              # User, password, recipient services
+  │   │   ├── dto/                   # User-related DTOs
+  │   │   └── types/                 # User-specific types
+  │   ├── app.controller.ts          # Root application controller
+  │   ├── app.module.ts              # Root application module
   │   └── main.ts                    # Application entry point
-  ├── dist/                          # Compiled backend JavaScript code
-  ├── public/                        # Static assets served to browser
-  │   ├── css/                       # Stylesheets (Bootstrap, custom)
-  │   ├── js/                        # Compiled frontend JavaScript
-  │   │   ├── crypto/                # Client-side encryption modules
-  │   │   └── htmx.min.js            # HTMX for dynamic interactions
-  │   ├── images/                    # Static images, logos, icons
-  │   └── favicon/                  
   ├── frontend/                      # Frontend TypeScript source code
-  │   ├── crypto/                    # Encryption/decryption modules
-  │   │   ├── encryption.ts          # Streaming file encryption
-  │   │   ├── key-manager.ts         # RSA/AES key operations
-  │   │   ├── security-utils.ts      # Crypto utilities
-  │   │   └── *.spec.ts              # Frontend unit tests
-  │   └── components/                # Reusable frontend components
+  │   ├── crypto/                    # Client-side encryption modules
+  │   │   └── _tests/                # Frontend crypto unit tests
+  │   ├── utils/                     # Frontend utility functions
+  │   │   ├── common.ts              # Shared utilities
+  │   │   └── _tests/                # Utility tests
+  │   ├── _tests/                    # General frontend tests
+  ├── public/                        # Static assets served to browser
+  │   ├── bootstrap/                 # Bootstrap framework files
+  │   │   ├── css/                   # Bootstrap stylesheets
+  │   │   ├── js/                    # Bootstrap JavaScript
+  │   │   └── icons/                 # Bootstrap icons
+  │   ├── css/                       # Custom stylesheets
+  │   ├── js/                        # Compiled frontend JavaScript
+  │   │   ├── crypto/                # Compiled crypto modules
+  │   │   └── utils/                 # Compiled utility modules
+  │   ├── images/                    # Static images, logos, icons
+  │   └── favicon/                   # Favicon files
   ├── views/                         # Server-side templates (Pug)
   │   ├── auth/                      # Login/register pages
   │   ├── transfer/                  # File upload/download UI
-  │   └── layout.pug                 # Base template
-  ├── test/                          # End-to-end tests
+  │   ├── user/                      # User settings and key management
+  │   ├── components/                # Reusable template components
+  │   │   ├── modals/                # Modal dialogs
+  │   ├── layout.pug                 # Base template
+  │   └── index.pug                  # Home page
+  ├── test/                          # End-to-end tests (Playwright)
+  │   ├── fixtures/                  # Test page objects
+  │   └── *.spec.ts                  # E2E test specifications
   ├── infra/                         # Infrastructure as code
   │   ├── ansible/                   # Deployment automation
-  │   └── terraform/                 # Cloud resource provisioning
+  │   │   ├── files/                 # Static files for deployment
+  │   │   └── templates/             # Configuration templates
+  │   ├── terraform/                 # Cloud resource provisioning
+  │   └── cleanup.sh                 # Infrastructure cleanup script
   ├── documents/                     # Project documentation
+  │   ├── umls/                      # UML diagrams and documentation
+  │   └── mockups/                   # UI mockups and designs
+  ├── dist/                          # Compiled backend JavaScript code
+  ├── coverage/                      # Test coverage reports
   ├── package.json                   # Dependencies and scripts
   ├── tsconfig.json                  # Backend TypeScript config
   ├── tsconfig.public.json           # Frontend TypeScript config
+  ├── tsconfig.build.json            # Build-specific TypeScript config
   ├── jest.public.config.json        # Frontend test configuration
+  ├── playwright.config.ts           # E2E test configuration
+  ├── eslint.config.mjs              # ESLint configuration
+  ├── nest-cli.json                  # NestJS CLI configuration
+  ├── copy-assets.js                 # Asset copying script
+  ├── Makefile                       # Build and setup commands
   └── docker-compose.yaml            # Local development environment
 ```
 

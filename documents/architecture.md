@@ -10,7 +10,6 @@ A server does have a Web-interface for their users, with a DB and server to stor
 * Web-server with server-side rendering
   * Node.js with the Nest.js framework
   * pug as a templating engine
-  * HTMX to simplify the HTTP requests directly in the HTML
   * Bootstrap for the css/formatting
 * Database to store app information
   * PostgreSQL
