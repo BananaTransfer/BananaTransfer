@@ -9,7 +9,7 @@ usrr -> brwr: Authenticate with \nusername@domain / password
 brwr -> srvr: Authenticate with \nusername@domain / password
 usrr -> brwr: Request to generate new private key
 brwr -> brwr: Generate new private key \nGenerate public key from private key
-usrr -> brwr: Enter new password for private key
+brwr -> brwr: Generate new master password \nfor private key
 brwr -> brwr: Encrypt private key with password
 usrr -> brwr: Confirm and save private key
 brwr -> srvr: Store public key and \nencrypted private key of user
